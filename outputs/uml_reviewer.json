@@ -1,0 +1,89 @@
+{
+  "reviewer": "uml_reviewer",
+  "scope": [
+    "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+    "docs/Software Engineer.drawio.xml"
+  ],
+  "findings": [
+    {
+      "id": "UML-001",
+      "severity": "high",
+      "category": "use-case-consistency",
+      "location": "UC3 use-case diagram note; UC-03 Triggers; UC-05 Assumptions",
+      "finding": "The UC3 diagram states that Play Audio Guide is 'manual or triggered by UC-05'. UC-03 likewise says UC-05 may trigger it, but UC-05 explicitly limits notification selection to opening Location Details and says loading content and playing audio remain UC-02 and UC-03 responsibilities. This leaves two incompatible behaviours for notification selection.",
+      "recommendation": "Choose the written UC-05 MVP boundary: notification/banner selection opens Location Details only. Remove the UC-05-to-UC-03 trigger claim from the UC3 diagram and UC-03 trigger text. Do not add an include or extend relation for it."
+    },
+    {
+      "id": "UML-002",
+      "severity": "medium",
+      "category": "use-case-relationships",
+      "location": "UC1–UC7 use-case diagrams",
+      "finding": "Each use-case diagram is an isolated actor-to-ellipse sketch, with no system boundary and no documented relationship notation. The PRD dependencies are preconditions/triggers rather than mandatory reusable use cases: UC-02 follows a selected location, UC-03 requires loaded guide content, and UC-05 opens a detail screen.",
+      "recommendation": "Add one application/system boundary and keep these diagrams as actor associations unless a genuinely reusable user-goal use case is introduced. Do not force <<include>> between UC-01 and UC-02 or UC-02 and UC-03: they are state/data preconditions and can occur independently after the screen is reached. Keep permission checks, validation, fallback, storage, and audio-focus handling inside activity diagrams rather than promoting them to use cases."
+    },
+    {
+      "id": "UML-003",
+      "severity": "high",
+      "category": "activity-flow",
+      "location": "UC2_activity",
+      "finding": "The activity loads scriptText immediately after retrieval and only then tests 'Approved content found?'. The PRD requires the system to retrieve only APPROVED content before it loads and displays scriptText. The diagram can therefore imply displaying unapproved content.",
+      "recommendation": "Place an 'approved content available?' decision immediately after lookup and before Load scriptText. Route a no result to the unavailable-language fallback or no-approved-content outcome as applicable; only the approved/fallback-approved branch may load and display scriptText."
+    },
+    {
+      "id": "UML-004",
+      "severity": "medium",
+      "category": "activity-flow",
+      "location": "UC2_activity",
+      "finding": "The fallback sequence is under-specified: the diagram uses one 'Fallback content found?' decision after the EN-to-VI note, but it does not visibly model EN first and VI only if EN is unavailable. It also does not show that a successful fallback returns to loading/displaying content.",
+      "recommendation": "Model the required ordered alternatives explicitly: selected language available?; otherwise EN available?; otherwise VI available?; otherwise end with the unavailable-content outcome. Merge all successful branches before Load scriptText."
+    },
+    {
+      "id": "UML-005",
+      "severity": "medium",
+      "category": "activity-overmodeling",
+      "location": "UC3_activity",
+      "finding": "The activity models 'Playback event?' as a central decision with branches for controls, audio focus, device disconnection, and completion. These are asynchronous runtime events, not mutually exclusive choices made at a single decision point; the diagram also labels a generic 'User' although the PRD actor is Tourist.",
+      "recommendation": "Keep the normal flow linear through preparation and Playing, then use a compact loop/event region for controls and interruption events (or a separate playback-state diagram). Retain only decisions that choose a result, such as audio-file available/playable and audio focus restored. Rename the actor consistently to Tourist."
+    },
+    {
+      "id": "UML-006",
+      "severity": "medium",
+      "category": "activity-flow",
+      "location": "UC4_activity",
+      "finding": "The activity uses decision diamonds for labels such as 'Tourist selects action?', 'Newer version available?', and 'Download completed?', but terminal alternatives/exceptions such as no update, cancellation, insufficient storage, and invalid package are shown as action boxes without an unambiguous visible merge/end convention. This makes it difficult to verify the PRD guarantee that current installed content remains unchanged on every failed or cancelled update.",
+      "recommendation": "Use a clear initial node, decision guards, and explicit final nodes or a merge into a single 'current content unchanged' outcome for A1, A3, E1, E2, and E3. Keep deletion as a separate guarded branch that ends after status update; do not represent it as an update failure."
+    },
+    {
+      "id": "UML-007",
+      "severity": "medium",
+      "category": "activity-flow",
+      "location": "UC6_activity; UC-06 BR4",
+      "finding": "For the edit path, the diagram proceeds to 'Save content and set status PENDING_REVIEW' without representing BR4: editing previously approved content must preserve the currently mobile-visible version until the replacement is approved. The activity also names the actor 'Admin/Manager', whereas the PRD specifies Content Admin / Editor.",
+      "recommendation": "Add an internal save/versioning action on the edit-submit branch that preserves the approved version and stores the edited version as PENDING_REVIEW. Align the actor label with Content Admin / Editor; this is a terminology correction, not a new actor or use case."
+    },
+    {
+      "id": "UML-008",
+      "severity": "medium",
+      "category": "activity-flow",
+      "location": "UC7_activity",
+      "finding": "UC7 serializes the optional behaviours: every path opens feedback, selects a record, updates status, then offers export. In the PRD, changing period, filtering, exporting, and updating feedback status are independent behaviours within this one use case. The no-data branch also flows into selecting feedback, which may be impossible when the empty state covers records.",
+      "recommendation": "After the dashboard/empty-state display, model optional admin choices with guarded loops or separate action branches: change period, open/filter/select feedback and optionally update status, and export the current report. Do not require a feedback-status update before export; give empty analytics/feedback results an appropriate end or return-to-choice path."
+    },
+    {
+      "id": "UML-009",
+      "severity": "low",
+      "category": "consistency",
+      "location": "UC6 and UC7 use-case diagrams",
+      "finding": "Both diagrams label the actor 'Admin/Manager', while UC-06 defines Content Admin / Editor and UC-07 defines System Admin / Product Owner. Those roles have different stated responsibilities and authorization boundaries.",
+      "recommendation": "Use the PRD actor labels in each respective diagram. If a shared generalized Admin actor is intended, document its specialization explicitly; otherwise keep the roles separate."
+    }
+  ],
+  "summary": {
+    "finding_count": 9,
+    "high": 2,
+    "medium": 6,
+    "low": 1,
+    "relationship_guidance": "No new include/extend relationship is justified by the current PRD. Most detailed operations are internal steps, validations, exceptions, or state/event handling and belong in activities.",
+    "overall": "The diagrams broadly cover the documented use cases and alternatives, but the UC3/UC5 scope contradiction, UC2 approval ordering, and optional-flow sequencing need correction before treating them as an authoritative UML baseline."
+  }
+}

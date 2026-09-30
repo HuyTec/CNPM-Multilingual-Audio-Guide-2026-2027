@@ -1,0 +1,117 @@
+{
+  "overall_assessment": "major_changes",
+  "summary": "The seven use cases describe a coherent MVP and the activity graphs are structurally connected, but the requirements baseline has three blocking end-to-end ambiguities: approved content has no defined publication path, geofence behavior conflicts with playback behavior, and notification navigation lacks an explicit content-loading handoff. Resolve those boundaries and the limited diagram/documentation defects before treating the PRD as the implementation baseline; no product redesign or new mandatory user-facing flow is required.",
+  "critical_issues": [],
+  "important_issues": [
+    {
+      "id": "SYN-01",
+      "title": "Approved-content publication and offline package boundary are unowned",
+      "affected_use_cases": ["UC-02", "UC-03", "UC-04", "UC-06"],
+      "evidence": "UC-02 exposes only APPROVED content, while UC-06 saves only DRAFT or PENDING_REVIEW and explicitly excludes approval, publishing, and mobile synchronization. UC-04 does not say updates contain approved assets only.",
+      "minimal_resolution": "Document an external approval/publication dependency with an owner. Define that only an approved, atomic content/package version is published and installed; UC-02/UC-03 and UC-04 must exclude DRAFT and PENDING_REVIEW data."
+    },
+    {
+      "id": "SYN-02",
+      "title": "Geofence-to-playback behavior is contradictory",
+      "affected_use_cases": ["UC-03", "UC-05"],
+      "evidence": "UC-03 and its diagram say playback can be triggered by UC-05, but UC-05 states that notification selection only opens Location Details and leaves content loading/playback to UC-02/UC-03.",
+      "minimal_resolution": "Keep the stated MVP boundary: notification/banner selection opens Location Details only. Remove the UC-05 trigger claim from UC-03 and its diagram; do not introduce include/extend or auto-play."
+    },
+    {
+      "id": "SYN-03",
+      "title": "Notification navigation has no explicit UC-02 handoff",
+      "affected_use_cases": ["UC-02", "UC-05"],
+      "evidence": "UC-02 requires a location selected through UC-01, whereas UC-05 independently opens Location Details with locationId and says UC-02 owns content loading.",
+      "minimal_resolution": "Generalize UC-02 to start after any valid navigation to Location Details with locationId, and state that UC-05 notification selection supplies that handoff."
+    },
+    {
+      "id": "SYN-04",
+      "title": "UC-02 activity can imply loading unapproved content and has incomplete fallback ordering",
+      "affected_use_cases": ["UC-02"],
+      "evidence": "The activity loads scriptText before the Approved-content decision and does not visibly model Selected Language -> EN -> VI with all successful branches joining before load/display.",
+      "minimal_resolution": "Move the approval decision immediately after lookup. Model the ordered language checks, then merge only approved success paths before Load and Display scriptText."
+    },
+    {
+      "id": "SYN-05",
+      "title": "UC-03 has unsafe/incomplete pause paths",
+      "affected_use_cases": ["UC-03"],
+      "evidence": "Remain paused has no outgoing edge or final node; the output-device-disconnect path can loop directly back to playback although UC-03 E3 requires automatic pause to avoid unintended speaker playback.",
+      "minimal_resolution": "Connect Remain paused to the final node and remove the disconnect-to-playback loop. Resume only after an explicit focus-restored or later user-driven action."
+    },
+    {
+      "id": "SYN-06",
+      "title": "Offline baseline and approved-version consistency are underspecified",
+      "affected_use_cases": ["UC-01", "UC-02", "UC-03", "UC-04", "UC-06"],
+      "evidence": "UC-01 requires a prior offline download for the local database, while UC-04 says bundled base content enables offline operation without prior download. UC-04 versions packages but UC-06 protects approved revisions without defining package/content-version pairing.",
+      "minimal_resolution": "Choose one first-run offline baseline. Add a short approved package-version contract that installs matched script/audio assets atomically."
+    }
+  ],
+  "minor_issues": [
+    {
+      "id": "SYN-07",
+      "title": "Activity diagrams omit or serialize documented alternatives",
+      "details": "Add UC-01 radius expansion; UC-04 delete-cancellation; an end/return after UC-07 empty state; UC-06 approved-version preservation. Model UC-07 period, feedback, status update, and export as independent optional paths; use an event/loop region for UC-03 playback controls."
+    },
+    {
+      "id": "SYN-08",
+      "title": "Role and identifier terminology is inconsistent",
+      "details": "Use Tourist, Content Admin / Editor, and System Admin / Product Owner consistently. Normalize UC-01..UC-07, activity names, locally reset flow steps, and scoped business-rule IDs."
+    },
+    {
+      "id": "SYN-09",
+      "title": "PRD and README need editorial/traceability cleanup",
+      "details": "Correct the PRD title and headings, separate metadata from flow tables, repair UC-03 formatting, define a short glossary, replace authoring placeholders with artifact references, and align README scope/link with the Markdown PRD."
+    },
+    {
+      "id": "SYN-10",
+      "title": "Language, feedback, and analytics sources are assumed rather than traced",
+      "details": "Document the existing/external owner for application language setting, feedback submission, and mobile analytics-event capture; this can remain outside the seven MVP use cases."
+    }
+  ],
+  "cross_agent_agreement": [
+    "Business, UML, consistency, and documentation reviews all identify the missing APPROVED publication path as the principal lifecycle gap.",
+    "Business, UML, and consistency reviews agree that UC-03/UC-05 contradict one another; the written UC-05 MVP boundary supports notification-to-details only.",
+    "UML and XML reviews agree that UC-02 needs approval/fallback-flow repair and that UC-03 pause/device-disconnect behavior needs diagram correction.",
+    "Business and consistency reviews agree that the offline baseline must be stated consistently across UC-01 and UC-04."
+  ],
+  "conflicting_findings": [
+    {
+      "topic": "Required scope for approval, feedback, language, and analytics capture",
+      "resolution": "Do not add new MVP user-facing use cases. Record each as an explicitly owned external dependency or future requirement with its input/output contract; only approval/publication needs a release-blocking contract because current UC-02 cannot legally obtain its required content otherwise."
+    },
+    {
+      "topic": "Use-case diagram relationships",
+      "resolution": "Do not add <<include>> or <<extend>>. UC-01/UC-02/UC-03 handoffs are state/data preconditions, not mandatory reusable user goals; add a system boundary and clear textual handoffs instead."
+    }
+  ],
+  "recommended_minimal_changes": [
+    "Add one PRD dependency note defining approval -> publication -> approved atomic package/version -> mobile synchronization; name its owner and approved-only rule.",
+    "Align UC-03 and UC-05 to notification/banner -> Location Details only; explicitly invoke UC-02 after valid Location Details navigation with locationId.",
+    "Repair UC2 and UC3 activity paths before any visual polish: approval before script load, ordered fallback; final paused outcome, no disconnect auto-resume.",
+    "Choose the bundled-base versus prior-download offline baseline and state the associated location-database availability.",
+    "Normalize roles, IDs, flow/rule numbering, PRD tables/title, diagram references, and README link/scope."
+  ],
+  "use_cases_needing_revision": [
+    {"use_case": "UC-02", "priority": "highest", "reason": "Approval/fallback ordering and generalized Location Details handoff."},
+    {"use_case": "UC-03", "priority": "highest", "reason": "Remove UC-05 trigger; correct paused/disconnect behavior."},
+    {"use_case": "UC-05", "priority": "highest", "reason": "Declare handoff to UC-02 after notification navigation."},
+    {"use_case": "UC-04", "priority": "high", "reason": "Approved-only atomic package/version and baseline alignment; show deletion cancellation."},
+    {"use_case": "UC-06", "priority": "high", "reason": "Trace approval/publication dependency and show approved-version protection."},
+    {"use_case": "UC-01", "priority": "medium", "reason": "Align offline baseline and show radius expansion."},
+    {"use_case": "UC-07", "priority": "medium", "reason": "Independent optional flows, empty-state route, and external feedback/event traceability."}
+  ],
+  "files_needing_revision": [
+    {"file": "docs/PRODUCT REQUIRMENTS DOCUMENT.md", "changes": "Resolve lifecycle/handoff/offline contracts, normalize identifiers/roles/tables/rules, and correct editorial defects."},
+    {"file": "docs/Software Engineer.drawio.xml", "changes": "Correct UC2/UC3 paths, add omitted compact alternatives, align labels and use-case notes, and add system boundaries to use-case diagrams."},
+    {"file": "README.md", "changes": "Align product scope and authoritative PRD link; remove stale placeholders and incomplete formatting."}
+  ],
+  "optimized_activity_flows": {
+    "UC-02": "Location Details(locationId) -> resolve selected language and mode -> lookup approved content -> selected language available? load; otherwise EN available? load; otherwise VI available? load; otherwise show updating/unavailable and disable Listen -> display scriptText.",
+    "UC-03": "Tourist selects Play -> matching approved audio available/playable? play audio : TTS(scriptText) -> Playing -> compact event loop for pause/resume/seek/speed and focus interruption -> focus restored? resume : remain paused -> final. Device disconnect -> pause/save position -> final.",
+    "UC-04": "Open manager -> choose update or delete. Update: newer approved package? no -> unchanged/final; yes -> confirm -> storage? -> download -> verify -> atomically replace with approved package/version -> ready. Cancel/failure -> current content unchanged/final. Delete: confirm? yes -> delete optional only -> status/final; no -> unchanged/final.",
+    "UC-05": "Enter geofence -> resolve nearest valid location -> cooldown/permission/foreground checks -> notification or banner(locationId, resolved language) -> selected? no -> final; yes -> Location Details(locationId) -> UC-02 content loading.",
+    "UC-06": "Open form -> create/edit -> validate/upload/preview -> save draft or submit review. On edit of approved content: retain published approved version and save replacement as PENDING_REVIEW -> final.",
+    "UC-07": "Open dashboard -> load selected period -> show analytics or empty state -> optional loop: change period; optional feedback list/filter/select/update; optional export current report with retry on failure -> final. Empty analytics must not force feedback selection."
+  },
+  "final_notes": "XML structural integrity is good: all seven activity graphs have logical start-to-end paths, no broken edge references, and no logical disconnected nodes. The remaining work is semantic alignment and documentation hygiene, not a redraw from scratch."
+}

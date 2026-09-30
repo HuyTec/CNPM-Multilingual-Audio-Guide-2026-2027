@@ -1,0 +1,80 @@
+{
+  "reviewer": "consistency_reviewer",
+  "review_scope": "Cross-use-case consistency review of UC-01 through UC-07, limited to the PRD and the supporting draw.io XML.",
+  "sources": [
+    "E:\\Project\\CongNghePhanMem_2026-2027\\docs\\PRODUCT REQUIRMENTS DOCUMENT.md",
+    "E:\\Project\\CongNghePhanMem_2026-2027\\docs\\Software Engineer.drawio.xml"
+  ],
+  "findings": [
+    {
+      "id": "CCR-01",
+      "severity": "high",
+      "title": "Approval-to-mobile publication path is not provided",
+      "affected_use_cases": ["UC-02", "UC-03", "UC-04", "UC-06"],
+      "evidence": "UC-02 retrieves only status = APPROVED content; UC-06 can save only DRAFT or PENDING_REVIEW and explicitly places approval, publishing, and Mobile App synchronization outside its scope. UC-04 replaces local content from a newer server version but does not state that the package is restricted to approved assets.",
+      "impact": "The required APPROVED content and audio that UC-02/UC-03 consume have no defined producer, status transition, publication rule, or synchronization boundary. An update package could otherwise expose non-approved content or fail to expose approved content.",
+      "recommendation": "Specify the owner/use case or service for PENDING_REVIEW -> APPROVED, define publication/version creation from approved assets only, and state that UC-04 packages and UC-02/UC-03 retrieval exclude DRAFT and PENDING_REVIEW data."
+    },
+    {
+      "id": "CCR-02",
+      "severity": "high",
+      "title": "UC-03's UC-05 auto-play trigger conflicts with UC-05's stated responsibility boundary",
+      "affected_use_cases": ["UC-03", "UC-05"],
+      "evidence": "UC-03 states that UC-05 may trigger UC-03 when the Tourist enters a configured location-based area. UC-05 states in its MVP assumption that selecting a notification only opens the location and that loading guide content and playing audio remain responsibilities of UC-02 and UC-03; its basic and alternative flows contain no trigger to UC-03.",
+      "impact": "The event sequence is ambiguous: entering a geofence may either only notify/open details or start playback. This affects consent, audio-focus behavior, and the required UC-02 content-loading prerequisite.",
+      "recommendation": "Choose one behavior. If auto-play is in scope, add the explicit UC-05 -> UC-02 -> UC-03 sequence and its user-consent rule; otherwise remove UC-05 as a system-initiated trigger from UC-03."
+    },
+    {
+      "id": "CCR-03",
+      "severity": "high",
+      "title": "Notification routing reaches Location Details without a defined UC-02 content-load handoff",
+      "affected_use_cases": ["UC-02", "UC-05"],
+      "evidence": "UC-02 is system-initiated after a Tourist selects/confirms a location in UC-01 and requires a location selected through UC-01. UC-05 independently opens Location Details Screen after notification selection using locationId, while also saying UC-02 owns guide-content loading. No UC-05 flow or trigger states that it invokes UC-02.",
+      "impact": "A location opened from a notification has no specified path to receive scriptText or enable Listen to Guide, despite UC-02 being the prerequisite for UC-03.",
+      "recommendation": "Generalize UC-02's precondition/trigger to any valid Location Details navigation carrying locationId, and explicitly include the UC-05 notification-selection handoff."
+    },
+    {
+      "id": "CCR-04",
+      "severity": "medium",
+      "title": "Offline baseline assumptions conflict between selection and content-update use cases",
+      "affected_use_cases": ["UC-01", "UC-04"],
+      "evidence": "UC-01 assumes that, without Internet, the Tourist has previously downloaded at least one offline package containing the required SQLite database. UC-04 states that base offline content is bundled with the application and that UC-02 and UC-03 can operate offline without any prior download.",
+      "impact": "The offline first-run expectation is inconsistent, so the required installation package and offline availability of location search are unclear.",
+      "recommendation": "State one baseline explicitly: either bundle the location database required by UC-01 with the base content, or retain the prior-download prerequisite and revise UC-04's no-prior-download claim."
+    },
+    {
+      "id": "CCR-05",
+      "severity": "medium",
+      "title": "Current languageCode has no defined cross-use-case source or persistence contract",
+      "affected_use_cases": ["UC-01", "UC-02", "UC-03", "UC-05", "UC-06"],
+      "evidence": "UC-02 receives a current languageCode after UC-01 and uses it with locationId and scriptType; UC-03 requires the same tuple; UC-05 must render notifications in the current application language; UC-06 maps scripts/assets by languageCode. None of these use cases defines how the current language is selected, stored, validated against supported languages, or made available to UC-05.",
+      "impact": "The shared localization key is assumed rather than supplied, creating inconsistent fallback and notification-language behavior across entry paths.",
+      "recommendation": "Define an application language-setting contract (default, change action, validation, persistence, and propagation) and specify that UC-02/UC-03/UC-05 use that same resolved languageCode."
+    },
+    {
+      "id": "CCR-06",
+      "severity": "medium",
+      "title": "Version consistency for approved edits and offline updates is underspecified",
+      "affected_use_cases": ["UC-02", "UC-03", "UC-04", "UC-06"],
+      "evidence": "UC-04 stores and compares a local content version and replaces local content with a verified newer version. UC-06 BR4 preserves the approved version available to the Mobile App while an edited replacement awaits approval, but it does not define a version identifier or the relationship between an approved content version and UC-04's package version. UC-02/UC-03 identify assets only by locationId, languageCode, and scriptType.",
+      "impact": "The sources do not establish how text and audio from the same approved revision remain paired, or how the app avoids mixing an old script with a new audio asset after an update.",
+      "recommendation": "Define an approved content/package version contract and require UC-04 to install an atomic approved version whose script and audio mappings are resolved together."
+    },
+    {
+      "id": "CCR-07",
+      "severity": "medium",
+      "title": "Feedback submission and analytics event capture are external assumptions, not supplied interactions",
+      "affected_use_cases": ["UC-02", "UC-03", "UC-04", "UC-05", "UC-07"],
+      "evidence": "UC-02 offers Send Feedback when content is unavailable, while UC-07 manages feedback but says the feedback form is defined elsewhere. UC-07 also assumes Mobile App usage events exist for Total Playbacks, Top Locations, Language Distribution, and Offline/Online Usage Ratio; the mobile use cases do not specify recording those events.",
+      "impact": "UC-07's managed records and metrics have no defined source within the provided use-case set, so reporting completeness and feedback routing cannot be verified.",
+      "recommendation": "Provide the feedback-submission use case and a minimal event contract naming the emitting mobile flows, required fields (including locationId/languageCode where applicable), and the online/offline classification rule."
+    }
+  ],
+  "summary": {
+    "finding_count": 7,
+    "high": 3,
+    "medium": 4,
+    "low": 0,
+    "overall_assessment": "The shared location/content flow is largely aligned around locationId, languageCode, and scriptType, but the approval-publication lifecycle, notification entry handoff, and offline/version contracts need resolution before the use cases form a complete end-to-end specification."
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "specialist": "business_analyst",
+  "source_scope": [
+    "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+    "docs/Software Engineer.drawio.xml"
+  ],
+  "assessment": {
+    "documented_product_goal": "A multilingual tourist mobile audio-guide application with location discovery, approved multilingual guide delivery and playback, offline content management, geofence notifications, plus web administration for content and analytics/feedback.",
+    "use_case_inventory": [
+      { "id": "UC-01", "name": "Explore & Select location", "actor": "Tourist", "scope": "Location discovery and selection via nearby GPS, keyword, map, or category; ends at Location Details." },
+      { "id": "UC-02", "name": "Access Multilingual Guide Content", "actor": "Tourist", "scope": "Load only approved script text for selected location/language/FULL or SHORT mode, including EN then VI fallback." },
+      { "id": "UC-03", "name": "Play Audio Guide", "actor": "Tourist", "scope": "Play matching audio or fall back to device TTS, with playback controls and audio-focus handling." },
+      { "id": "UC-04", "name": "Manage & Update Offline Content", "actor": "Tourist", "scope": "Check, download, verify, replace, resume, or delete optional offline content while protecting bundled base content." },
+      { "id": "UC-05", "name": "Receive Location-Based Notifications", "actor": "Tourist", "scope": "Detect geofence entry, enforce cooldown, display notification/banner, and route selection to Location Details." },
+      { "id": "UC-06", "name": "Manage Location Content & Audio Assets", "actor": "Content Admin / Editor", "scope": "Create/edit location, scripts, and audio; save only DRAFT or PENDING_REVIEW." },
+      { "id": "UC-07", "name": "System Analytics & Tourist Feedback Management", "actor": "System Admin / Product Owner", "scope": "View usage metrics, inspect/filter/update feedback status, and export the current report." }
+    ],
+    "workflow_dependencies": [
+      "UC-01 supplies locationId to UC-02; UC-02 supplies locationId, languageCode, scriptType, and scriptText to UC-03.",
+      "UC-04 supplies/version-controls offline data used by UC-02 and UC-03.",
+      "UC-05 routes to Location Details; its stated MVP boundary delegates guide loading/playback to UC-02/UC-03.",
+      "UC-06 creates DRAFT/PENDING_REVIEW content; UC-02 exposes APPROVED content only."
+    ],
+    "scope_assessment": {
+      "mvp_fit": "The seven use cases cover a coherent tourist journey and the minimum administration needed to maintain it. UC-04 and UC-07 each combine related operational actions, but the document explicitly treats their variants as behaviors inside one use case, which is reasonable for the stated MVP.",
+      "overlap": "UC-01/UC-05 both lead to Location Details but have distinct triggers (manual discovery versus geofence event). UC-02/UC-03 are appropriately separated as content retrieval versus playback. UC-06 and UC-07 have distinct admin goals and actors.",
+      "extension_points": "Every use case records Extension Points as N/A. Cross-use-case handoffs are documented in triggers, preconditions, assumptions, and rules instead of formal extension points."
+    }
+  },
+  "findings": [
+    {
+      "id": "BA-01",
+      "severity": "high",
+      "category": "cross_use_case_inconsistency",
+      "title": "UC-05's playback relationship conflicts with its own MVP boundary",
+      "evidence": "UC-03 says that UC-05 may trigger UC-03 when a tourist enters a configured area, and the UC3 draw.io note says 'manual or triggered by UC-05'. UC-05's assumptions instead state that selecting a notification only opens Location Details and that loading/playback remain responsibilities of UC-02 and UC-03.",
+      "impact": "The documented geofence experience is ambiguous: it could auto-play audio on entry, or merely open Location Details after the tourist selects a notification. These paths have materially different consent, audio-focus, and notification behavior.",
+      "recommendation": "Choose one documented MVP behavior and align UC-03 trigger, UC-05 basic/alternative paths, assumptions, and the UC3 diagram. If automatic playback is intentionally deferred, remove the UC-05-to-UC-03 trigger rather than leaving it as an implied extension.",
+      "affected_use_cases": ["UC-03", "UC-05"],
+      "source_evidence": ["PRD UC-03 Triggers", "PRD UC-05 Assumptions", "draw.io UC3 note"]
+    },
+    {
+      "id": "BA-02",
+      "severity": "high",
+      "category": "lifecycle_gap",
+      "title": "The content lifecycle stops at PENDING_REVIEW while tourist delivery requires APPROVED",
+      "evidence": "UC-06 can save only DRAFT or PENDING_REVIEW and explicitly puts approval, publishing, and Mobile App synchronization outside its scope. UC-02 permits only status=APPROVED content.",
+      "impact": "The documented use-case set does not trace how admin-authored content becomes eligible for tourist retrieval, nor how an approved revision reaches mobile/offline data.",
+      "recommendation": "Record the approval/publishing/synchronization function as a separate out-of-scope dependency or a future use case, with its ownership and handoff to UC-02/UC-04. Do not imply it is performed by UC-06.",
+      "affected_use_cases": ["UC-02", "UC-04", "UC-06"],
+      "source_evidence": ["PRD UC-02 BR1", "PRD UC-06 Assumptions and BR2"]
+    },
+    {
+      "id": "BA-03",
+      "severity": "medium",
+      "category": "assumption_inconsistency",
+      "title": "Offline-content assumptions differ on whether prior download is needed",
+      "evidence": "UC-01 assumes that offline use requires a previously downloaded package containing the SQLite database. UC-04 states that base offline content is bundled with the application, allowing UC-02 and UC-03 to operate offline without any prior download.",
+      "impact": "The minimum offline installation state is unclear, which affects onboarding, storage expectations, and the availability of nearby-location discovery.",
+      "recommendation": "State one baseline explicitly: whether the bundled base package includes the location database required by UC-01, and distinguish it from optional downloaded updates/assets.",
+      "affected_use_cases": ["UC-01", "UC-02", "UC-03", "UC-04"],
+      "source_evidence": ["PRD UC-01 Assumptions", "PRD UC-04 Goal, Assumptions"]
+    },
+    {
+      "id": "BA-04",
+      "severity": "medium",
+      "category": "scope_boundary",
+      "title": "Tourist feedback creation is an external dependency with no documented owner",
+      "evidence": "UC-07 assumes feedback has already been stored and says the tourist feedback form is defined elsewhere; the PRD use-case inventory contains no use case for submitting that feedback.",
+      "impact": "Analytics/feedback management can be specified, but the source, validation, and lifecycle entry point of the feedback data are not traceable within this documented scope.",
+      "recommendation": "Name the external feedback-submission function/system and its handoff to UC-07, or add it as a separately scoped future use case if it belongs to this product.",
+      "affected_use_cases": ["UC-07"],
+      "source_evidence": ["PRD UC-07 Assumptions"]
+    },
+    {
+      "id": "BA-05",
+      "severity": "low",
+      "category": "specification_clarity",
+      "title": "Use-case numbering in basic flows is global rather than locally reset",
+      "evidence": "UC-01 basic flow starts at 1, UC-02 starts at 7, and UC-03 starts at 12, while UC-04 through UC-07 reset to 1.",
+      "impact": "References to numbered steps are less easy to review and maintain because the convention changes across use cases.",
+      "recommendation": "Reset basic-flow numbering within each use case and update any step references in alternatives/exceptions accordingly.",
+      "affected_use_cases": ["UC-01", "UC-02", "UC-03"],
+      "source_evidence": ["PRD UC-01 to UC-03 Basic Course of Event"]
+    }
+  ],
+  "documented_strengths": [
+    "Each use case identifies an actor, goal, trigger, precondition, postcondition, alternatives/exceptions, assumptions, and business rules.",
+    "The tourist flow has explicit, resilient fallbacks: manual discovery after GPS denial, language fallback, TTS after audio failure, and safe offline-update recovery.",
+    "Business rules protect key integrity boundaries: approved-only content, matching content identifiers, verified updates, cooldown/locationId routing, and draft/pending-review status controls.",
+    "The draw.io file contains UC1 through UC7 and activity diagrams, supporting the stated PRD workflows."
+  ],
+  "overall_conclusion": "The PRD defines a coherent and mostly MVP-sized set of tourist and administrative use cases. The primary documentation risks are the unresolved geofence-to-playback behavior, the untraced approval/publication lifecycle, and conflicting offline baseline assumptions; resolving those boundaries would make the use-case model implementation-ready without expanding the product scope."
+}

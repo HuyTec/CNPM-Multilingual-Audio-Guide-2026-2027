@@ -1,0 +1,136 @@
+{
+  "reviewer": "xml_reviewer",
+  "status": "completed",
+  "scope": {
+    "diagram_file": "E:\\Project\\CongNghePhanMem_2026-2027\\docs\\Software Engineer.drawio.xml",
+    "requirements_file": "E:\\Project\\CongNghePhanMem_2026-2027\\docs\\PRODUCT REQUIRMENTS DOCUMENT.md",
+    "method": "Parsed each activity-page mxCell graph, including start/end groups, vertices, edges, decisions, branch labels, and reachability. Disconnected overlay labels used to caption blank diamonds were treated as annotations rather than executable nodes."
+  },
+  "summary": {
+    "activity_diagrams_reviewed": 7,
+    "logical_start_to_end_paths": "present for UC1 through UC7",
+    "broken_edge_references": 0,
+    "logical_disconnected_nodes": 0,
+    "findings_by_severity": {
+      "P1": 2,
+      "P2": 3,
+      "P3": 0
+    },
+    "overall_assessment": "The activity graphs are compact and largely connected. The main corrections are confined to UC3's pause/disconnect paths and a few documented outcomes omitted or contradicted by the diagrams."
+  },
+  "structural_checks": [
+    {
+      "diagram": "UC1_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 24,
+      "decisions": 7,
+      "result": "Connected from initial node to final node; all branch outcomes converge on location confirmation or an intentional retry loop."
+    },
+    {
+      "diagram": "UC2_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 10,
+      "decisions": 3,
+      "result": "Connected; language and duration selection correctly loop to retrieval."
+    },
+    {
+      "diagram": "UC3_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 14,
+      "decisions": 3,
+      "result": "Main flow reaches a final node, but the audio-focus no path terminates at a non-final action and the device-disconnect branch also loops back to playback."
+    },
+    {
+      "diagram": "UC4_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 16,
+      "decisions": 6,
+      "result": "Connected; no invalid edge references or accidental loops found."
+    },
+    {
+      "diagram": "UC5_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 13,
+      "decisions": 7,
+      "result": "Connected; permission, cooldown, foreground, selection, and invalid-location outcomes all resolve to the final node."
+    },
+    {
+      "diagram": "UC6_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 10,
+      "decisions": 4,
+      "result": "Connected; invalid upload and missing-data retries return to the form as documented."
+    },
+    {
+      "diagram": "UC7_activity",
+      "starts": 1,
+      "ends": 1,
+      "actions_or_outcomes": 10,
+      "decisions": 5,
+      "result": "Connected; reporting-period and export-retry loops are intentional."
+    }
+  ],
+  "findings": [
+    {
+      "id": "XML-001",
+      "severity": "P1",
+      "category": "dead_end",
+      "diagram": "UC3_activity",
+      "title": "Audio-focus refusal ends at a non-final action",
+      "evidence": "The 'Audio focus restored?' decision has a No edge to 'Remain paused' (cell fixNo-remainsPaused), which has no outgoing edge and is not a final node.",
+      "requirements_comparison": "UC-03 E2 says the system pauses and stores position; playback may continue only when focus is restored.",
+      "recommendation": "Connect 'Remain paused' to the UC final node. Keep the Yes branch as the only resume route."
+    },
+    {
+      "id": "XML-002",
+      "severity": "P1",
+      "category": "incorrect_loop",
+      "diagram": "UC3_activity",
+      "title": "Output-device disconnect can immediately re-enter playback",
+      "evidence": "E3 'Output device disconnected' points both to 'Pause and save position' and directly back to the playback-event decision (cell o0_6KubHvzofkxdgklQR-15).",
+      "requirements_comparison": "UC-03 E3 requires automatic pause and stored position to prevent unintended speaker playback; it does not authorize automatic continuation after disconnect.",
+      "recommendation": "Remove the direct E3-to-playback loop. End after the paused state, or add an explicit later user-driven reconnection/resume event only if the requirements are expanded."
+    },
+    {
+      "id": "XML-003",
+      "severity": "P2",
+      "category": "documented_path_omitted",
+      "diagram": "UC1_activity",
+      "title": "No nearby-result path omits expansion of the search radius",
+      "evidence": "E2 'No attractions found nearby' offers only 'Choose another method' back to the method-selection decision.",
+      "requirements_comparison": "UC-01 E2 explicitly allows the Tourist to expand the current search radius before or instead of choosing A2/A3/A4.",
+      "recommendation": "Add a compact 'Expand radius' route from E2 back to 'Search locations within configured radius', or state that radius expansion is out of scope in the written UC."
+    },
+    {
+      "id": "XML-004",
+      "severity": "P2",
+      "category": "documented_path_omitted",
+      "diagram": "UC4_activity",
+      "title": "Delete-content cancellation is not represented",
+      "evidence": "The A2 node combines selection, confirmation, deletion, and status update, then ends; it contains no cancellation outcome.",
+      "requirements_comparison": "UC-04 A2 states that if the Tourist cancels deletion, nothing changes.",
+      "recommendation": "Add one compact cancel-to-final edge/outcome, or revise the A2 wording to remove the cancellation behavior."
+    },
+    {
+      "id": "XML-005",
+      "severity": "P2",
+      "category": "requirements_conflict",
+      "diagram": "UC7_activity",
+      "title": "No-data branch proceeds to display feedback records",
+      "evidence": "The E1 'No data ... display Empty State instead of charts or records' node flows directly to 'Open feedback list: display recent feedback'.",
+      "requirements_comparison": "UC-07 E1 specifies an Empty State instead of charts or records when no data matches the selected reporting period or filter.",
+      "recommendation": "Either terminate after the Empty State, or clarify in the requirements that E1 applies only to analytics while feedback records remain independently available."
+    }
+  ],
+  "non_findings": [
+    "Blank-diamond captions appear as disconnected annotation cells in several pages; their associated diamonds carry the actual edges, so these are not graph dead ends.",
+    "No malformed source or target references were found among logical activity edges.",
+    "Documented alternatives and exceptions were not required to receive a decision diamond when their compact action/outcome representation preserved the stated behavior."
+  ]
+}

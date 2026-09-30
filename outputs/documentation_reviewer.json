@@ -1,0 +1,163 @@
+{
+  "reviewer": "documentation_reviewer",
+  "status": "completed",
+  "scope": [
+    "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+    "README.md"
+  ],
+  "summary": {
+    "finding_count": 14,
+    "critical": 0,
+    "high": 5,
+    "medium": 7,
+    "low": 2,
+    "overall_assessment": "The use-case content is substantially detailed, but the PRD is not yet a consistently structured requirements baseline and the README is materially incomplete and out of alignment with the documented product scope."
+  },
+  "findings": [
+    {
+      "id": "DOC-001",
+      "severity": "high",
+      "category": "document_structure",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "Document title and opening section",
+      "evidence": "The title says 'PRODUCT REQUIRMENTS DOCUMENT' and the first section is 'ABOUT USECASE'. The document begins directly with seven use cases and contains no document-control, product overview, scope, glossary, or requirements-section framing.",
+      "impact": "Readers cannot reliably treat the file as a maintained PRD baseline or distinguish its documented use-case scope from requirements that may be absent.",
+      "recommendation": "Correct the title and opening heading, then establish a clear PRD hierarchy before the use cases. Label any intentionally out-of-scope PRD sections rather than implying they were specified."
+    },
+    {
+      "id": "DOC-002",
+      "severity": "high",
+      "category": "traceability_and_numbering",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "UC-01 through UC-07",
+      "evidence": "Use-case identifiers alternate between UC-1/UC-2/UC-3 and UC-01/UC-02/UC-03 references. UC-04 labels its metadata field 'UC Id'; activity references use UC01, UC02, UC03, UC04, UC5, UC6, and UC7. Basic-flow steps are globally continued in UC-02/UC-03 (7-18) but restart from 1 in UC-04 onward.",
+      "impact": "Cross-references, diagrams, test cases, and future traceability matrices can point to ambiguous identifiers or steps.",
+      "recommendation": "Adopt one canonical identifier and activity-file convention, and number each use case's basic flow from 1 unless a document-wide numbering scheme is explicitly declared."
+    },
+    {
+      "id": "DOC-003",
+      "severity": "high",
+      "category": "readme_scope_alignment",
+      "source": "README.md",
+      "section": "Project title, technology section, and PRD reference",
+      "evidence": "The README calls the topic 'Backend thiết kế 3 lớp + CI/CD', but the PRD specifies a tourist mobile application plus a Web Admin Dashboard, offline content, audio playback, geofencing, and analytics. The technology fields are blank, the code block says no structure exists because the PRD is unverified, and the PRD link names './docs/PRD.docx.' rather than the reviewed Markdown PRD.",
+      "impact": "The repository entry point gives contributors a stale and incomplete product boundary and a potentially incorrect requirements reference.",
+      "recommendation": "Make the README describe the approved product surfaces and current repository state, complete or explicitly defer the technology/structure sections, and point to the authoritative requirements artifact."
+    },
+    {
+      "id": "DOC-004",
+      "severity": "high",
+      "category": "business_rule_classification",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "Reference: Business Rule fields in UC-01, UC-03, UC-05, and UC-06",
+      "evidence": "Several entries specified as business rules are implementation or data-routing details: UC-03 pre-rendered audio priority/TTS fallback, UC-05 notification locationId routing, and UC-06 script/audio association by locationId-languageCode-scriptType. UC-01 pagination and GPS radius configuration are also operational/UI configuration constraints rather than domain policies as written.",
+      "impact": "Mixing policy with solution design makes rules harder to validate with stakeholders and can prematurely constrain architecture.",
+      "recommendation": "Retain true product policies as business rules and move implementation/data-mapping choices to functional, data, integration, or technical design requirements, without changing the underlying behavior."
+    },
+    {
+      "id": "DOC-005",
+      "severity": "high",
+      "category": "role_terminology",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "UC-06 and UC-07 actor definitions",
+      "evidence": "UC-06 alternates among 'Content Admin / Editor' and 'Admin'. UC-07 alternates among 'System Admin / Product Owner' and 'Admin'. The roles' relationship, authority, and whether the slash denotes one role or alternatives are not defined.",
+      "impact": "Authorization and acceptance criteria cannot be consistently derived from the use cases.",
+      "recommendation": "Define canonical actor names and use them consistently; document whether each slash-separated term is the same role, an allowed alternative, or a distinct role."
+    },
+    {
+      "id": "DOC-006",
+      "severity": "medium",
+      "category": "table_structure",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "All use-case attribute tables",
+      "evidence": "Each Markdown table declares three columns, but most attribute rows use only an attribute and description with a blank third cell. The 'Basic Course of Event' header switches that same table into Actor Action/System Response columns.",
+      "impact": "The tables are difficult to maintain and can render inconsistently; metadata and flow semantics are visually conflated.",
+      "recommendation": "Use a two-column metadata table and a separate, consistently headed flow table with step, actor action, and system response columns."
+    },
+    {
+      "id": "DOC-007",
+      "severity": "medium",
+      "category": "business_rule_traceability",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "Reference: Business Rule fields",
+      "evidence": "Business-rule identifiers restart as BR1 in several use cases, while UC-04 uses BR-01. Cross-references include bare 'BR1' in UC-05 and 'BR4' in UC-06, which depend on local context.",
+      "impact": "Rule references become ambiguous outside their local table and are unsuitable for a consolidated rules register.",
+      "recommendation": "Choose a scoped or global rule-ID scheme and reference the complete identifier consistently."
+    },
+    {
+      "id": "DOC-008",
+      "severity": "medium",
+      "category": "terminology_and_language",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "Throughout",
+      "evidence": "The document uses inconsistent labels and spelling: 'Bussiness Rule' versus 'Business Rule', 'PostCondition' versus 'Postcondition', and 'UC Id' versus 'UC ID'. It also mixes UI/product terms such as 'Location Details Screen', 'Map View', 'Bottom Sheet', 'Empty State', 'In-App Banner', and raw status/field names without a glossary or naming convention.",
+      "impact": "Vietnamese-English documentation can be translated or implemented inconsistently, especially for screen names, roles, statuses, and data fields.",
+      "recommendation": "Create a short bilingual terminology/naming convention and apply it uniformly to headings, UI labels, roles, statuses, and technical identifiers."
+    },
+    {
+      "id": "DOC-009",
+      "severity": "medium",
+      "category": "editorial_quality",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "UC-03 assumptions and business rules",
+      "evidence": "UC-03 contains visible spacing/word-break defects including 'req  uired' and 'pr ovided', and the pre-rendered-audio rule has broken emphasis around 'Playback Content Consistency' and 'Pre-rendered Audio Priority'.",
+      "impact": "These defects reduce readability and can change perceived wording when the document is converted or presented.",
+      "recommendation": "Repair the text and Markdown emphasis, then render-review the affected table."
+    },
+    {
+      "id": "DOC-010",
+      "severity": "medium",
+      "category": "business_logic_clarity",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "UC-02 content retrieval and UC-06 content lifecycle",
+      "evidence": "UC-02 says tourists receive only APPROVED content. UC-06 states it saves DRAFT or PENDING_REVIEW content and says approval, publishing, and Mobile App synchronization are outside that use case; however, the document does not identify the use case or requirement that performs approval/publishing.",
+      "impact": "The documented lifecycle has no explicitly owned transition to the APPROVED state on which tourist content retrieval depends.",
+      "recommendation": "Add traceability to the existing approval/publishing requirement if it exists, or mark the lifecycle handoff as a documented scope gap for stakeholder resolution; do not assume an approval workflow."
+    },
+    {
+      "id": "DOC-011",
+      "severity": "medium",
+      "category": "business_logic_clarity",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "UC-07 feedback management",
+      "evidence": "UC-02 offers 'Send Feedback', while UC-07 states that the tourist feedback form is defined elsewhere. No use case in this PRD defines submission, storage, or the association between the option and the feedback records managed by UC-07.",
+      "impact": "The feedback journey is incomplete from the tourist action to the administrative records described in analytics.",
+      "recommendation": "Trace UC-02 and UC-07 to the existing feedback-submission requirement, or record that missing link as a scope gap without defining new behavior."
+    },
+    {
+      "id": "DOC-012",
+      "severity": "medium",
+      "category": "technical_detail_in_requirements",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md",
+      "section": "Assumptions and flows in UC-01 through UC-07",
+      "evidence": "The use cases prescribe solution choices such as 'server database or local SQLite database', operating-system TTS capability, Local Database, .xlsx export, and data fields such as locationId/languageCode/scriptType as if they were business-facing requirements.",
+      "impact": "The PRD couples product intent to selected technologies and data implementation before those choices are separated into design artifacts.",
+      "recommendation": "Use stakeholder-facing behavior in the PRD and relocate committed storage, platform, file-format, and internal-field choices to a technical specification unless they are contractual product constraints."
+    },
+    {
+      "id": "DOC-013",
+      "severity": "low",
+      "category": "readme_formatting",
+      "source": "README.md",
+      "section": "Top-level headings and project structure code block",
+      "evidence": "The README begins with two consecutive H1 headings, has an empty bullet under the technology list, and marks a prose placeholder as a Java code block.",
+      "impact": "The repository landing page renders as an unfinished draft and provides misleading syntax highlighting.",
+      "recommendation": "Keep one H1, remove empty list items, and present the placeholder as ordinary text or replace it with an actual structure diagram/tree when available."
+    },
+    {
+      "id": "DOC-014",
+      "severity": "low",
+      "category": "diagram_traceability",
+      "source": "docs/PRODUCT REQUIRMENTS DOCUMENT.md and README.md",
+      "section": "Activities Diagram references",
+      "evidence": "Each use case references a draw.io activity diagram, but UC-07 adds the unresolved instruction '(export as PNG/SVG and insert here)' while the README only broadly points to diagrams.net/XML files. Naming and delivery format are not consistently presented.",
+      "impact": "A reviewer cannot tell which diagram artifact is final or how it maps to each use case.",
+      "recommendation": "Use a single documented diagram naming/location convention and replace authoring notes with final artifact references."
+    }
+  ],
+  "constraints": {
+    "requirements_invented": false,
+    "reviewed_outputs_directory": false,
+    "sources_reviewed_only": true
+  }
+}
