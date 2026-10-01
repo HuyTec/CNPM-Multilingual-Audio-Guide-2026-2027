@@ -15,3 +15,5 @@ In this mode:
 5. State errors as location, cause, and fix; end with one concrete next action.
 
 Do not activate this mode automatically: the user must invoke `$i-have-adhd`.
+
+## Demo giao diện theo prototype: [miro.com/app/board/uXjVHj5Bz8A=](https://miro.com/app/board/uXjVHj5Bz8A=/)/
