@@ -6,6 +6,21 @@
 
 Approval, publication, and Mobile App synchronization are external to the seven use cases. The responsible publishing function may publish only an **APPROVED** content package. Each package has a `version` and atomically contains the matching guide scripts and audio assets for its included `(locationId, languageCode, scriptType)` mappings. Draft and pending-review content must not be delivered to the Mobile App or installed by UC-04.
 
+## Pending design decisions — do not treat as approved requirements yet
+
+The following proposals are recorded for later confirmation before the PRD is locked. When confirmed, UC-02 through UC-07, the offline-package model, and the diagrams must be aligned with the selected choices.
+
+| # | Decision | Recommended proposal | Affected scope |
+| :---- | :---- | :---- | :---- |
+| 1 | Must every language have audio? | No. An **APPROVED** `scriptText` is mandatory; pre-rendered audio is optional and TTS is used when audio is unavailable. | UC-03, UC-04, UC-06, offline packages |
+| 2 | Who approves and publishes content? | An external `Content Reviewer / Publisher` role or service. | Authority for `PENDING_REVIEW → APPROVED → published` |
+| 3 | How are offline packages grouped? | By region or location group: a base package is bundled and extra packages are optional. | Download size, UC-04, offline availability |
+| 4 | What is required for a new language? | Add `languageCode`, UI translations, and **APPROVED** `scriptText`; add audio only when available. | UC-02 fallback; UC-03 TTS/audio |
+| 5 | Can RESOLVED feedback be reopened? | No in the MVP; keep the one-way flow `NEW → IN_REVIEW → RESOLVED`. | UC-07, reporting implementation |
+| 6 | Where is the current language stored? | In app settings/local storage; send `languageCode` to UC-02 and use it for UC-05 notifications. | Consistency of content, audio, and notifications |
+
+**Alignment note:** Proposal 1 would require the publication/package wording above and the affected UC details to explicitly allow a package to contain an approved script without pre-rendered audio, while retaining TTS fallback. This change must be made only after the proposal is confirmed.
+
 **ABOUT USECASE:**
 **1\. USECASE 1: Explore & Select location**
 
