@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="sequence-demo" name="Sequence UC02-UC03">
+    <mxGraphModel dx="1500" dy="950" grid="1" gridSize="10" page="1" pageWidth="1600" pageHeight="1050">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Sequence Diagram demo — UC-02 load approved content, then UC-03 playback" style="text;html=1;fontSize=20;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="380" y="20" width="800" height="30" as="geometry"/></mxCell>
+        <mxCell id="tourist" value="&lt;b&gt;Tourist&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;" vertex="1" parent="1"><mxGeometry x="105" y="100" width="100" height="800" as="geometry"/></mxCell>
+        <mxCell id="mobile" value="&lt;b&gt;Mobile App&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;" vertex="1" parent="1"><mxGeometry x="355" y="100" width="110" height="800" as="geometry"/></mxCell>
+        <mxCell id="api" value="&lt;b&gt;Guide Content API&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;" vertex="1" parent="1"><mxGeometry x="640" y="100" width="140" height="800" as="geometry"/></mxCell>
+        <mxCell id="db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;" vertex="1" parent="1"><mxGeometry x="950" y="100" width="115" height="800" as="geometry"/></mxCell>
+        <mxCell id="audio" value="&lt;b&gt;Audio / OS TTS&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;html=1;" vertex="1" parent="1"><mxGeometry x="1220" y="100" width="135" height="800" as="geometry"/></mxCell>
+        <mxCell id="m1" value="1. Open Location Details(locationId, languageCode, FULL)" style="endArrow=block;html=1;" edge="1" parent="1" source="tourist" target="mobile"><mxGeometry relative="1" as="geometry"><mxPoint x="205" y="190" as="sourcePoint"/><mxPoint x="355" y="190" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m2" value="2. GET approved content" style="endArrow=block;html=1;" edge="1" parent="1" source="mobile" target="api"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="270" as="sourcePoint"/><mxPoint x="640" y="270" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m3" value="3. Query APPROVED content by location, language, script type" style="endArrow=block;html=1;" edge="1" parent="1" source="api" target="db"><mxGeometry relative="1" as="geometry"><mxPoint x="780" y="350" as="sourcePoint"/><mxPoint x="950" y="350" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m4" value="4. Approved revision / EN / VI fallback result" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="db" target="api"><mxGeometry relative="1" as="geometry"><mxPoint x="950" y="430" as="sourcePoint"/><mxPoint x="780" y="430" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m5" value="5. scriptText + optional audio metadata" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="api" target="mobile"><mxGeometry relative="1" as="geometry"><mxPoint x="640" y="510" as="sourcePoint"/><mxPoint x="465" y="510" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m6" value="6. Display guide content" style="endArrow=open;dashed=1;html=1;" edge="1" parent="1" source="mobile" target="tourist"><mxGeometry relative="1" as="geometry"><mxPoint x="355" y="590" as="sourcePoint"/><mxPoint x="205" y="590" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m7" value="7. Play Audio" style="endArrow=block;html=1;" edge="1" parent="1" source="tourist" target="mobile"><mxGeometry relative="1" as="geometry"><mxPoint x="205" y="670" as="sourcePoint"/><mxPoint x="355" y="670" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="m8" value="8. Play pre-rendered audio; otherwise read scriptText with TTS" style="endArrow=block;html=1;" edge="1" parent="1" source="mobile" target="audio"><mxGeometry relative="1" as="geometry"><mxPoint x="465" y="750" as="sourcePoint"/><mxPoint x="1220" y="750" as="targetPoint"/></mxGeometry></mxCell>
+        <mxCell id="note" value="alt: If no APPROVED content exists after fallback, Mobile shows an updating state and disables Listen to Guide." style="shape=note;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="450" y="825" width="460" height="65" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

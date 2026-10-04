@@ -1,4 +1,4 @@
-* [ ] 
+* [ ]
 
 **TÀI LIỆU YÊU CẦU SẢN PHẨM**
 ***Ứng dụng hướng dẫn âm thanh đa ngôn ngữ***
@@ -12,19 +12,20 @@ Việc phê duyệt, xuất bản và đồng bộ với Ứng dụng Di động
 
 Các đề xuất sau được ghi lại để xác nhận sau, trước khi khóa PRD. Khi được chốt, UC-02 đến UC-07, mô hình package ngoại tuyến và các sơ đồ phải được đồng bộ theo lựa chọn đã chọn.
 
-| # | Quyết định | Đề xuất khuyến nghị | Phạm vi ảnh hưởng |
-| :---- | :---- | :---- | :---- |
-| 1 | Audio có bắt buộc cho mọi ngôn ngữ không? | Không. `scriptText` **APPROVED** là bắt buộc; audio dựng sẵn là tùy chọn và dùng TTS khi audio không có. | UC-03, UC-04, UC-06, package ngoại tuyến |
-| 2 | Ai duyệt và xuất bản nội dung? | Một vai trò hoặc dịch vụ bên ngoài: `Content Reviewer / Publisher`. | Quyền chuyển `PENDING_REVIEW → APPROVED → published` |
-| 3 | Package ngoại tuyến được nhóm theo gì? | Theo khu vực hoặc nhóm địa điểm: package cơ bản được đóng gói sẵn, package bổ sung là tùy chọn. | Dung lượng tải, UC-04, khả năng dùng ngoại tuyến |
-| 4 | Thêm ngôn ngữ mới cần gì? | Thêm `languageCode`, bản dịch UI và `scriptText` **APPROVED**; chỉ thêm audio khi có. | Fallback của UC-02; TTS/audio của UC-03 |
-| 5 | Feedback đã RESOLVED có được mở lại không? | Không trong MVP; giữ luồng một chiều `NEW → IN_REVIEW → RESOLVED`. | UC-07, triển khai báo cáo |
-| 6 | Current language được lưu ở đâu? | Trong app settings/local storage; gửi `languageCode` đến UC-02 và dùng cho thông báo UC-05. | Tính nhất quán của nội dung, audio và thông báo |
+| # | Quyết định                                       | Đề xuất khuyến nghị                                                                                                     | Phạm vi ảnh hưởng                                     |
+| :- | :-------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------- |
+| 1 | Audio có bắt buộc cho mọi ngôn ngữ không?    | Không.`scriptText` **APPROVED** là bắt buộc; audio dựng sẵn là tùy chọn và dùng TTS khi audio không có. | UC-03, UC-04, UC-06, package ngoại tuyến                |
+| 2 | Ai duyệt và xuất bản nội dung?                 | Một vai trò hoặc dịch vụ bên ngoài:`Content Reviewer / Publisher`.                                                  | Quyền chuyển`PENDING_REVIEW → APPROVED → published` |
+| 3 | Package ngoại tuyến được nhóm theo gì?       | Theo khu vực hoặc nhóm địa điểm: package cơ bản được đóng gói sẵn, package bổ sung là tùy chọn.          | Dung lượng tải, UC-04, khả năng dùng ngoại tuyến  |
+| 4 | Thêm ngôn ngữ mới cần gì?                     | Thêm`languageCode`, bản dịch UI và `scriptText` **APPROVED**; chỉ thêm audio khi có.                        | Fallback của UC-02; TTS/audio của UC-03                 |
+| 5 | Feedback đã RESOLVED có được mở lại không? | Không trong MVP; giữ luồng một chiều`NEW → IN_REVIEW → RESOLVED`.                                                   | UC-07, triển khai báo cáo                              |
+| 6 | Current language được lưu ở đâu?             | Trong app settings/local storage; gửi`languageCode` đến UC-02 và dùng cho thông báo UC-05.                          | Tính nhất quán của nội dung, audio và thông báo   |
 
 **Ghi chú đồng bộ:** Đề xuất 1 yêu cầu phần mô tả về xuất bản/package ở trên và chi tiết các UC liên quan phải cho phép một package chứa kịch bản đã phê duyệt nhưng không có audio dựng sẵn, đồng thời vẫn giữ TTS dự phòng. Chỉ thực hiện thay đổi này sau khi đề xuất được xác nhận.
 
 **VỀ CÁC USE CASE:**
-**1\. USE CASE 1: Khám phá và chọn địa điểm**
+
+## ### 1\. USE CASE 1: Khám phá và chọn địa điểm
 
 | Thuộc tính                                | Mô tả                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |                                                                                                                                                          |
 | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |

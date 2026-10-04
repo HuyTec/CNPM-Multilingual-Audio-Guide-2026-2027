@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="deployment-demo" name="Deployment">
+    <mxGraphModel dx="1500" dy="900" grid="1" gridSize="10" page="1" pageWidth="1600" pageHeight="1000">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Deployment Diagram demo — easy-to-deploy MVP" style="text;html=1;fontSize=20;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="500" y="20" width="600" height="30" as="geometry"/></mxCell>
+        <mxCell id="mobileNode" value="&lt;b&gt;&lt;&lt;device&gt;&gt; Tourist Mobile Device&lt;/b&gt;&lt;br&gt;Flutter Mobile App&lt;br&gt;SQLite + package files&lt;br&gt;OS GPS, Geofence, Notification, TTS" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="55" y="170" width="320" height="240" as="geometry"/></mxCell>
+        <mxCell id="adminNode" value="&lt;b&gt;&lt;&lt;device&gt;&gt; Admin Browser&lt;/b&gt;&lt;br&gt;React + Vite SPA" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="55" y="560" width="320" height="130" as="geometry"/></mxCell>
+        <mxCell id="cloud" value="&lt;b&gt;&lt;&lt;node&gt;&gt; Cloud VM / Container Host&lt;/b&gt;" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#d5e8d4;swimlaneFillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="570" y="135" width="400" height="590" as="geometry"/></mxCell>
+        <mxCell id="api" value="&lt;&lt;artifact&gt;&gt;&lt;br&gt;Spring Boot API&lt;br&gt;Modular monolith" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="650" y="220" width="240" height="80" as="geometry"/></mxCell>
+        <mxCell id="worker" value="&lt;&lt;artifact&gt;&gt;&lt;br&gt;Spring Scheduler / Worker&lt;br&gt;package and reporting jobs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="650" y="410" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="postgresNode" value="&lt;b&gt;&lt;&lt;node&gt;&gt; Database Service&lt;/b&gt;&lt;br&gt;PostgreSQL + PostGIS&lt;br&gt;Flyway migrations" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#fff2cc;swimlaneFillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="1110" y="180" width="275" height="150" as="geometry"/></mxCell>
+        <mxCell id="objectNode" value="&lt;b&gt;&lt;&lt;node&gt;&gt; Object Storage&lt;/b&gt;&lt;br&gt;S3 / MinIO&lt;br&gt;audio assets + content packages" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#fff2cc;swimlaneFillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="1110" y="500" width="275" height="155" as="geometry"/></mxCell>
+        <mxCell id="d1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="mobileNode" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d2" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="adminNode" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d3" value="JDBC / SQL" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="postgresNode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d4" value="S3 API" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="objectNode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d5" value="JDBC / S3 API" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="worker" target="postgresNode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="d6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="worker" target="objectNode"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="note" value="Không đưa Kafka/Redis vào deployment demo ban đầu. Chỉ thêm Redis khi có đo đạc cho thấy cần cache/rate limit; dùng worker/scheduler đơn giản trước khi cần queue." style="shape=note;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1060" y="740" width="350" height="100" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

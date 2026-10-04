@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="class-demo" name="Domain classes">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" page="1" pageWidth="1600" pageHeight="1000">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Class Diagram demo — domain model" style="text;html=1;fontSize=20;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="570" y="20" width="430" height="30" as="geometry"/></mxCell>
+        <mxCell id="location" value="&lt;b&gt;Location&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ name: String&lt;br&gt;+ coordinate: GeoPoint&lt;br&gt;+ geofenceRadiusM: int&lt;hr&gt;+ isWithinRadius(point): boolean" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="90" y="170" width="250" height="160" as="geometry"/></mxCell>
+        <mxCell id="category" value="&lt;b&gt;Category&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ name: String&lt;br&gt;+ active: boolean" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="90" y="440" width="210" height="115" as="geometry"/></mxCell>
+        <mxCell id="language" value="&lt;b&gt;Language&lt;/b&gt;&lt;hr&gt;+ code: String&lt;br&gt;+ displayName: String&lt;br&gt;+ active: boolean" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="410" y="440" width="210" height="115" as="geometry"/></mxCell>
+        <mxCell id="content" value="&lt;b&gt;GuideContentRevision&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ scriptType: ScriptType&lt;br&gt;+ scriptText: Text&lt;br&gt;+ status: ContentStatus&lt;br&gt;+ revisionNo: int&lt;hr&gt;+ isApproved(): boolean" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#fff2cc;swimlaneFillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="430" y="150" width="270" height="180" as="geometry"/></mxCell>
+        <mxCell id="audio" value="&lt;b&gt;AudioAsset&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ storageKey: String&lt;br&gt;+ format: String&lt;br&gt;+ durationSeconds: int" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#fff2cc;swimlaneFillColor=#fff2cc;" vertex="1" parent="1"><mxGeometry x="800" y="120" width="230" height="130" as="geometry"/></mxCell>
+        <mxCell id="package" value="&lt;b&gt;ContentPackage&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ version: String&lt;br&gt;+ status: PackageStatus&lt;hr&gt;+ publish()" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#d5e8d4;swimlaneFillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="410" y="650" width="230" height="130" as="geometry"/></mxCell>
+        <mxCell id="item" value="&lt;b&gt;PackageItem&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ contentId: UUID&lt;br&gt;+ audioId: UUID?&lt;hr&gt;+ validateMatchingAssets()" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#d5e8d4;swimlaneFillColor=#d5e8d4;" vertex="1" parent="1"><mxGeometry x="800" y="620" width="260" height="140" as="geometry"/></mxCell>
+        <mxCell id="feedback" value="&lt;b&gt;Feedback&lt;/b&gt;&lt;hr&gt;+ id: UUID&lt;br&gt;+ rating: int&lt;br&gt;+ content: String&lt;br&gt;+ status: FeedbackStatus&lt;hr&gt;+ moveToNextStatus()" style="swimlane;html=1;rounded=0;startSize=28;fillColor=#f8cecc;swimlaneFillColor=#f8cecc;" vertex="1" parent="1"><mxGeometry x="1130" y="430" width="235" height="145" as="geometry"/></mxCell>
+        <mxCell id="a1" value="1   *" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;" edge="1" parent="1" source="category" target="location"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a2" value="1   *" style="edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;" edge="1" parent="1" source="location" target="content"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a3" value="1   *" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;" edge="1" parent="1" source="language" target="content"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a4" value="0..1" style="edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;" edge="1" parent="1" source="content" target="audio"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a5" value="1   *" style="edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;" edge="1" parent="1" source="package" target="item"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a6" value="*" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;" edge="1" parent="1" source="item" target="content"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a7" value="0..1" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;dashed=1;" edge="1" parent="1" source="item" target="audio"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="a8" value="0..*" style="edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;" edge="1" parent="1" source="location" target="feedback"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

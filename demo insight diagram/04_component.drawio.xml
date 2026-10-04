@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net">
+  <diagram id="component-demo" name="Components">
+    <mxGraphModel dx="1500" dy="900" grid="1" gridSize="10" page="1" pageWidth="1600" pageHeight="1000">
+      <root>
+        <mxCell id="0"/><mxCell id="1" parent="0"/>
+        <mxCell id="title" value="Component Diagram demo — modular monolith MVP" style="text;html=1;fontSize=20;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="490" y="20" width="600" height="30" as="geometry"/></mxCell>
+        <mxCell id="mobile" value="&lt;b&gt;&lt;&lt;application&gt;&gt;&lt;/b&gt;&lt;br&gt;Mobile App (Flutter)&lt;br&gt;Location Discovery&lt;br&gt;Guide Content / Audio Playback&lt;br&gt;Offline Sync / Geofence Notification" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="60" y="160" width="320" height="230" as="geometry"/></mxCell>
+        <mxCell id="admin" value="&lt;b&gt;&lt;&lt;application&gt;&gt;&lt;/b&gt;&lt;br&gt;Web Admin (React + Vite)&lt;br&gt;Content Management&lt;br&gt;Analytics &amp;amp; Feedback Dashboard" style="swimlane;html=1;rounded=0;startSize=30;fillColor=#dae8fc;swimlaneFillColor=#dae8fc;" vertex="1" parent="1"><mxGeometry x="60" y="520" width="320" height="170" as="geometry"/></mxCell>
+        <mxCell id="api" value="&lt;b&gt;&lt;&lt;component&gt;&gt; API Gateway / REST Controllers&lt;/b&gt;&lt;br&gt;Authentication and request validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="515" y="130" width="280" height="75" as="geometry"/></mxCell>
+        <mxCell id="catalog" value="&lt;b&gt;&lt;&lt;component&gt;&gt; Location Catalog&lt;/b&gt;&lt;br&gt;Search, category, nearest locations" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="485" y="270" width="210" height="75" as="geometry"/></mxCell>
+        <mxCell id="guide" value="&lt;b&gt;&lt;&lt;component&gt;&gt; Guide Content&lt;/b&gt;&lt;br&gt;APPROVED query, language fallback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="770" y="270" width="225" height="75" as="geometry"/></mxCell>
+        <mxCell id="workflow" value="&lt;b&gt;&lt;&lt;component&gt;&gt; Content Workflow&lt;/b&gt;&lt;br&gt;DRAFT / PENDING_REVIEW management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="485" y="420" width="230" height="75" as="geometry"/></mxCell>
+        <mxCell id="package" value="&lt;b&gt;&lt;&lt;component&gt;&gt; Package Distribution&lt;/b&gt;&lt;br&gt;Version manifest and package download" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="770" y="420" width="240" height="75" as="geometry"/></mxCell>
+        <mxCell id="feedback" value="&lt;b&gt;&lt;&lt;component&gt;&gt; Feedback &amp;amp; Analytics&lt;/b&gt;&lt;br&gt;Feedback status, event ingestion, reporting" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="625" y="570" width="255" height="75" as="geometry"/></mxCell>
+        <mxCell id="db" value="&lt;&lt;database&gt;&gt;&lt;br&gt;PostgreSQL + PostGIS" style="shape=cylinder;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1120" y="220" width="210" height="90" as="geometry"/></mxCell>
+        <mxCell id="storage" value="&lt;&lt;storage&gt;&gt;&lt;br&gt;S3 / MinIO&lt;br&gt;Audio + packages" style="shape=cylinder;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1"><mxGeometry x="1120" y="400" width="210" height="100" as="geometry"/></mxCell>
+        <mxCell id="os" value="&lt;&lt;external&gt;&gt;&lt;br&gt;OS GPS / Geofence&lt;br&gt;Notifications / Audio / TTS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="1120" y="610" width="220" height="100" as="geometry"/></mxCell>
+        <mxCell id="publisher" value="&lt;&lt;external&gt;&gt;&lt;br&gt;Content Reviewer / Publisher&lt;br&gt;Approval and publication boundary" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="485" y="720" width="250" height="80" as="geometry"/></mxCell>
+        <mxCell id="c1" value="HTTPS / REST" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;" edge="1" parent="1" source="mobile" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c2" value="HTTPS / REST" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;" edge="1" parent="1" source="admin" target="api"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="catalog"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c4" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="guide"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="workflow"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="package"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c7" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="api" target="feedback"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c8" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="catalog" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c9" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="guide" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c10" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="workflow" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c11" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="package" target="storage"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c12" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" edge="1" parent="1" source="feedback" target="db"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c13" value="device APIs" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;" edge="1" parent="1" source="mobile" target="os"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="c14" value="publish APPROVED package" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;" edge="1" parent="1" source="publisher" target="package"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
