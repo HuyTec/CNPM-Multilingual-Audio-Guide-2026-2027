@@ -1,0 +1,38 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+application-local.properties
+application-local.yml
+application-local.yaml
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Java / Spring Boot
+backend/target/
+backend/build/
+backend/.gradle/
+backend/out/
+
+# React / Node.js
+web-admin/node_modules/
+web-admin/dist/
+web-admin/coverage/
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/**/build/
+android/local.properties
+android/.cxx/
+*.apk
+*.aab
+
+# Logs and temporary files
+*.log
+*.tmp

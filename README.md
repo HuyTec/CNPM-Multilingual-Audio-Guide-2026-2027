@@ -74,20 +74,25 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - `HVP-17: add health check endpoint`
 - `HVP-19: add backend Dockerfile with heap limit`
 
-## Cấu trúc thư mục dự kiến
+## Cấu trúc thư mục
 
 ```text
-/backend       Spring Boot API
-/web-admin     React web admin
-/android       Kotlin Android app
-/docs          Tài liệu, sơ đồ
-/.github       Workflow GitHub Actions
+/backend               Spring Boot API (HVP-17)
+/web-admin             React web admin
+/android               Kotlin Android app
+/docs/en, /docs/vi           PRD và báo cáo theo ngôn ngữ
+/docs/demo_insight_diagram   Sơ đồ Draw.io và biên bản rà soát
+/docs/analysist_outputs     Kết quả rà soát tài liệu
+/.github/workflows     GitHub Actions (HVP-20)
 ```
+
+Các thư mục ứng dụng hiện là chỗ dành cho mã nguồn tương lai. Task HVP-16 chỉ thiết lập cấu trúc repository; chưa có ứng dụng để build hoặc chạy.
 
 ## Tài liệu
 
-- **PRD:** `./docs/PRD.docx`
-- **Sơ đồ:** các lược đồ use case, activity, ERD, class, component, deployment được lưu dưới dạng tệp draw.io (XML) trong `./docs`.
+- **PRD hiện hành:** [tiếng Việt](./docs/vi/PRD_Report_vi.md) và [tiếng Anh](./docs/en/PRD_Report.md).
+- **Sơ đồ thiết kế:** các tệp Draw.io độc lập trong [`docs/demo_insight_diagram/`](./docs/demo_insight_diagram/README.md); sơ đồ phân tích hệ thống gốc ở [`docs/en/`](./docs/en/System_Analysist.drawio.xml).
+- **Tài liệu DOCX trước đó:** [`docs/en/PRODUCT_REQUIRMENTS_DOCUMENT.docx`](./docs/en/PRODUCT_REQUIRMENTS_DOCUMENT.docx).
 
 > Lưu ý: PRD và các sơ đồ đang trong giai đoạn kiểm chứng, nội dung có thể thay đổi.
 
