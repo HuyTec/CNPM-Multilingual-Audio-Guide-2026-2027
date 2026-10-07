@@ -1,4 +1,3 @@
-
 # Ứng dụng thuyết minh đa ngôn ngữ (Multilingual Audio Guide Application)
 
 > Đồ án môn Công nghệ phần mềm, năm học 2026-2027.
@@ -6,11 +5,11 @@
 
 ## Thành viên nhóm
 
-| Thành viên         | MSSV       | Vai trò       |
-| -------------------- | ---------- | -------------- |
-| Trần Nhựt Huy      | 3124411112 | Nhóm trưởng |
-| Nguyễn Hoàng Phúc | 3124411236 | Thành viên   |
-| Phùng Anh Vũ       | 3124411351 | Thành viên   |
+| Thành viên        | MSSV       | Vai trò     |
+| ----------------- | ---------- | ----------- |
+| Trần Nhựt Huy     | 3124411112 | Nhóm trưởng |
+| Nguyễn Hoàng Phúc | 3124411236 | Thành viên  |
+| Phùng Anh Vũ      | 3124411351 | Thành viên  |
 
 ## Giới thiệu
 
@@ -23,14 +22,14 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
 ## Công nghệ sử dụng
 
-| Thành phần      | Công nghệ             | Ghi chú                                                  |
-| ----------------- | ----------------------- | --------------------------------------------------------- |
-| Web admin         | React.js                | Giao diện quản trị (UC-06, UC-07)                      |
-| Backend           | Java (Spring Boot)      | Kiến trúc 3 lớp                                        |
-| Android client    | Kotlin                  | Ứng dụng cho du khách (UC-01 đến UC-05)              |
-| Cơ sở dữ liệu | PostgreSQL              | Phù hợp với nhiều dịch vụ lưu trữ miễn phí      |
-| CI                | GitHub Actions          | Tự động build và test khi push hoặc mở pull request |
-| CD / đóng gói  | Docker (Docker Compose) | Chạy được trên nhiều máy, thuận tiện cho demo    |
+| Thành phần     | Công nghệ               | Ghi chú                                             |
+| -------------- | ----------------------- | --------------------------------------------------- |
+| Web admin      | React.js                | Giao diện quản trị (UC-06, UC-07)                   |
+| Backend        | Java (Spring Boot)      | Kiến trúc 3 lớp                                     |
+| Android client | Kotlin                  | Ứng dụng cho du khách (UC-01 đến UC-05)             |
+| Cơ sở dữ liệu  | PostgreSQL              | Phù hợp với nhiều dịch vụ lưu trữ miễn phí          |
+| CI             | GitHub Actions          | Tự động build và test khi push hoặc mở pull request |
+| CD / đóng gói  | Docker (Docker Compose) | Chạy được trên nhiều máy, thuận tiện cho demo       |
 
 **Lý do chọn Java cho backend:** cùng nền JVM với Kotlin nên dễ chuyển đổi và đọc hiểu code giữa hai phần.
 
@@ -61,38 +60,35 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 ## Quy trình và công cụ
 
-| Việc                | Công cụ / quy ước                                              |
-| -------------------- | ------------------------------------------------------------------ |
-| Quản lý mã nguồn | GitHub                                                             |
-| Quản lý dự án    | Jira (Scrum, sprint 1 tuần, space`HVP`)                         |
-| Tên nhánh          | `HVP-<số>-<mô-tả-ngắn>`, ví dụ `HVP-17-backend-skeleton` |
-| Commit               | `HVP-<số>: <mô tả thay đổi>`                                |
-| Hợp nhất code      | Qua pull request, CI phải xanh, ít nhất một người xem qua    |
+| Việc             | Công cụ / quy ước                                         |
+| ---------------- | --------------------------------------------------------- |
+| Quản lý mã nguồn | GitHub                                                    |
+| Quản lý dự án    | Jira (Scrum, sprint 1 tuần, space`HVP`)                   |
+| Tên nhánh        | `HVP-<số>-<mô-tả-ngắn>`, ví dụ `HVP-17-backend-skeleton`  |
+| Commit           | `HVP-<số>: <mô tả thay đổi>`                              |
+| Hợp nhất code    | Qua pull request, CI phải xanh, ít nhất một người xem qua |
 
 **Ví dụ commit:**
 
 - `HVP-17: add health check endpoint`
 - `HVP-19: add backend Dockerfile with heap limit`
 
-## Cấu trúc thư mục
+## Cấu trúc thư mục dự kiến
 
 ```text
-/backend               Spring Boot API (HVP-17)
-/web-admin             React web admin
-/android               Kotlin Android app
-/docs/en, /docs/vi           PRD và báo cáo theo ngôn ngữ
-/docs/demo_insight_diagram   Sơ đồ Draw.io và biên bản rà soát
-/docs/analysist_outputs     Kết quả rà soát tài liệu
-/.github/workflows     GitHub Actions (HVP-20)
+/backend       Spring Boot API
+/web-admin     React web admin
+/android       Kotlin Android app
+/docs          Tài liệu, sơ đồ
+/.github       Workflow GitHub Actions
 ```
-
-Các thư mục ứng dụng hiện là chỗ dành cho mã nguồn tương lai. Task HVP-16 chỉ thiết lập cấu trúc repository; chưa có ứng dụng để build hoặc chạy.
 
 ## Tài liệu
 
-- **PRD hiện hành:** [tiếng Việt](./docs/vi/PRD_Report_vi.md) và [tiếng Anh](./docs/en/PRD_Report.md).
-- **Sơ đồ thiết kế:** các tệp Draw.io độc lập trong [`docs/demo_insight_diagram/`](./docs/demo_insight_diagram/README.md); sơ đồ phân tích hệ thống gốc ở [`docs/en/`](./docs/en/System_Analysist.drawio.xml).
-- **Tài liệu DOCX trước đó:** [`docs/en/PRODUCT_REQUIRMENTS_DOCUMENT.docx`](./docs/en/PRODUCT_REQUIRMENTS_DOCUMENT.docx).
+- gg doc: [docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing](https://docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing)
+- lược đồ: **[drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing](https://drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing)**
+- **PRD:** `./docs/PRD.docx`
+- **Sơ đồ:** các lược đồ use case, activity, ERD, class, component, deployment được lưu dưới dạng tệp draw.io (XML) trong `./docs`.
 
 > Lưu ý: PRD và các sơ đồ đang trong giai đoạn kiểm chứng, nội dung có thể thay đổi.
 
