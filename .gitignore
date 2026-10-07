@@ -14,10 +14,8 @@ application-local.yaml
 Thumbs.db
 
 # Java / Spring Boot
-backend/target/
-backend/build/
-backend/.gradle/
-backend/out/
+backend/**/target/
+backend/**/out/
 
 # React / Node.js
 web-admin/node_modules/

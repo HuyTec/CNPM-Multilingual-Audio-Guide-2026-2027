@@ -25,7 +25,7 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 | Thành phần     | Công nghệ               | Ghi chú                                             |
 | -------------- | ----------------------- | --------------------------------------------------- |
 | Web admin      | React.js                | Giao diện quản trị (UC-06, UC-07)                   |
-| Backend        | Java (Spring Boot)      | Kiến trúc 3 lớp                                     |
+| Backend        | Java 21, Spring Boot 4.1.1, Maven | Kiến trúc 3 lớp                          |
 | Android client | Kotlin                  | Ứng dụng cho du khách (UC-01 đến UC-05)             |
 | Cơ sở dữ liệu  | PostgreSQL              | Phù hợp với nhiều dịch vụ lưu trữ miễn phí          |
 | CI             | GitHub Actions          | Tự động build và test khi push hoặc mở pull request |
@@ -39,7 +39,7 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 - Web: Vite, TypeScript
 - Android: Jetpack Compose, Room, Media3, WorkManager
-- Backend: Java 21, Maven, Flyway, PostGIS
+- Backend: Flyway, PostGIS
 - Lưu trữ file audio và gói nội dung: S3 hoặc MinIO
 
 ## Kiến trúc
@@ -94,4 +94,4 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 ## Chạy dự án
 
-Hướng dẫn chạy sẽ được bổ sung sau khi có skeleton (Sprint 0).
+Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
