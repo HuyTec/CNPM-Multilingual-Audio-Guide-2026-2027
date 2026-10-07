@@ -20,13 +20,12 @@ jobs:
       run:
         working-directory: backend/multi-audio-guide
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-java@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
-          cache-dependency-path: backend/multi-audio-guide/pom.xml
       - name: Build and test
         run: bash ./mvnw -B -ntp verify
 
@@ -37,8 +36,8 @@ jobs:
       run:
         working-directory: web-admin
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
