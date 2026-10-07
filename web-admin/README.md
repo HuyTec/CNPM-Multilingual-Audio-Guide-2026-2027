@@ -1,5 +1,24 @@
 # React + TypeScript + Vite
 
+## Demo Web Admin UC-06 / UC-07
+
+Giao diện tiếng Việt, React Router, Tailwind, dữ liệu giả lập trong `src/mocks/`. Đọc thiết kế tại `../docs/ui-design.md`, câu hỏi chưa chốt tại `../docs/open-questions.md`, và kết quả review tại `../docs/ui-review.md`.
+
+- `/locations`: danh sách, tìm kiếm, trạng thái và phân trang.
+- `/locations/new`, `/locations/:id/edit`: lưu nháp, gửi duyệt, kịch bản ngôn ngữ × FULL/SHORT, audio preview/retry và cảnh báo chưa lưu. Không thay thế bản published.
+- `/analytics`: kỳ 30 ngày, thống kê, bộ lọc/chi tiết phản hồi trong URL, trạng thái một chiều và XLSX thật từ dữ liệu mock.
+
+Dùng **Tình huống kiểm thử** cuối trang để kiểm tra rỗng, lỗi, dữ liệu dài, lỗi upload và lỗi export. Loading xuất hiện khi tải hoặc đổi kỳ. Mặc định giả lập Admin đã đăng nhập; chưa tích hợp backend hay dịch vụ xác thực. Audio nghe thử chỉ tồn tại trong phiên; sau reload chọn lại file, metadata vẫn được giữ. localStorage dùng hai khóa `hvp-demo-locations-v1` và `hvp-demo-feedback-v1`.
+
+Kiểm thử luồng và accessibility:
+
+```powershell
+npx.cmd playwright install chromium
+npm.cmd run test:e2e
+```
+
+Ảnh kiểm tra desktop/mobile nằm trong `test-results/` (được gitignore). Không chạy hai bộ Playwright đồng thời vào cùng thư mục output.
+
 ## Cài đặt và chạy trên Windows
 
 [Vite 8](https://v8.vite.dev/guide/) cần Node.js 20.19+ hoặc 22.12+; Node.js 24 cũng phù hợp. Nếu chưa có Node.js và máy có `winget`, cài bản LTS rồi mở lại PowerShell:
