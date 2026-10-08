@@ -1,5 +1,7 @@
 # TravelVoice — Android UI Demo (HVP-22)
 
+> Cấu trúc để phát triển các luồng Android thật: [docs/development-structure.md](docs/development-structure.md). Các thư mục `domain/`, `data/` và `platform/` hiện là khung trống; ứng dụng vẫn chạy bằng dữ liệu mẫu.
+
 Jetpack Compose / Material 3 prototype cho du khách, đối chiếu UC-01–UC-05 của [PRD](../docs/en/PRD_Report.md). `MainActivity` → `DemoApp`. Không có backend hay dịch vụ thiết bị thật.
 
 ## Chạy demo

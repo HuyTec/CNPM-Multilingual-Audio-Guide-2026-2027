@@ -44,7 +44,7 @@ fun StateMessage(title: String, message: String, onRetry: (() -> Unit)? = null) 
 @Composable
 fun DemoStatePicker(selected: String, options: List<String>, onSelect: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text("Tình huống mô phỏng", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Tình huống mô phỏng jhdasdfdfdfdffd", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { label -> FilterChip(selected = selected == label, onClick = { onSelect(label) }, label = { Text(label) }) }
         }
