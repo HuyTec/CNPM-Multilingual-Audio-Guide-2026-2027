@@ -24,7 +24,9 @@ web-admin/coverage/
 
 # Android / Gradle
 android/.gradle/
+android/.gradle-user-home/
 android/build/
+android/.sdk/
 android/**/build/
 android/local.properties
 android/.cxx/
