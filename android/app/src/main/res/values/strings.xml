@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">TravelVoice</string>
+    <string name="explore">Khám phá</string>
+    <string name="offline">Ngoại tuyến</string>
+    <string name="demo_note">Giao diện mô phỏng • không sử dụng GPS, mạng hoặc âm thanh thật</string>
+    <string name="back">Quay lại</string>
+</resources>
