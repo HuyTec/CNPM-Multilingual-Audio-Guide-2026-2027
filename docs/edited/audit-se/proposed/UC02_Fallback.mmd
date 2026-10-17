@@ -1,0 +1,20 @@
+flowchart TD
+    Start(["Valid Location Details navigation or language/type change"])
+    Source["Select Server online or Local Content Store offline"]
+    Chain["Create unique language chain: Selected → EN → VI"]
+    Requested["Keep requested scriptType; initialize FULL-chain-tried = false; try APPROVED scripts in chain order"]
+    Found{"Matching APPROVED script found?"}
+    Short{"Requested SHORT and FULL chain not yet tried?"}
+    Full["Set FULL-chain-tried = true; try FULL across the same language chain"]
+    Version["Require matching location/text/available-audio package version"]
+    Output["Output scriptText, effective languageCode, effective scriptType and version context"]
+    Inform["If FULL replaces SHORT, report summary unavailable"]
+    Display["Display guide text; Play remains Tourist initiated"]
+    E2["E2: content currently being updated; disable Listen to Guide"]
+    Note["Version-mismatch recovery is pending contract definition; this graph does not invent a new error path"]
+    Start --> Source --> Chain --> Requested --> Found
+    Found -->|Yes| Version --> Output --> Inform --> Display
+    Found -->|No after chain exhausted| Short
+    Short -->|Yes| Full --> Found
+    Short -->|No| E2
+    Note -.- Version

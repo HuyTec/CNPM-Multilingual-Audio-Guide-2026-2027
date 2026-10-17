@@ -1,0 +1,240 @@
+
+SHEET 0. Tổng quan
+ROW 1: A=PRD – Multilingual Audio Guide Application: kế hoạch sửa đổi
+ROW 2: A=Nguồn: kết quả rà soát tính nhất quán và thiếu sót. Cột Ưu tiên / Trạng thái ở các sheet 1, 2, 9, 10 có danh sách chọn; sheet này tự cập nhật.
+ROW 4: A=Sheet | B=Tổng mục | C=Ưu tiên Cao | D=Trung bình | E=Thấp | F=Đã xong | G=% hoàn thành
+ROW 5: A=1. Mâu thuẫn | B=15 | C=9 | D=5 | E=1 | F=5 | G=0.333333333333333
+ROW 6: A=2. Bổ sung theo UC | B=45 | C=9 | D=27 | E=9 | F=0 | G=0
+ROW 7: A=9. Cấu trúc TL | B=13 | C=5 | D=7 | E=1 | F=0 | G=0
+ROW 8: A=10. Trình bày | B=11 | C=0 | D=2 | E=9 | F=0 | G=0
+ROW 9: A=Tổng | B=84 | C=23 | D=41 | E=20 | F=5 | G=0.0595238095238095
+ROW 11: A=Thứ tự làm đề xuất
+ROW 12: A=1. Chốt vòng đời trạng thái nội dung và Content Publication Service (M06, G33, G36) – sheet 4, 7.
+ROW 13: A=2. Chốt mô hình dữ liệu: location (có tên/mô tả localize, thumbnail), script, audio theo scriptType, package (M07–M10) – sheet 6.
+ROW 14: A=3. Sửa mâu thuẫn số liệu/phạm vi (M01, M02, M04, M05).
+ROW 15: A=4. Điền Actors, Epics, NFR, thuật ngữ (M11–M13; sheet 3, 5, 8).
+ROW 16: A=5. Bổ sung luồng tải optional content, offline map, geofence limits, TTS không hỗ trợ (G06, G16, G23, G24, G11).
+ROW 17: A=6. Sửa trình bày và chính tả (sheet 10) khi chốt bản cuối.
+ROW 19: A=Chú giải
+ROW 20: A=• Giá trị trong [ ] (ví dụ [200] m) là số đề xuất ban đầu, không có trong PRD hiện tại; cần team xác nhận.
+ROW 21: A=• 'Đề xuất sửa' và 'Nội dung bổ sung' viết bằng tiếng Anh để dán trực tiếp vào PRD; phần giải thích viết bằng tiếng Việt.
+ROW 22: A=• Cập nhật cột 'Trạng thái' (Chưa làm / Đang làm / Xong) để bảng trên tự tính % hoàn thành.
+
+SHEET 1. Mâu thuẫn
+ROW 1: A=Nhóm 1 – Sửa các mâu thuẫn / không nhất quán
+ROW 2: A=Nội dung ở cột 'Đề xuất sửa' viết bằng tiếng Anh để dán trực tiếp vào PRD. Giá trị trong [ ] là đề xuất cần team xác nhận.
+ROW 3: A=Mã | B=Vị trí trong PRD | C=Vấn đề | D=Đề xuất sửa (dán vào PRD) | E=Ưu tiên | F=Trạng thái | G=Cần chốt / ghi chú
+ROW 4: A=M01 | B=UC-01 bước 5 và BR1 | C=Bán kính tìm kiếm: bước 5 ghi 50–500 m, BR1 ghi 100–500 m. | D=Step 5: 'The system searches for locations within the configured radius (BR1: 100–500 m; default [200] m) and sorts the results by distance in ascending order.'
+BR1: keep '100–500 meters'; add 'Default value is [200] m and is stored in system configuration.' | E=Cao | F=Xong | G=Chốt khoảng 100–500 m hay 50–500 m, và giá trị mặc định (ví dụ 200 m).
+ROW 5: A=M02 | B=UC-01 bước 6, A1, BR3 | C=Bước 6 chỉ hiển thị 1 địa điểm gần nhất; A1 hiển thị shortlist 3–5; BR3 (comment 'Quan trọng') phân trang 20/trang. Luồng chính không tham chiếu A1. | D=Step 1 reference: '...selects “Find Nearby Locations.” (A1, A2, A3, A4)'.
+Step 6: 'The system displays the locations found within the radius sorted by distance ascending; the [3–5] nearest are shown first with their distances, and the list is paginated at most 20 locations per page (BR3).'
+A1 (replace): 'Only one location found: the system displays it directly for the Tourist to confirm (go to step 7).' | E=Cao | F=Xong | G=Chọn 1 mô hình hiển thị: shortlist 3–5 + 'Xem thêm' (phân trang 20), hay chỉ danh sách phân trang.
+ROW 6: A=M03 | B=UC-01 Goal | C=Goal nói 'prepare for navigation' nhưng 2.2 loại trừ turn-by-turn navigation. | D=Goal: 'The Tourist selects a target attraction in order to view its details and access the multilingual guide content.' | E=Trung bình | F=Xong
+ROW 7: A=M04 | B=2.2 Out of Scope và UC-02 E2 | C=2.2 loại trừ việc gửi feedback trên mobile, nhưng UC-02 E2 cung cấp nút Send Feedback; không có UC mô tả luồng này. | D=Phương án A (khuyến nghị): add UC-08 'Submit Tourist Feedback' (Mobile App) and UC-09 'Capture Usage Analytics Events' (system-initiated); update 2.1 In Scope and remove the first two bullets of the matching line in 2.2.
+Phương án B: keep out of scope; UC-02 E2 becomes: '...The Listen to Guide function is unavailable.' (remove 'Send Feedback'). | E=Cao | F=Xong | G=Chọn A hoặc B. UC-07 phụ thuộc dữ liệu feedback/analytics nên A hợp lý hơn.
+ROW 8: A=M05 | B=2.2 Out of Scope và UC-05 bước 6 | C=2.2 nói notification chỉ mở Location Details; UC-05 bước 6/Postcondition lại 'triggers UC-02 to load guide content'. | D=2.2 bullet: 'Auto-playing audio or auto-loading guide content as part of the notification action. Selecting a notification only opens the Location Details Screen; UC-02 then loads content through its normal trigger.'
+UC-05 Assumptions: remove 'Loading guide content ... remain the responsibilities of UC-02 and UC-03' and replace with 'After the Location Details Screen opens, UC-02 is triggered by its own System-Initiated trigger.' | E=Trung bình | F=Xong
+ROW 9: A=M06 | B=UC-06 BR2/Assumptions, UC-04, mục 6.4 | C=Nhiều UC viện dẫn 'external content publication dependency described above' nhưng không có mô tả; APPROVED và 'approved and published' bị dùng lẫn lộn. | D=Add to 6.4: 'Content Publication Service (external): receives PENDING_REVIEW content, supports review (APPROVED / REJECTED), assigns a package version, publishes packages to the Content Server/CDN.'
+Define content lifecycle (see sheet '4. Trạng thái nội dung'). UC-02 BR1 and UC-04 BR-02/BR-04 use the same status names. | E=Cao | F=Chưa làm | G=Chốt: APPROVED đã bao gồm publish, hay tách thêm PUBLISHED.
+ROW 10: A=M07 | B=UC-06 bước 4 và BR3, UC-03 | C=Bước 4 upload audio theo ngôn ngữ; BR3 và UC-03 cần audio theo languageCode + scriptType (FULL, SHORT). | D=Step 4: 'The Admin uploads the corresponding audio asset for each languageCode and scriptType (FULL, SHORT).' System response: 'The system validates the file format and stores the audio asset linked to (locationId, languageCode, scriptType).'
+Add BR: 'Audio is optional. If a script has no audio, UC-03 falls back to operating-system TTS.' | E=Cao | F=Chưa làm
+ROW 11: A=M08 | B=UC-06 bước 2 và UC-01/UC-05 | C=UC-06 chỉ nhập name, category, GPS, radius; UC-01 cần description + thumbnail, UC-05 cần tên đã localize theo ngôn ngữ. | D=Step 2: 'The Admin enters or edits the location information: localized name and description per languageCode, category, GPS coordinates, geofence radius, and thumbnail image.'
+BR1: 'To be submitted for review, each location must contain a name in at least one of VI/EN, category, GPS coordinates, and geofence radius. Description and thumbnail are optional.'
+E2: add 'localized name' to the required-field check. | E=Cao | F=Chưa làm
+ROW 12: A=M09 | B=UC-04 Goal/bước 6 so với UC-01, UC-05 | C=UC-04 chỉ thay scripts và audio; không có cách cập nhật dữ liệu địa điểm local (tọa độ, geofence, tên, ảnh). | D=UC-04 Goal/Step 6: '...atomically replaces the affected local location data (coordinates, geofence radius, localized names, thumbnails), guide scripts and audio assets with the verified package...'
+BR-04: 'A package version contains location data, scripts and audio assets that must be installed together.'
+UC-01/UC-05 Assumptions: 'The Local Content Store is updated through UC-04.' | E=Cao | F=Chưa làm
+ROW 13: A=M10 | B=UC-02 Postcondition và UC-03 BR1 | C=UC-02 fallback ngôn ngữ nhưng không xuất ra ngôn ngữ thực tế; UC-03 BR1 yêu cầu audio khớp languageCode 'từ UC-02'. | D=UC-02 Postcondition: '...The system outputs the effective languageCode and scriptType of the loaded content (after fallback) together with scriptText.'
+UC-03 Precondition: 'valid locationId, effective languageCode, scriptType and scriptText are available.' | E=Cao | F=Chưa làm
+ROW 14: A=M11 | B=1.3, 2.3, UC-01 BR1, UC-06, UC-07 | C=Tên actor không thống nhất; mục 2.3 Actors trống. | D=Standardize to: Tourist; Content Admin (Editor); System Admin / Product Owner. Replace 'Content Administrator' (UC-01 BR1), 'Administrators/Content Editors' (1.3) with 'Content Admin'. Fill 2.3 using sheet '3. Actors & Epics'. | E=Trung bình | F=Chưa làm
+ROW 15: A=M12 | B=Mục 3 Epics và 2.1 Scope | C=Scope có 7 nhóm, chỉ có 6 Epic; UC-05 không thuộc Epic nào; Epic 6 không có UC; UC-02 nằm trong Epic 'Audio Guide'. | D=Re-map Epics to UCs as in sheet '3. Actors & Epics' (E1–E7), and fill Objective / Features / Related Use Cases for each. | E=Trung bình | F=Chưa làm | G=Nếu muốn giữ 6 Epic: gộp E4 (Notifications) vào E1 hoặc E2.
+ROW 16: A=M13 | B=Toàn tài liệu | C=Thuật ngữ không thống nhất (content mode / duration mode / scriptType; guide content / tour script / scriptText; Local Database / bundled SQLite). | D=Adopt the glossary in sheet '5. Thuật ngữ' and apply it document-wide; add it to the Appendix. | E=Trung bình | F=Chưa làm
+ROW 17: A=M14 | B=UC-01 BR1, UC-05 BR1, UC-06 Assumptions | C=Giá trị cấu hình (bán kính mặc định, cooldown, categories, languages) 'được cấu hình' nhưng không có UC/tính năng nào cấu hình. | D=Option A: add UC-10 'Configure System Parameters' (Content Admin): default search radius, notification cooldown, categories, supported languages.
+Option B (MVP): state in Appendix that these are fixed configuration values: default radius [200] m, cooldown [4] hours, language list in Appendix; changes require a release. | E=Cao | F=Chưa làm | G=Chốt A hoặc B.
+ROW 18: A=M15 | B=UC-06 A2 | C=A2 viện dẫn '(BR4)' cho bước xác nhận lưu, nhưng BR4 là về bảo vệ nội dung đã approved. | D=A2: '...Changes are saved after the Admin confirms (BR5).' Add BR5: 'The system must ask the Admin to confirm before saving changes to an existing location.' | E=Thấp | F=Chưa làm
+
+SHEET 2. Bổ sung theo UC
+ROW 1: A=Nhóm 2 – Bổ sung các thiếu sót theo từng Use Case
+ROW 2: A=Cột 'Nội dung bổ sung' viết bằng tiếng Anh để dán vào PRD. Giá trị trong [ ] là đề xuất cần xác nhận.
+ROW 3: A=Mã | B=UC | C=Loại | D=Thiếu sót | E=Nội dung bổ sung (dán vào PRD) | F=Ưu tiên | G=Trạng thái | H=Ghi chú
+ROW 4: A=G01 | B=UC-01 | C=Basic Flow | D=Chưa có bước xin quyền vị trí lần đầu. | E=Step 3: 'The system checks the location permission. If not yet determined, the system shows the OS permission prompt with a short rationale; if granted, continue; if denied, go to E1.' | F=Trung bình | G=Chưa làm
+ROW 5: A=G02 | B=UC-01 | C=Business Rule | D=Độ chính xác GPS thấp chưa được xử lý dù bước 4 có lấy accuracy. | E=BR5: 'If the reported accuracy is worse than [100] m, the system shows a notice that nearby results may be inaccurate.' | F=Thấp | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 6: A=G03 | B=UC-01 | C=Alternative Path | D=E2 cho phép 'expand radius' nhưng không có bước thực hiện. | E=A5 Expand Radius: 'The Tourist selects Expand Radius. The system increases the radius by [100] m up to the maximum of 500 m and repeats step 5. At the maximum, the E2 message is shown with suggestions to use A2, A3 or A4.' | F=Trung bình | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 7: A=G04 | B=UC-01 | C=Business Rule | D=BR2: 'relevance, distance, or popularity' không xác định; popularity cần analytics (ngoài scope). | E=BR2: 'GPS results: distance ascending. Keyword results: name relevance, then distance. Category results: distance ascending. Popularity sorting is out of MVP scope.' | F=Trung bình | G=Chưa làm
+ROW 8: A=G05 | B=UC-01 | C=Business Rule | D=Chưa nói tìm kiếm theo ngôn ngữ nào và nguồn dữ liệu online/offline. | E=BR6: 'Keyword search matches the localized names in the current app language and falls back to EN then VI. Online: data from the Server; offline: data from the Local Content Store.' | F=Trung bình | G=Chưa làm
+ROW 9: A=G06 | B=UC-01 / UC-04 | C=Assumption / NFR | D=Map View offline: map tiles không được đề cập. | E=Assumptions: choose one — (a) map tiles for the MVP area are bundled and updated through UC-04; or (b) offline Map View shows markers on a simplified background without tiles. State the choice in UC-01 and NFR-04. | F=Cao | G=Chưa làm
+ROW 10: A=G07 | B=UC-02 | C=Business Rule | D=SHORT không có ở ngôn ngữ đã chọn nhưng FULL có thì chưa rõ. | E=BR3: 'If SHORT is unavailable for the selected language but FULL is available, the system displays FULL and informs the Tourist that the summary is unavailable.' | F=Trung bình | G=Chưa làm
+ROW 11: A=G08 | B=UC-02 | C=Exception Path | D=Chuỗi fallback bị lặp khi ngôn ngữ chọn là EN; chưa nối tường minh sang E2. | E=E1: 'Fallback chain is Selected → EN → VI, skipping duplicates. If no APPROVED content exists in any of them, go to E2.' | F=Trung bình | G=Chưa làm
+ROW 12: A=G09 | B=UC-02 / Appendix | C=Appendix | D=Danh sách ngôn ngữ hỗ trợ chưa được liệt kê. | E=Appendix table: languageCode | Language name | UI supported | Content supported | TTS expected. (Example: vi | Vietnamese; en | English; ...) — team điền. | F=Trung bình | G=Chưa làm
+ROW 13: A=G10 | B=UC-02 | C=Business Rule | D=Khi vừa có nội dung offline vừa có online thì chưa rõ nguồn nào được dùng. | E=BR4: 'The installed Local Content Store is the default source. Newer Server content is used only after it is installed through UC-04, to keep scripts and audio consistent.' | F=Trung bình | G=Chưa làm
+ROW 14: A=G11 | B=UC-03 | C=Exception Path | D=Thiết bị không có TTS cho ngôn ngữ đó (nêu ở Assumptions nhưng không có exception). | E=E4: 'If the device has no TTS voice for languageCode, the system shows “Audio is not available for this language on your device” and the Tourist can still read scriptText.' | F=Cao | G=Chưa làm
+ROW 15: A=G12 | B=UC-03 | C=Exception Path | D=Stream audio bị mất mạng giữa chừng. | E=E5: 'If streaming is interrupted, the system pauses, stores the position and offers Retry; when offline and scriptText is available, offer TTS fallback.' | F=Trung bình | G=Chưa làm
+ROW 16: A=G13 | B=UC-03 | C=Alternative Path | D=Seek/speed khi dùng TTS fallback. | E=A2: 'In TTS mode, Pause/Resume and speed (TTS rate) are supported; seek is disabled.' | F=Trung bình | G=Chưa làm
+ROW 17: A=G14 | B=UC-03 | C=Alternative Path | D=Chưa có: đổi ngôn ngữ/mode khi đang phát, phát nền/lock-screen, hết audio. | E=A3: language or mode change during playback stops playback and reloads via UC-02.
+A4: playback continues in background with lock-screen controls.
+Step 8: 'When playback completes, the state becomes Completed and Replay is offered.' | F=Trung bình | G=Chưa làm
+ROW 18: A=G15 | B=UC-03 | C=Exception Path | D=E2: 'playback may continue' mơ hồ (tự tiếp tục hay không). | E=E2: 'After a temporary audio-focus loss, playback resumes automatically from the stored position; after a permanent loss, playback stays Paused until the Tourist selects Resume.' | F=Trung bình | G=Chưa làm
+ROW 19: A=G16 | B=UC-04 | C=Alternative Path | D=Goal có 'add' nhưng không có luồng tải thêm optional content. | E=A4 Download Optional Content: 'The Tourist opens Available Content. The system lists optional packages (by area/language) with sizes. The Tourist selects and confirms; the flow continues from step 4 of the main flow.' | F=Cao | G=Chưa làm
+ROW 20: A=G17 | B=UC-04 | C=Trigger | D=Chưa nói khi nào hệ thống phát hiện bản mới. | E=Trigger: 'The system checks the Server version on app launch (at most once per [24] hours) when a connection is available, and shows Update Available.' | F=Trung bình | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 21: A=G18 | B=UC-04 | C=Business Rule | D=Chưa có cảnh báo dữ liệu di động, hủy tải giữa chừng. | E=BR-05: 'If the download size exceeds [50] MB and the device is on mobile data, the system asks for confirmation.' A5 Cancel Download: 'The Tourist cancels; progress is kept for resume; installed content remains unchanged.' | F=Trung bình | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 22: A=G19 | B=UC-04 | C=Business Rule | D=Thay package khi đang phát audio dùng file cũ. | E=BR-06: 'Installation is deferred until current playback ends or the Tourist leaves the Location Details Screen.' | F=Trung bình | G=Chưa làm
+ROW 23: A=G20 | B=UC-04 | C=Business Rule | D=Cơ chế verify chưa nêu. | E=BR-02 add: 'Integrity is verified by SHA-256 checksum and a package signature provided by the Server.' | F=Trung bình | G=Chưa làm
+ROW 24: A=G21 | B=UC-04 | C=Business Rule | D=Nội dung bị gỡ ở bản mới chưa xử lý; cần nhất quán với BR-01. | E=BR-07: 'The package manifest lists removed items. Removed items are deleted atomically with the installation, except Base Content (BR-01).' | F=Thấp | G=Chưa làm
+ROW 25: A=G22 | B=UC-05 | C=Business Rule | D=Cooldown và bán kính geofence chưa có giá trị/khoảng. | E=BR5: 'Default cooldown is [4] hours per location (system configuration). Geofence radius is [50–500] m, aligned with UC-06.' | F=Trung bình | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 26: A=G23 | B=UC-05 | C=Business Rule / NFR | D=Giới hạn số geofence của hệ điều hành (iOS ~20, Android ~100). | E=BR6: 'The system registers only the nearest [20] geofences around the current position and re-registers them when the Tourist moves significantly.' | F=Cao | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 27: A=G24 | B=UC-05 | C=Assumption / Exception | D=Background location, app bị kill, khởi động lại máy, pin. | E=Assumption: background location permission is required for notifications while the app is closed. E4: 'If only foreground location is granted, notifications are shown as In-App Banners only (A2).' Geofences are re-registered at app launch and device boot. | F=Cao | G=Chưa làm
+ROW 28: A=G25 | B=UC-05 | C=Feature | D=Chưa có tùy chọn bật/tắt thông báo theo vị trí. | E=Add to Settings: 'Location-based notifications on/off'; when off, UC-05 produces no notification (same as E2). | F=Trung bình | G=Chưa làm
+ROW 29: A=G26 | B=UC-05 | C=Business Rule | D=Tên địa điểm chưa localize cho ngôn ngữ hiện tại. | E=BR3 add: 'If the localized name is unavailable, use EN then VI.' | F=Trung bình | G=Chưa làm
+ROW 30: A=G27 | B=UC-05 | C=Alternative Path | D='Nearest' ở A1 chưa định nghĩa. | E=A1: '...the nearest location is the one with the smallest distance between the device position and the location coordinates.' | F=Thấp | G=Chưa làm
+ROW 31: A=G28 | B=UC-05 | C=Cấu trúc | D=A3 'Notification Not Selected' không phải alternative path. | E=Remove A3; describe it in Postcondition (‘Otherwise’ part). | F=Thấp | G=Chưa làm
+ROW 32: A=G29 | B=UC-06 | C=Alternative Path | D=Chưa có xóa / ẩn / lưu trữ địa điểm. | E=A3 Deactivate Location: 'The Admin deactivates a location (status ARCHIVED). It is removed from the Mobile App at the next published package. Physical deletion is not allowed when feedback or analytics reference it.' | F=Cao | G=Chưa làm
+ROW 33: A=G30 | B=UC-06 | C=Basic Flow | D=Chưa có danh sách/tìm kiếm/lọc cho admin. | E=Step 0: 'The Admin opens Location Management, which lists locations with search and filters by name, category and status.' | F=Trung bình | G=Chưa làm
+ROW 34: A=G31 | B=UC-06 | C=Exception Path | D=Hai admin sửa cùng lúc. | E=E3: 'If the record was changed by another Admin since it was opened (version mismatch), the system rejects the save and offers to reload.' | F=Thấp | G=Chưa làm
+ROW 35: A=G32 | B=UC-06 | C=Business Rule | D=Chưa có audit trail. | E=BR6: 'The system records createdBy, updatedBy, timestamps and every status change.' | F=Trung bình | G=Chưa làm
+ROW 36: A=G33 | B=UC-06 | C=Assumption | D=BR3 có 'package version' nhưng không nói ai tạo. | E=Assumption: 'Package versions are created by the Content Publication Service at publication time; UC-06 only stores content.' | F=Cao | G=Chưa làm
+ROW 37: A=G34 | B=UC-06 | C=Business Rule | D=Submit được địa điểm không có script nào. | E=BR1 add: 'To submit, at least one FULL script in VI or EN is required.' | F=Trung bình | G=Chưa làm
+ROW 38: A=G35 | B=UC-06 | C=Business Rule | D=Ràng buộc file audio chưa có. | E=BR7: 'Audio formats: [MP3, M4A (AAC)]; max size [20] MB; max duration [10] minutes.' E1 references these limits. | F=Trung bình | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 39: A=G36 | B=UC-06 | C=Business Rule | D=Thiếu trạng thái REJECTED nên nội dung bị từ chối không quay lại đâu. | E=BR2 add: 'Content returned by the reviewer has status REJECTED with a reviewer comment; the Admin edits it and may resubmit.' (see sheet '4. Trạng thái nội dung') | F=Cao | G=Chưa làm
+ROW 40: A=G37 | B=UC-06 | C=Business Rule | D=Không kiểm tra audio khớp script. | E=BR8: 'Before submitting, the Admin confirms that the audio matches the script (checkbox). Matching is verified during external review.' | F=Thấp | G=Chưa làm
+ROW 41: A=G38 | B=UC-07 | C=Data / Appendix | D=Chưa có schema sự kiện analytics. | E=Appendix: events — playback_started, playback_completed (locationId, languageCode, scriptType, source=AUDIO|TTS, connectivity=ONLINE|OFFLINE, timestamp, anonymousDeviceId); content_viewed; offline_package_installed. | F=Cao | G=Chưa làm
+ROW 42: A=G39 | B=UC-07 | C=Assumption | D=Sự kiện phát sinh khi offline chưa được đồng bộ. | E=Assumption: 'Events are queued locally when offline and uploaded in batches when a connection is available.' | F=Trung bình | G=Chưa làm
+ROW 43: A=G40 | B=UC-07 | C=Data | D=Feedback chưa có cấu trúc dữ liệu (gắn locationId?). | E=Feedback fields: feedbackId, locationId (nullable), category, rating (1–5), content, languageCode, status, createdAt, updatedAt. | F=Trung bình | G=Chưa làm
+ROW 44: A=G41 | B=UC-07 | C=Basic Flow | D=Danh sách feedback chưa có phân trang/sắp xếp. | E=Step 3: 'The system displays feedback records sorted by newest first, [20] per page.' | F=Thấp | G=Chưa làm | H=Các giá trị trong [ ] cần team xác nhận.
+ROW 45: A=G42 | B=UC-07 | C=Business Rule | D=Chưa rõ có reopen feedback không. | E=BR2: choose — 'RESOLVED may be reopened to IN_REVIEW' or 'RESOLVED is final'. | F=Thấp | G=Chưa làm
+ROW 46: A=G43 | B=UC-07 | C=Alternative Path | D=Export chưa gắn với reporting period và filter của feedback. | E=A3: 'The exported file contains the analytics of the selected reporting period and the feedback created in that period, with the active filters applied.' | F=Trung bình | G=Chưa làm
+ROW 47: A=G44 | B=UC-07 / UC-06 | C=Business Rule | D=Chưa có ma trận phân quyền. | E=BR1: 'Content Admin: UC-06 only. System Admin / Product Owner: UC-07 (and read-only access to UC-06).' Add role–permission table to the Appendix. | F=Trung bình | G=Chưa làm
+ROW 48: A=G45 | B=UC-07 | C=Exception Path | D=Chưa có lỗi khi tải dashboard. | E=E3: 'If analytics data cannot be loaded, the system shows an error with Retry; the feedback list remains accessible.' | F=Thấp | G=Chưa làm
+
+SHEET 3. Actors & Epics
+ROW 1: A=Nội dung đề xuất cho mục 2.3 Actors và mục 3 Epics
+ROW 3: A=2.3 Actors (đề xuất)
+ROW 4: A=Actor | B=Loại | C=Mô tả | D=UC liên quan
+ROW 5: A=Tourist | B=Primary | C=Du khách dùng mobile app để khám phá địa điểm, nghe thuyết minh, quản lý nội dung offline, nhận thông báo. | D=UC-01 … UC-05 (+ UC-08 nếu thêm)
+ROW 6: A=Content Admin (Editor) | B=Primary | C=Tạo và sửa thông tin địa điểm, script đa ngôn ngữ, audio trên Web Admin. | D=UC-06
+ROW 7: A=System Admin / Product Owner | B=Primary | C=Xem thống kê sử dụng, quản lý feedback trên Web Admin. | D=UC-07
+ROW 8: A=Content Approver (external) | B=Secondary | C=Duyệt và publish nội dung; nằm ngoài scope PRD, được mô tả ở 6.4. | D=UC-06 (dependency)
+ROW 9: A=Map Service | B=Secondary | C=Cung cấp bản đồ và marker. | D=UC-01
+ROW 10: A=OS Location & Geofencing Service | B=Secondary | C=Cung cấp vị trí và sự kiện geofence. | D=UC-01, UC-05
+ROW 11: A=OS Audio / TTS Service | B=Secondary | C=Phát audio, quản lý audio focus, đọc TTS. | D=UC-03
+ROW 12: A=Content Server / API | B=Secondary | C=Cung cấp nội dung và gói offline đã APPROVED. | D=UC-02, UC-04
+ROW 14: A=Mục 3 Epics (đề xuất ánh xạ Epic – UC)
+ROW 15: A=Epic | B=Objective (3.x.1) | C=Features (3.x.2) | D=Related Use Cases (3.x.3)
+ROW 16: A=E1 – Location Discovery & Selection | B=Giúp du khách tìm và chọn điểm tham quan nhanh, kể cả khi không có GPS. | C=Nearby search, keyword search, category browse, map view, pagination. | D=UC-01
+ROW 17: A=E2 – Multilingual Guide & Audio | B=Cung cấp nội dung đã duyệt theo ngôn ngữ/chế độ và phát audio với fallback TTS. | C=Language picker, FULL/SHORT, language fallback, audio controls, TTS fallback. | D=UC-02, UC-03
+ROW 18: A=E3 – Offline Experience | B=Đảm bảo nội dung thiết yếu dùng được không cần Internet và cập nhật an toàn. | C=Base content, update check, package download, verify, atomic install, delete optional content, (offline map). | D=UC-04
+ROW 19: A=E4 – Location-Based Notifications | B=Thông báo khi du khách vào vùng địa điểm và mở nhanh chi tiết. | C=Geofence, notification/banner, cooldown, deep link bằng locationId. | D=UC-05
+ROW 20: A=E5 – Content Management | B=Cho Content Admin quản lý địa điểm, script, audio trước khi duyệt. | C=Create/edit location, scripts, audio, Draft/Pending review, deactivate. | D=UC-06
+ROW 21: A=E6 – Analytics & Tourist Feedback | B=Hỗ trợ cải tiến dịch vụ bằng số liệu và phản hồi. | C=Dashboard metrics, feedback list/filter/status, export; (feedback submission, event capture nếu đưa vào scope). | D=UC-07 (+ UC-08, UC-09)
+ROW 22: A=E7 – Setup & Infrastructure | B=Thiết lập nền tảng kỹ thuật cho cả mobile và web. | C=System configuration, storage/CDN, publication integration, environments. (Có thể bỏ nếu không có yêu cầu riêng.) | D=— (hoặc UC-10)
+
+SHEET 4. Trạng thái nội dung
+ROW 1: A=Vòng đời trạng thái nội dung (đề xuất cho M06, G36)
+ROW 2: A=Dùng chung cho UC-02, UC-04, UC-06. Cần chốt có tách APPROVED / PUBLISHED hay không.
+ROW 3: A=Trạng thái | B=Ý nghĩa | C=Ai đặt | D=Mobile App thấy? | E=Chuyển tiếp hợp lệ
+ROW 4: A=DRAFT | B=Nội dung chưa đầy đủ, đang soạn. | C=Content Admin (UC-06) | D=Không | E=→ PENDING_REVIEW
+ROW 5: A=PENDING_REVIEW | B=Đã submit, chờ duyệt. | C=Content Admin (UC-06) | D=Không (bản đã publish trước đó vẫn hiển thị) | E=→ APPROVED, → REJECTED
+ROW 6: A=REJECTED | B=Bị từ chối kèm nhận xét của người duyệt. | C=Content Approver (external) | D=Không | E=→ DRAFT (sau khi sửa) hoặc → PENDING_REVIEW
+ROW 7: A=APPROVED | B=Đã duyệt. Nếu không tách PUBLISHED, APPROVED nghĩa là đã duyệt và đã được đưa vào package đã publish. | C=Content Approver / Publication Service (external) | D=Chỉ khi nằm trong package đã publish | E=→ ARCHIVED, hoặc phiên bản mới thay thế
+ROW 8: A=PUBLISHED (tùy chọn) | B=Đã nằm trong package version đang phát hành. | C=Publication Service (external) | D=Có | E=→ ARCHIVED
+ROW 9: A=ARCHIVED | B=Ngừng sử dụng / bị gỡ khỏi app ở package kế tiếp. | C=Content Admin (UC-06 A3) | D=Không (sau bản cập nhật kế tiếp) | E=— 
+
+SHEET 5. Thuật ngữ
+ROW 1: A=Bảng thuật ngữ thống nhất (cho M13, đưa vào Appendix)
+ROW 2: A=Mỗi khái niệm chỉ dùng một tên trong toàn PRD.
+ROW 3: A=Thuật ngữ chuẩn | B=Thay cho các tên đang dùng | C=Định nghĩa
+ROW 4: A=Guide Script (scriptText) | B=guide content, tour script, guide script | C=Văn bản thuyết minh của một địa điểm theo languageCode và scriptType.
+ROW 5: A=scriptType (FULL | SHORT) | B=content mode, duration mode, Short Summary | C=Chế độ thời lượng của script: đầy đủ hoặc tóm tắt.
+ROW 6: A=Effective Language | B=— | C=languageCode của nội dung thực sự được nạp sau khi áp dụng fallback.
+ROW 7: A=Local Content Store | B=Local Database, bundled SQLite, local DB | C=Kho dữ liệu trên thiết bị gồm location data, scripts, audio đã cài.
+ROW 8: A=Server Database | B=server database | C=CSDL phía server chứa nội dung quản lý bởi UC-06.
+ROW 9: A=Base Content | B=bundled base offline content | C=Nội dung đi kèm app khi cài, không bị xóa (BR-01 của UC-04).
+ROW 10: A=Optional Content | B=additionally downloaded content | C=Nội dung tải thêm qua UC-04, có thể xóa.
+ROW 11: A=Content Package | B=offline package, approved package, update package | C=Tập location data + scripts + audio có packageVersion, cài đặt nguyên tử.
+ROW 12: A=Location Details Screen | B=— | C=Màn hình chi tiết địa điểm, nơi UC-02 hiển thị scriptText và UC-03 phát audio.
+ROW 13: A=Geofence | B=— | C=Vùng tròn quanh địa điểm (tọa độ + geofenceRadius) dùng để kích hoạt UC-05.
+ROW 14: A=Content Admin | B=Content Administrator, Administrators/Content Editors | C=Actor quản lý nội dung ở UC-06.
+ROW 15: A=System Admin / Product Owner | B=— | C=Actor xem analytics và quản lý feedback ở UC-07.
+
+SHEET 6. Data (mục 5.2)
+ROW 1: A=Gợi ý Entity Definitions cho mục 5 Data Models
+ROW 2: A=Điểm xuất phát để vẽ ERD (5.1). Trường chính chỉ gồm những gì các UC hiện tại cần.
+ROW 3: A=Entity | B=Trường chính | C=Dùng bởi
+ROW 4: A=Location | B=locationId (PK), categoryId (FK), latitude, longitude, geofenceRadius, thumbnailUrl, status, version | C=UC-01, 05, 06
+ROW 5: A=LocationTranslation | B=locationId (FK), languageCode (FK), name, description | C=UC-01, 05, 06
+ROW 6: A=Category | B=categoryId (PK), name (đa ngôn ngữ), isActive | C=UC-01, 06
+ROW 7: A=Language | B=languageCode (PK), name, isUiSupported, isContentSupported | C=UC-02, 03, 06
+ROW 8: A=GuideScript | B=scriptId (PK), locationId (FK), languageCode (FK), scriptType, scriptText, status, packageVersion, reviewerComment, updatedBy, updatedAt | C=UC-02, 04, 06
+ROW 9: A=AudioAsset | B=audioId (PK), scriptId (FK), fileUrl, format, durationSec, sizeBytes, checksum | C=UC-03, 04, 06
+ROW 10: A=ContentPackage | B=packageVersion (PK), scopeArea, languageCode (nullable), sizeBytes, checksum, signature, publishedAt, manifest | C=UC-04
+ROW 11: A=LocalContentVersion (thiết bị) | B=installedPackageVersion, installedAt, isBase | C=UC-04
+ROW 12: A=Feedback | B=feedbackId (PK), locationId (nullable FK), category, rating, content, languageCode, status, createdAt, updatedAt | C=UC-07 (+UC-08)
+ROW 13: A=AnalyticsEvent | B=eventId (PK), eventType, locationId, languageCode, scriptType, source, connectivity, anonymousDeviceId, occurredAt | C=UC-07 (+UC-09)
+ROW 14: A=AdminUser (tham chiếu) | B=adminId, role (CONTENT_ADMIN | SYSTEM_ADMIN) — xác thực nằm ngoài scope nhưng cần role | C=UC-06, 07
+ROW 15: A=SystemConfig | B=key, value (defaultSearchRadius, notificationCooldown, ...) | C=UC-01, 05
+
+SHEET 7. Phụ thuộc (mục 6.4)
+ROW 1: A=External Services & Dependencies (đề xuất cho mục 6.4)
+ROW 2: A=Mỗi dòng nên có mô tả ngắn trong PRD và xuất hiện ở Component/Deployment Diagram.
+ROW 3: A=Dịch vụ / phụ thuộc | B=Vai trò | C=UC liên quan
+ROW 4: A=Map Service | B=Hiển thị bản đồ, marker, zoom/pan (kể cả chiến lược offline tiles). | C=UC-01
+ROW 5: A=OS Location & Geofencing | B=Lấy tọa độ + accuracy, đăng ký và nhận sự kiện geofence. | C=UC-01, 05
+ROW 6: A=OS Notification | B=Hiển thị thông báo hệ thống, deep link bằng locationId. | C=UC-05
+ROW 7: A=OS Audio & TTS | B=Phát audio, audio focus, Bluetooth/headphone events, TTS fallback. | C=UC-03
+ROW 8: A=Content Publication Service (external) | B=Nhận PENDING_REVIEW, duyệt, tạo packageVersion, publish. | C=UC-04, 06
+ROW 9: A=Content Server / CDN | B=Lưu trữ và phân phối audio, packages. | C=UC-02, 03, 04
+ROW 10: A=Admin Authentication (external) | B=Xác thực và phân quyền Admin (ngoài scope, cần định nghĩa giao diện tích hợp). | C=UC-06, 07
+ROW 11: A=Analytics Event Capture (mobile) | B=Ghi và gửi sự kiện sử dụng (hàng đợi offline). | C=UC-07, UC-09
+ROW 12: A=Feedback Submission | B=Gửi feedback từ mobile tới server. | C=UC-07, UC-08
+
+SHEET 8. NFR đề xuất
+ROW 1: A=Non-Functional Requirements (mục 7) – bản nháp
+ROW 2: A=Con số trong [ ] là đề xuất khởi đầu cần team xác nhận bằng thực nghiệm hoặc yêu cầu đề tài.
+ROW 3: A=Mã | B=Nhóm | C=Yêu cầu (dán vào PRD) | D=Ghi chú
+ROW 4: A=NFR-01 | B=Performance | C=Location Details Screen loads within [2] s on 4G and within [1] s from the Local Content Store.
+ROW 5: A=NFR-02 | B=Performance | C=Nearby-location search returns results within [3] s after a valid GPS fix.
+ROW 6: A=NFR-03 | B=Performance | C=Pre-rendered audio starts within [2] s of selecting Play; TTS fallback starts within [3] s.
+ROW 7: A=NFR-04 | B=Offline | C=Base Content bundle is at most [150] MB. UC-01 (search/category), UC-02 and UC-03 work with no network using Base Content. | D=Liên quan G06 (offline map).
+ROW 8: A=NFR-05 | B=Platform | C=Supported platforms: Android [8.0+] and iOS [15+].
+ROW 9: A=NFR-06 | B=Security | C=All client–server traffic uses HTTPS (TLS). Web Admin requires authenticated, role-based access. Content packages are verified by checksum and signature.
+ROW 10: A=NFR-07 | B=Privacy | C=Location is used only for nearby search and geofencing; analytics events are anonymous; data handling complies with Decree 13/2023/ND-CP on personal data protection. | D=Cần người có chuyên môn pháp lý xác nhận.
+ROW 11: A=NFR-08 | B=Battery | C=Geofence monitoring consumes at most [3]% battery per hour of normal walking use.
+ROW 12: A=NFR-09 | B=Reliability | C=A failed or interrupted update never corrupts or removes installed content (UC-04 BR-02).
+ROW 13: A=NFR-10 | B=Accessibility | C=Mobile UI supports system font scaling, screen-reader labels, and WCAG 2.1 AA contrast.
+ROW 14: A=NFR-11 | B=Localization | C=UI and content use Unicode; supported languages are listed in the Appendix.
+ROW 15: A=NFR-12 | B=Availability | C=Server API availability of at least [99.5]% per month.
+ROW 16: A=NFR-13 | B=Scalability | C=System supports at least [500] locations and [1,000] concurrent users.
+ROW 17: A=NFR-14 | B=Media | C=Audio assets use [MP3 or M4A (AAC)] at a bitrate of [64–128] kbps. | D=Khớp BR7 (G35).
+
+SHEET 9. Cấu trúc TL
+ROW 1: A=Nhóm 3 – Bổ sung cấu trúc tài liệu
+ROW 2: A=Các phần còn trống hoặc chưa có trong PRD.
+ROW 3: A=Mã | B=Hạng mục | C=Hiện trạng | D=Đề xuất bổ sung | E=Ưu tiên | F=Trạng thái
+ROW 4: A=S01 | B=Metadata tài liệu | C=Chưa có version, tác giả, ngày, lịch sử thay đổi. | D=Thêm bảng Document Control ở đầu tài liệu: Version | Date | Author | Change description | Approved by. | E=Trung bình | F=Chưa làm
+ROW 5: A=S02 | B=Mã & độ ưu tiên yêu cầu | C=Yêu cầu chưa có ID/độ ưu tiên. | D=Gán FR-xx cho từng tính năng ở mục 3 và MoSCoW (Must/Should/Could/Won't). | E=Trung bình | F=Chưa làm
+ROW 6: A=S03 | B=KPI cho Product goals | C=Mục 1.4 chưa đo được. | D=Thêm cột Success metric, ví dụ: % địa điểm có nội dung APPROVED ≥ [2] ngôn ngữ; tỷ lệ phát audio thành công ≥ [95]%; thời gian đến màn hình chi tiết ≤ [10] s. | E=Trung bình | F=Chưa làm
+ROW 7: A=S04 | B=Định nghĩa MVP | C='MVP' xuất hiện nhưng chưa có danh sách. | D=Thêm bảng MVP / Post-MVP cho từng tính năng (ví dụ: popularity sort, offline map, UC-10 → Post-MVP). | E=Trung bình | F=Chưa làm
+ROW 8: A=S05 | B=Rủi ro và phụ thuộc | C=Chưa có. | D=Thêm bảng Risks: geofence limits OS, nội dung chưa được duyệt, dung lượng offline, quyền vị trí bị từ chối, TTS thiếu ngôn ngữ. | E=Trung bình | F=Chưa làm
+ROW 9: A=S06 | B=Sơ đồ activity | C=Chỉ tham chiếu tên file .drawio. | D=Nhúng ảnh hoặc link từng sơ đồ vào mục 'Activities Diagram' của UC. | E=Trung bình | F=Chưa làm
+ROW 10: A=S07 | B=Author(s) / Date từng UC | C=Đang trống. | D=Điền tên thành viên phụ trách và ngày cập nhật. | E=Thấp | F=Chưa làm
+ROW 11: A=S08 | B=Mục 5 Data Models | C=5.1, 5.2 trống; còn dòng 'Question:' của template. | D=Dùng sheet '6. Data (mục 5.2)' để vẽ ERD và viết Entity Definitions; xóa dòng 'Question:'. | E=Cao | F=Chưa làm
+ROW 12: A=S09 | B=Mục 6.1–6.3 | C=Class, Component, Deployment Diagram trống. | D=Component gợi ý: Mobile App (UI, Content Service, Audio Player, Geofence Service, Offline Manager, Local Content Store), Backend API, Web Admin, Database, Object Storage/CDN, Content Publication Service (external). | E=Cao | F=Chưa làm
+ROW 13: A=S10 | B=Mục 6.4 | C=Trống. | D=Dùng sheet '7. Phụ thuộc (mục 6.4)'. | E=Cao | F=Chưa làm
+ROW 14: A=S11 | B=Mục 7 NFR | C=Trống. | D=Dùng sheet '8. NFR đề xuất'. | E=Cao | F=Chưa làm
+ROW 15: A=S12 | B=Mục 8 Appendix | C=Trống. | D=Thêm: danh sách ngôn ngữ, danh sách category, thuật ngữ, schema sự kiện analytics, ma trận role–permission, catalog thông báo lỗi, danh sách màn hình. | E=Trung bình | F=Chưa làm
+ROW 16: A=S13 | B=Mục 2.3 và mục 3 | C=Trống. | D=Dùng sheet '3. Actors & Epics'. | E=Cao | F=Chưa làm
+
+SHEET 10. Trình bày
+ROW 1: A=Nhóm 4 – Lỗi trình bày và chính tả
+ROW 2: A=Sửa nhanh, không cần quyết định thiết kế.
+ROW 3: A=Mã | B=Vị trí | C=Vấn đề | D=Cách sửa | E=Ưu tiên | F=Trạng thái
+ROW 4: A=T01 | B=Tiêu đề và các heading (2, 3, 7) | C='REQUIRMENTS' sai chính tả. | D=Sửa thành 'REQUIREMENTS'. | E=Thấp | F=Chưa làm
+ROW 5: A=T02 | B=UC-01, 02, 03, 06 | C='Bussiness Rule'. | D=Sửa thành 'Business Rule'; thống nhất cho cả 7 UC. | E=Thấp | F=Chưa làm
+ROW 6: A=T03 | B=UC-03 BR1 | C='pr ovided'. | D=Sửa thành 'provided'. | E=Thấp | F=Chưa làm
+ROW 7: A=T04 | B=UC-04 | C='BR-01…BR-04' khác kiểu với 'BR1…' ở UC khác. | D=Thống nhất 'BR1, BR2, …' và cập nhật các tham chiếu chéo (UC-04 A2, E-paths). | E=Thấp | F=Chưa làm
+ROW 8: A=T05 | B=Activities Diagram | C=Tên file UC01–UC04 nhưng UC5, UC6, UC7. | D=Đổi thành UC05_activity.drawio, UC06_activity.drawio, UC07_activity.drawio. | E=Thấp | F=Chưa làm
+ROW 9: A=T06 | B=Trường Type | C=UC-01 'Client-side', UC-02..05 'Mobile App – Tourist-facing'. | D=Thống nhất 'Mobile App – Tourist-facing' cho UC-01. | E=Thấp | F=Chưa làm
+ROW 10: A=T07 | B=Tiêu đề UC-01 | C='Explore & Select location' viết thường. | D=Sửa thành 'Explore & Select Location'. | E=Thấp | F=Chưa làm
+ROW 11: A=T08 | B=Bảng UC-01 (A2–A4) và UC-02 bước 1 | C=Hàng/cột sai vị trí (tham chiếu A2, A3, A4 nằm trong ô hành động; System Response bước 1 không đánh số). | D=Chuyển các tham chiếu sang cột riêng 'Ref'; đánh số lại các bước hệ thống. | E=Trung bình | F=Chưa làm
+ROW 12: A=T09 | B=Secondary Actor | C=UC-01 liệt kê; UC-02..07 ghi None/N/A dù có dùng dịch vụ ngoài. | D=Điền theo sheet '3. Actors & Epics' (Content Server, OS Audio/TTS, OS Geofencing, Content Publication Service…). | E=Trung bình | F=Chưa làm
+ROW 13: A=T10 | B=Mục 5 | C=Còn dòng '*Question:* What data does the system need…' của template. | D=Xóa dòng, thay bằng nội dung. | E=Thấp | F=Chưa làm
+ROW 14: A=T11 | B=UC-01 luồng chính | C=Tham chiếu 'A2, A3, A4' đặt giữa câu. | D=Dùng dạng '(see A1–A4)' ở cuối bước 1 hoặc cột Ref. | E=Thấp | F=Chưa làm

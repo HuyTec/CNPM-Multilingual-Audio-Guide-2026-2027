@@ -1,0 +1,22 @@
+flowchart LR
+    Location["Location<br/>locationId · categoryId · coordinates<br/>geofenceRadius · thumbnailUrl · status · version"]
+    Translation["LocationTranslation<br/>locationId · languageCode · name · description"]
+    Category["Category<br/>categoryId · localized name · isActive"]
+    Language["Language<br/>languageCode · name<br/>isUiSupported · isContentSupported"]
+    Script["GuideScript<br/>scriptId · locationId · languageCode<br/>scriptType · scriptText · status<br/>packageVersion · reviewerComment · updatedBy · updatedAt"]
+    Audio["AudioAsset<br/>audioId · scriptId · fileUrl · format<br/>durationSec · sizeBytes · checksum"]
+    Package["ContentPackage<br/>packageVersion · scopeArea · languageCode<br/>sizeBytes · checksum · signature · publishedAt · manifest"]
+    Local["LocalContentVersion<br/>installedPackageVersion · installedAt · isBase"]
+    Feedback["Feedback<br/>feedbackId · nullable locationId<br/>category · rating · content · languageCode<br/>status · createdAt · updatedAt"]
+    Analytics["AnalyticsEvent<br/>eventId · eventType · locationId · languageCode<br/>scriptType · source · connectivity<br/>anonymousDeviceId · occurredAt"]
+    Admin["AdminUser — external reference<br/>adminId · role"]
+    Config["SystemConfig — fixed MVP configuration<br/>key · value"]
+    Location -->|categoryId reference| Category
+    Translation -->|locationId reference| Location
+    Translation -->|languageCode reference| Language
+    Script -->|locationId reference| Location
+    Script -->|languageCode reference| Language
+    Audio -->|scriptId reference| Script
+    Script -->|packageVersion after publication| Package
+    Feedback -->|optional locationId reference| Location
+    Note["Proposed conceptual reference model<br/>Keys, cardinalities and package grouping require confirmation<br/>No additional FK is assumed for event identifiers"]

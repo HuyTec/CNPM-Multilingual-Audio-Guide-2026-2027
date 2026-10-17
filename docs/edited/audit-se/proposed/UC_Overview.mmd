@@ -1,0 +1,38 @@
+flowchart LR
+    Tourist["Tourist"]
+    Editor["Content Admin (Editor)"]
+    Admin["System Admin / Product Owner"]
+    Map["Map Service"]
+    Geo["OS Location & Geofencing"]
+    Audio["OS Audio & TTS"]
+    Notify["OS Notification"]
+    Auth["External Admin Authentication"]
+    Publication["External Content Publication Service"]
+    Capture["External Analytics Event Capture"]
+    Feedback["External Feedback Submission"]
+    subgraph Subject["Multilingual Audio Guide Application — proposed whole-system boundary"]
+        U1(["UC-01 Explore & Select Location"])
+        U2(["UC-02 Access Multilingual Guide Content"])
+        U3(["UC-03 Play Audio Guide"])
+        U4(["UC-04 Manage & Update Offline Content"])
+        U5(["UC-05 Receive Location-Based Notifications"])
+        U6(["UC-06 Manage Location Content & Audio Assets"])
+        U7(["UC-07 System Analytics & Tourist Feedback Management"])
+    end
+    Tourist --- U1
+    Tourist --- U2
+    Tourist --- U3
+    Tourist --- U4
+    Tourist --- U5
+    Editor --- U6
+    Admin --- U7
+    Map --- U1
+    Geo --- U1
+    Geo --- U5
+    Audio --- U3
+    Notify --- U5
+    Auth --- U6
+    Auth --- U7
+    Publication --- U6
+    Capture --- U7
+    Feedback --- U7

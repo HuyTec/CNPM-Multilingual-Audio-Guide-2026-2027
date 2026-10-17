@@ -1,0 +1,105 @@
+classDiagram
+    class Location {
+        locationId
+        categoryId
+        latitude
+        longitude
+        geofenceRadius
+        thumbnailUrl
+        status
+        version
+    }
+    class LocationTranslation {
+        locationId
+        languageCode
+        name
+        description
+    }
+    class Category {
+        categoryId
+        name
+        isActive
+    }
+    class Language {
+        languageCode
+        name
+        isUiSupported
+        isContentSupported
+    }
+    class GuideScript {
+        scriptId
+        locationId
+        languageCode
+        scriptType
+        scriptText
+        status
+        packageVersion
+        reviewerComment
+        updatedBy
+        updatedAt
+    }
+    class AudioAsset {
+        audioId
+        scriptId
+        fileUrl
+        format
+        durationSec
+        sizeBytes
+        checksum
+    }
+    class ContentPackage {
+        packageVersion
+        scopeArea
+        languageCode
+        sizeBytes
+        checksum
+        signature
+        publishedAt
+        manifest
+    }
+    class LocalContentVersion {
+        installedPackageVersion
+        installedAt
+        isBase
+    }
+    class Feedback {
+        feedbackId
+        locationId
+        category
+        rating
+        content
+        languageCode
+        status
+        createdAt
+        updatedAt
+    }
+    class AnalyticsEvent {
+        eventId
+        eventType
+        locationId
+        languageCode
+        scriptType
+        source
+        connectivity
+        anonymousDeviceId
+        occurredAt
+    }
+    class AdminUser {
+        adminId
+        role
+    }
+    class SystemConfig {
+        key
+        value
+    }
+    Location --> Category : categoryId
+    LocationTranslation --> Location : locationId
+    LocationTranslation --> Language : languageCode
+    GuideScript --> Location : locationId
+    GuideScript --> Language : languageCode
+    AudioAsset --> GuideScript : scriptId
+    GuideScript --> ContentPackage : after publication
+    Feedback --> Location : optional reference
+    note for GuideScript "Proposed attribute model; packageVersion is not required before publication. Method signatures and multiplicities are not specified."
+    note for AdminUser "External authentication reference; no account management UC."
+    note for SystemConfig "Fixed MVP configuration; no configuration administration UC."

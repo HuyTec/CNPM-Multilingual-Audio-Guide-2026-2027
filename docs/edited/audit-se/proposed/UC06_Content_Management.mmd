@@ -1,0 +1,53 @@
+flowchart TD
+    Start(["Authorized Content Admin"])
+    List["List / search / filter locations"]
+    Form["Open new or existing form; retain entered data"]
+    Action{"Choose action"}
+    Edit["Edit localized location data and scripts"]
+    Upload["Select languageCode + scriptType and upload optional audio"]
+    File{"File valid under proposed limits?"}
+    E1["E1: report upload error; keep form data"]
+    Preview["Preview provided audio"]
+    Draft["Save Draft: completeness checks do not apply"]
+    Submit["Validate required location data and proposed VI/EN name + FULL script"]
+    Complete{"Submission data complete?"}
+    E2["E2: highlight missing fields; retain input"]
+    HasAudio{"Audio provided?"}
+    ConfirmAudio["Confirm audio matches script; only when provided"]
+    TargetDraft["Target save status DRAFT"]
+    TargetPending["Target save status PENDING_REVIEW"]
+    Existing{"Saving changes to existing location?"}
+    Confirm["Ask confirmation under BR5"]
+    Accepted{"Admin confirms?"}
+    Version{"Record version still current?"}
+    E3["E3: reject conflicting save; offer reload; retain entered data"]
+    Save["Save chosen status; audit change; retain approved mobile version"]
+    Deactivate["Send deactivation request to external Publication Service"]
+    subgraph Outside["External lifecycle — outside UC-06 execution"]
+        External["Service performs ARCHIVED transition and releases package"]
+        Installed["Mobile change effective after successful install; Base files retained"]
+        External --> Installed
+    end
+    Finish(["Finish"])
+    Start --> List --> Form --> Action
+    Action -->|Edit| Edit --> Action
+    Action -->|Upload / replace audio| Upload --> File
+    File -->|No| E1 --> Action
+    File -->|Yes| Preview --> Action
+    Action -->|Save Draft| Draft --> TargetDraft --> Existing
+    Action -->|Submit for Review| Submit --> Complete
+    Complete -->|No| E2 --> Action
+    Complete -->|Yes| HasAudio
+    HasAudio -->|Yes| ConfirmAudio --> TargetPending
+    HasAudio -->|No| TargetPending
+    TargetPending --> Existing
+    Existing -->|No| Save
+    Existing -->|Yes| Confirm --> Accepted
+    Accepted -->|No| Action
+    Accepted -->|Yes| Version
+    Version -->|No| E3 --> Action
+    Version -->|Yes| Save
+    Save --> Action
+    Action -->|Request deactivation| Deactivate --> Finish
+    Deactivate -.->|External processing continues separately| External
+    Action -->|Finish| Finish

@@ -1,0 +1,940 @@
+[
+  {
+    "code": "SE-01",
+    "priority": "P1",
+    "pages": [
+      "UC1"
+    ],
+    "cells": [
+      {
+        "page": "UC1",
+        "id": "AvO_44uf7ePXLSYSitZW-2",
+        "line": 22,
+        "label": "GPS Location"
+      },
+      {
+        "page": "UC1",
+        "id": "gAk2jW1bffTvXic_H5ub-1",
+        "line": 25,
+        "label": "<<extend>>"
+      }
+    ],
+    "issue": "GPS Location bị mô hình hóa thành use case mở rộng chưa thuộc bộ 7 UC.",
+    "evidence": "GPS Location là ellipse; cạnh GPS Location → UC1 có nhãn <<extend>>. UC-01 PRD ghi Extension Points: N/A và mô tả GPS là một phương thức chọn địa điểm.",
+    "requirement": "Giữ 7 UC; UC-01 A1–A4; quy tắc UML Extend.",
+    "fix": "Nếu đây là chức năng tìm bằng GPS, đưa nó về nhánh nội bộ của UC-01. Nếu muốn thể hiện dịch vụ định vị, dùng external actor OS Location & Geofencing với association, không đổi nhãn dịch vụ thành một UC mở rộng. Không thêm include/extend chỉ để biểu diễn thứ tự bước."
+  },
+  {
+    "code": "SE-02",
+    "priority": "P2",
+    "pages": [
+      "UC1",
+      "UC2",
+      "UC3",
+      "UC4",
+      "UC5",
+      "UC6",
+      "UC7"
+    ],
+    "cells": [],
+    "issue": "Các trang UC là hình actor–một UC rời, chưa làm rõ subject boundary và tương tác bên ngoài.",
+    "evidence": "Cả bảy trang chỉ có actor chính và oval UC, riêng UC1 thêm GPS Location. Không có trang overview chung hoặc hình boundary xác định Mobile/Web/Backend thuộc subject nào.",
+    "requirement": "2.3 Actors, 6.4 Dependencies; distinction actor/dependency.",
+    "fix": "Giữ các trang chi tiết nếu cần, thêm overview 7 UC trong boundary toàn hệ thống và chỉ nối supporting actor ngoài boundary có tương tác với UC. Không coi thiếu hình chữ nhật boundary tự nó là lỗi UML; vấn đề là thiếu ngữ cảnh để phân loại actor."
+  },
+  {
+    "code": "SE-03",
+    "priority": "P1",
+    "pages": [
+      "UC6",
+      "UC7"
+    ],
+    "cells": [
+      {
+        "page": "UC6",
+        "id": "iA_47EVZrF2NrLpTxS1p-2",
+        "line": 1765,
+        "label": "Admin/Manager"
+      },
+      {
+        "page": "UC7",
+        "id": "TjRQBHKusHSHiObb22YL-2",
+        "line": 1922,
+        "label": "Admin/Manager"
+      }
+    ],
+    "issue": "Hai vai trò quản trị bị gộp thành Admin/Manager.",
+    "evidence": "Cả UC6 và UC7 đều dùng actor Admin/Manager; trong hai activity tương ứng lại là Content Admin và System Admin / Product Owner.",
+    "requirement": "M11, G44, D09; role matrix không có quyền System Admin read-only UC-06.",
+    "fix": "UC6 dùng Content Admin (Editor); UC7 dùng System Admin / Product Owner. Không suy ra một actor Manager có quyền cả hai UC."
+  },
+  {
+    "code": "SE-04",
+    "priority": "P1",
+    "pages": [
+      "UC1_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC1_activity",
+        "id": "vza5PDOPSUm6RJ7DLLyD-1",
+        "line": 157,
+        "label": ""
+      },
+      {
+        "page": "UC1_activity",
+        "id": "3uTMfyMZvL_de9KM9Xpx-79",
+        "line": 433,
+        "label": ""
+      },
+      {
+        "page": "UC1_activity",
+        "id": "3uTMfyMZvL_de9KM9Xpx-91",
+        "line": 471,
+        "label": "5. Search locations within configured radius (50–500 m), sort by distance ascending"
+      }
+    ],
+    "issue": "Một trang chứa hai bản activity và vẫn có search radius cũ 50–500 m.",
+    "evidence": "Có hai initial nodes thuộc hai cụm flow; bản thứ hai ghi Search locations within configured radius (50–500 m), trong khi PRD hiện tại là 100–500 m. Bản đầu có cạnh Expand radius (100–500 m).",
+    "requirement": "M01; UC_01.md BR1/G03; D11.",
+    "fix": "Chọn một bản flow làm bản đang hiệu lực; giữ bản kia như bản lịch sử ở trang riêng nếu cần bảo toàn. Bán kính tìm kiếm là 100–500 m; [200] m default và [100] m increment vẫn là đề xuất. Không nhầm với geofence [50–500] m."
+  },
+  {
+    "code": "SE-05",
+    "priority": "P1",
+    "pages": [
+      "UC1_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC1_activity",
+        "id": "vza5PDOPSUm6RJ7DLLyD-8",
+        "line": 66,
+        "label": "A1: Display 3–5 nearest\nlocations with distances"
+      },
+      {
+        "page": "UC1_activity",
+        "id": "vza5PDOPSUm6RJ7DLLyD-7",
+        "line": 105,
+        "label": "Display nearest\nmatching location"
+      },
+      {
+        "page": "UC1_activity",
+        "id": "3uTMfyMZvL_de9KM9Xpx-97",
+        "line": 489,
+        "label": "6. Display the nearest matching location"
+      }
+    ],
+    "issue": "Kết quả chưa thể hiện mô hình một danh sách + phần shortlist + xem tiếp.",
+    "evidence": "Flow tách Display nearest matching location và A1 shortlist; không có biểu diễn pagination 20/trang hoặc phần xem tiếp trong cùng danh sách.",
+    "requirement": "M02, D10; PRD UC-01 bước 6/BR3.",
+    "fix": "Thể hiện một danh sách distance ascending, [3–5] đầu là shortlist; chọn/xem tiếp dùng cùng tập kết quả. Giữ A1, không tạo hai danh sách độc lập."
+  },
+  {
+    "code": "SE-06",
+    "priority": "P2",
+    "pages": [
+      "UC1_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC1_activity",
+        "id": "vza5PDOPSUm6RJ7DLLyD-18",
+        "line": 60,
+        "label": "Display location markers"
+      },
+      {
+        "page": "UC1_activity",
+        "id": "vza5PDOPSUm6RJ7DLLyD-5",
+        "line": 133,
+        "label": "Search locations within\nconfigured radius"
+      }
+    ],
+    "issue": "Các bổ sung mới về search/offline chưa được phản ánh đầy đủ.",
+    "evidence": "Có request permission, manual alternatives và đường expand radius; nhưng chưa nêu accuracy notice, search-language fallback, online Server/offline Local, simplified offline map, increment/trần của expansion.",
+    "requirement": "G02–G06; UC_01.md; D04/D06.",
+    "fix": "Bổ sung note/guard tại các điểm tương ứng; không cần vẽ mọi cấu hình thành một UC mới. Giữ permission/manual fallback đã đúng."
+  },
+  {
+    "code": "SE-07",
+    "priority": "P1",
+    "pages": [
+      "UC2_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC2_activity",
+        "id": "jr7hXPGmXHG0paXlPZda-9",
+        "line": 749,
+        "label": "Display \"Content is currently\nbeing updated\"; disable Listen to\nGuide; show Send Feedback option"
+      }
+    ],
+    "issue": "Nhánh E2 vẫn hiển thị Send Feedback trái M04 đã chốt.",
+    "evidence": "Node ghi disable Listen to Guide; show Send Feedback option. PRD gốc hiện không còn Send Feedback và người dùng đã yêu cầu không thêm vào E2.",
+    "requirement": "M04 được xác nhận Đã áp dụng; UC_02.md giữ E2.",
+    "fix": "Bỏ hành vi Send Feedback khỏi bản sơ đồ hiệu lực của E2; giữ thông báo unavailable và disable Listen. Không thêm UC-08/09 để hợp thức hóa node cũ."
+  },
+  {
+    "code": "SE-08",
+    "priority": "P1",
+    "pages": [
+      "UC2_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC2_activity",
+        "id": "jr7hXPGmXHG0paXlPZda-5",
+        "line": 740,
+        "label": "Load scriptText"
+      },
+      {
+        "page": "UC2_activity",
+        "id": "jr7hXPGmXHG0paXlPZda-6",
+        "line": 743,
+        "label": "E1 – Approved content unavailable;\napply fallback Selected → EN → VI"
+      },
+      {
+        "page": "UC2_activity",
+        "id": "jr7hXPGmXHG0paXlPZda-40",
+        "line": 863,
+        "label": "APPROVED fallback<br style=\"forced-color-adjust: none;\">found in EN then VI?"
+      }
+    ],
+    "issue": "Fallback và kết quả load thiếu quy tắc scriptType/effective language/version mới.",
+    "evidence": "Fallback chỉ Selected → EN → VI rồi đi E2; chưa có thử FULL sau khi hết SHORT toàn chuỗi, skip duplicate languages, đầu ra effective languageCode/scriptType và version.",
+    "requirement": "G07/G08, M10, D04/D05; UC-02 BR3/BR4 mới.",
+    "fix": "Thử SHORT trên toàn chuỗi trước, rồi FULL trên toàn chuỗi nếu cần; trả effective values cùng context version. E2 chỉ sau khi hết fallback áp dụng; không đổi chính sách online/offline."
+  },
+  {
+    "code": "SE-09",
+    "priority": "P2",
+    "pages": [
+      "UC2_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC2_activity",
+        "id": "diEoupAUMjpGpEfyS3mI-1",
+        "line": 725,
+        "label": ""
+      }
+    ],
+    "issue": "A2 có thêm self-loop không có điều kiện.",
+    "evidence": "Cạnh có source = target = jr7hXPGmXHG0paXlPZda-13, đồng thời A2 đã có cạnh đi Retrieve content.",
+    "requirement": "UC-02 A2 chỉ cập nhật scriptType rồi reload.",
+    "fix": "Loại self-loop khỏi flow hiệu lực hoặc ghi rõ ý nghĩa nếu có chủ đích. Không coi self-loop bất kỳ là sai UML; ở đây nó thêm đường lặp không có nghiệp vụ."
+  },
+  {
+    "code": "SE-10",
+    "priority": "P1",
+    "pages": [
+      "UC3_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC3_activity",
+        "id": "o0_6KubHvzofkxdgklQR-13",
+        "line": 1069,
+        "label": "E1 – Audio unavailable/invalid\nFallback to OS Text-to-Speech using <code>scriptText</code>"
+      }
+    ],
+    "issue": "Fallback TTS chưa xử lý trường hợp thiếu voice đúng ngôn ngữ.",
+    "evidence": "Audio unavailable/invalid đi thẳng Fallback to OS TTS rồi tiếp tục playback event; không có E4 hoặc điều kiện device voice.",
+    "requirement": "G11, M10; UC-03 E4 mới.",
+    "fix": "Kiểm tra TTS voice cho effective languageCode; không có voice thì báo audio unavailable và giữ scriptText để đọc, không coi fallback luôn thành công."
+  },
+  {
+    "code": "SE-11",
+    "priority": "P1",
+    "pages": [
+      "UC3_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC3_activity",
+        "id": "o0_6KubHvzofkxdgklQR-42",
+        "line": 984,
+        "label": "Yes"
+      },
+      {
+        "page": "UC3_activity",
+        "id": "o0_6KubHvzofkxdgklQR-19",
+        "line": 1082,
+        "label": "Resume from stored position"
+      }
+    ],
+    "issue": "Khôi phục audio focus đang luôn đi Resume.",
+    "evidence": "Audio focus restored? nhánh Yes → Resume from stored position; không phân biệt temporary/permanent loss.",
+    "requirement": "G15; UC_03.md E2 clarification.",
+    "fix": "Chỉ temporary loss tự resume sau khi focus trở lại; permanent loss giữ Paused đến khi Tourist Resume."
+  },
+  {
+    "code": "SE-12",
+    "priority": "P2",
+    "pages": [
+      "UC3_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC3_activity",
+        "id": "o0_6KubHvzofkxdgklQR-16",
+        "line": 920,
+        "label": "A1 – Playback control"
+      },
+      {
+        "page": "UC3_activity",
+        "id": "ZE_orUKCMDMedaNMvrc7-12",
+        "line": 1021,
+        "label": "Playback Completed"
+      },
+      {
+        "page": "UC3_activity",
+        "id": "o0_6KubHvzofkxdgklQR-11",
+        "line": 1066,
+        "label": "Load audio and prepare playback session"
+      }
+    ],
+    "issue": "Các trạng thái/nhánh playback mới còn thiếu hoặc chưa nối rõ.",
+    "evidence": "A1 control chung chưa tách TTS seek disabled; chưa có E5 stream interruption, reload khi đổi language/mode, background controls/Replay. Node Playback Completed riêng không có edge nối; sau Load audio and prepare session chưa có action explicit start audio/update Playing.",
+    "requirement": "G12–G14; UC_03.md A2–A4/E5/bước 8.",
+    "fix": "Bổ sung các nhánh mới hoặc note rõ scope nếu chỉ giữ happy path; nối action phát thực tế và Completed/Replay. Không tuyên bố lỗi runtime chỉ vì một action được giản lược."
+  },
+  {
+    "code": "SE-13",
+    "priority": "P1",
+    "pages": [
+      "UC4_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC4_activity",
+        "id": "g45D0m5QW9cc8jciQBO7-38",
+        "line": 1334,
+        "label": "Atomically install matching scripts and audio; update version"
+      }
+    ],
+    "issue": "Atomic install vẫn chỉ scripts/audio, thiếu location data và archive visibility.",
+    "evidence": "Node install ghi Atomically install matching scripts and audio; update version; không có coordinates/geofence/localized names/manifest changes.",
+    "requirement": "M09, G21, D03/D04; UC-04 BR-04/BR-07 mới.",
+    "fix": "Cài location data + scripts + available audio cùng version; áp dụng removed/archived manifest atomically. Base files không xóa vật lý, location archive chỉ ẩn sau successful install."
+  },
+  {
+    "code": "SE-14",
+    "priority": "P1",
+    "pages": [
+      "UC4_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC4_activity",
+        "id": "g45D0m5QW9cc8jciQBO7-39",
+        "line": 1337,
+        "label": "Yes"
+      }
+    ],
+    "issue": "Package hợp lệ đi thẳng install, chưa chờ playback kết thúc.",
+    "evidence": "Package valid? Yes → Atomically install, không có playback guard/deferred install.",
+    "requirement": "G19, D07; UC-04 BR-06; UC-03 A4.",
+    "fix": "Chèn kiểm tra playback; nếu còn phát kể cả background thì chờ kết thúc. Rời Details không phải điều kiện đủ để install."
+  },
+  {
+    "code": "SE-15",
+    "priority": "P2",
+    "pages": [
+      "UC4_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC4_activity",
+        "id": "g45D0m5QW9cc8jciQBO7-32",
+        "line": 1210,
+        "label": "Verify integrity of downloaded content"
+      },
+      {
+        "page": "UC4_activity",
+        "id": "g45D0m5QW9cc8jciQBO7-4",
+        "line": 1415,
+        "label": ""
+      }
+    ],
+    "issue": "Activity update chưa bao phủ optional download/cancel và các điều kiện mới.",
+    "evidence": "Action choice chỉ Delete hoặc Check/Update. Chưa có Available Content lần đầu, cancel trong lúc download, mobile-data confirmation, SHA-256/signature hoặc launch interval.",
+    "requirement": "G16–G18/G20; UC_04.md A4/A5, BR-05.",
+    "fix": "Thêm A4/A5 và notes/guards cho verification/network. Giữ fork download/progress hiện tại: cạnh từ Start package download đã nối tới fork, không phải lỗi disconnected fork."
+  },
+  {
+    "code": "SE-16",
+    "priority": "P1",
+    "pages": [
+      "UC5_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC5_activity",
+        "id": "9Oq7mpxagojBVmxwowkJ-6",
+        "line": 1558,
+        "label": "Detect geofence entry and identify location (locationId)"
+      },
+      {
+        "page": "UC5_activity",
+        "id": "9Oq7mpxagojBVmxwowkJ-2",
+        "line": 1713,
+        "label": ""
+      }
+    ],
+    "issue": "UC-05 thiếu các điều kiện eligibility đã bổ sung.",
+    "evidence": "Flow kiểm tra location permission rồi detect event; chưa có app toggle, foreground-only E4, giới hạn/re-registration, loại location ARCHIVED sau install.",
+    "requirement": "G23–G25/G29, D03; UC_05.md BR4/BR6/E4.",
+    "fix": "Bổ sung toggle off tắt cả banner/OS notification; phân biệt foreground-only với permission unavailable; chỉ theo dõi location còn active trong installed version. Giữ foreground banner và cooldown đã có."
+  },
+  {
+    "code": "SE-17",
+    "priority": "P2",
+    "pages": [
+      "UC5_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC5_activity",
+        "id": "9Oq7mpxagojBVmxwowkJ-25",
+        "line": 1606,
+        "label": "Display OS notification (current app language, locationId)"
+      },
+      {
+        "page": "UC5_activity",
+        "id": "9Oq7mpxagojBVmxwowkJ-38",
+        "line": 1639,
+        "label": "Open Location Details Screen and trigger UC-02 with locationId"
+      }
+    ],
+    "issue": "Ranh giới notification action và UC-02 trigger còn viết gộp.",
+    "evidence": "Open Location Details Screen and trigger UC-02 là một node; notification language chưa biểu diễn fallback name EN/VI.",
+    "requirement": "M05, G26; quyết định không auto-play.",
+    "fix": "Đặt note hoặc tách Open Details → UC-02 own trigger; không dùng include để biểu diễn thứ tự này. Node gộp hiện tại không chứng minh auto-play: sơ đồ thực tế không có action Play Audio trong UC5."
+  },
+  {
+    "code": "SE-18",
+    "priority": "P1",
+    "pages": [
+      "UC6_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-14",
+        "line": 1833,
+        "label": ""
+      },
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-22",
+        "line": 1852,
+        "label": "Save option?"
+      }
+    ],
+    "issue": "Upload audio trở thành đường bắt buộc trước cả Save Draft và Submit.",
+    "evidence": "Enter/edit guide content → Upload audio → Audio file valid? → Preview → Save option; không có nhánh không có audio hoặc Save Draft sớm.",
+    "requirement": "M07, D08; UC-06 BR1/A1/BR8 mới.",
+    "fix": "Cho bỏ qua upload/preview khi không có audio; Save Draft không phải đi qua required-content checks. Chỉ xác nhận audio-script checkbox khi có audio."
+  },
+  {
+    "code": "SE-19",
+    "priority": "P1",
+    "pages": [
+      "UC6_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-8",
+        "line": 1815,
+        "label": "Enter / edit location information (name, category, GPS, geofence radius)"
+      },
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-13",
+        "line": 1830,
+        "label": "Upload audio for each language"
+      },
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-26",
+        "line": 1864,
+        "label": "Required data complete?"
+      }
+    ],
+    "issue": "Input/mapping/submission checks vẫn là phiên bản cũ.",
+    "evidence": "Location info chỉ name/category/GPS/radius; upload chỉ each language; Required data complete? không giải thích localized name VI/EN, FULL script VI/EN hoặc scriptType mapping.",
+    "requirement": "M07/M08, G34/G35/G37, D08.",
+    "fix": "Thêm localized data/optional thumbnail, upload theo languageCode × scriptType, điều kiện Submit đề xuất và giới hạn file đề xuất. Không áp dụng các điều kiện Submit cho Save Draft."
+  },
+  {
+    "code": "SE-20",
+    "priority": "P1",
+    "pages": [
+      "UC6_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-2",
+        "line": 1797,
+        "label": "Create or edit location?"
+      },
+      {
+        "page": "UC6_activity",
+        "id": "zETJm5G_Df36_UZA9jXr-31",
+        "line": 1884,
+        "label": "Save PENDING_REVIEW; retain the current published version"
+      }
+    ],
+    "issue": "Các nhánh quản lý nội dung mới chưa có.",
+    "evidence": "Chỉ Create/Edit và Save DRAFT/PENDING_REVIEW; chưa có deactivate request, sửa REJECTED/resubmit, concurrent-edit E3, confirm BR5/audit.",
+    "requirement": "G29–G33/G36, M15, D02/D03; UC_06.md.",
+    "fix": "Thêm các nhánh hoặc activity tham chiếu riêng trong cùng UC-06. Service mới đổi ARCHIVED; không để Admin trực tiếp publish/archive. Giữ retain current published version đang đúng."
+  },
+  {
+    "code": "SE-21",
+    "priority": "P1",
+    "pages": [
+      "UC7_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-4",
+        "line": 1951,
+        "label": "Load analytics for the last 30 days"
+      },
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-16",
+        "line": 1995,
+        "label": ""
+      }
+    ],
+    "issue": "Đổi reporting period rồi bị reset về 30 ngày.",
+    "evidence": "A1 Change reporting period → cạnh -16 → Load analytics for the last 30 days.",
+    "requirement": "UC-07 A1, BR3: 30 ngày chỉ là default.",
+    "fix": "Tách khởi tạo default period khỏi Load analytics(selectedPeriod); A1 quay vào loader dùng kỳ đang chọn."
+  },
+  {
+    "code": "SE-22",
+    "priority": "P1",
+    "pages": [
+      "UC7_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-24",
+        "line": 2016,
+        "label": "Select a feedback record and display its details"
+      },
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-27",
+        "line": 2025,
+        "label": "Update feedback status; save new status and update timestamp (BR2)"
+      },
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-29",
+        "line": 2031,
+        "label": "Export report?"
+      }
+    ],
+    "issue": "Export bị buộc phải đi sau chọn feedback và cập nhật trạng thái.",
+    "evidence": "Đường duy nhất từ feedback/filter tới Export report? đi qua Select a feedback record → Update feedback status; không có nhánh chỉ xem hoặc export trực tiếp.",
+    "requirement": "UC-07 A3 và Postcondition: thay đổi nếu Admin thực hiện, không bắt buộc mutation.",
+    "fix": "Tạo lựa chọn thao tác từ dashboard: đổi kỳ, xem/lọc feedback, xem chi tiết/update tùy chọn, export hoặc kết thúc. Không bắt buộc cập nhật feedback để tải báo cáo."
+  },
+  {
+    "code": "SE-23",
+    "priority": "P1",
+    "pages": [
+      "UC7_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-6",
+        "line": 1957,
+        "label": "Data available?"
+      },
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-8",
+        "line": 1971,
+        "label": "E1 – No data for the selected period / filter: display Empty State instead of charts or records"
+      }
+    ],
+    "issue": "Chưa phân biệt analytics-loading error, empty analytics và feedback vẫn truy cập được.",
+    "evidence": "Chỉ có Data available? và E1 Empty State đi end; không có E3 loading failure/Retry. Dashboard load và feedback bị nối thành chuỗi phụ thuộc.",
+    "requirement": "G45; UC_07.md E3. E1 không đồng nghĩa không thể mở phần feedback còn dữ liệu.",
+    "fix": "Bổ sung E3 riêng; no analytics/error analytics không tự khóa feedback. Empty State áp dụng vùng dữ liệu không có kết quả, không suy ra feedback cũng trống."
+  },
+  {
+    "code": "SE-24",
+    "priority": "P2",
+    "pages": [
+      "UC7_activity"
+    ],
+    "cells": [
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-27",
+        "line": 2025,
+        "label": "Update feedback status; save new status and update timestamp (BR2)"
+      },
+      {
+        "page": "UC7_activity",
+        "id": "Q8Nx3ErHPsax8sTNVdMS-31",
+        "line": 2037,
+        "label": "A3 – Export Report: generate .xlsx with analytics and feedback data"
+      }
+    ],
+    "issue": "Các ràng buộc mới của feedback/export chưa được nêu.",
+    "evidence": "Update status chỉ tham chiếu BR2; export chỉ analytics/feedback data. Chưa nêu RESOLVED final, newest-first/[20] page hoặc active feedback filters theo kỳ.",
+    "requirement": "G41–G44, D09; UC_07.md.",
+    "fix": "Thêm note/guard hoặc tham chiếu BR2 đã cập nhật và export contract mới; không nhất thiết vẽ ba trạng thái thành ba UC."
+  },
+  {
+    "code": "SE-25",
+    "priority": "P1",
+    "pages": [
+      "ERD",
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-3",
+        "line": 2101,
+        "label": "Location\nPK locationId\nFK categoryId\nname, latitude, longitude\ngeofenceRadius, status"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-3",
+        "line": 2623,
+        "label": "locations\nPK id UUID\nFK category_id UUID\nname VARCHAR(255)\ncoordinates GEOGRAPHY(Point,4326)\ngeofence_radius_m INTEGER\nINDEX GIST(coordinates)"
+      }
+    ],
+    "issue": "Location name đơn ngữ và thiếu cấu trúc localized location data.",
+    "evidence": "Location/locations chỉ name cùng coordinates/radius; không LocationTranslation hoặc cấu trúc tương đương cho name/description theo languageCode; thumbnail/version location cũng thiếu.",
+    "requirement": "M08/M09, G26/G31; 05_Data_Models.md.",
+    "fix": "Bổ sung LocationTranslation hoặc thiết kế tương đương đã được nhóm duyệt; lưu description/thumbnail và record-version cần thiết. Không bắt buộc đổi mọi tên vật lý cho giống glossary nếu có mapping rõ."
+  },
+  {
+    "code": "SE-26",
+    "priority": "P1",
+    "pages": [
+      "ERD",
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-7",
+        "line": 2113,
+        "label": "ContentPackage\nPK packageId\nversion, status\nscopeType, publishedAt"
+      },
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-8",
+        "line": 2116,
+        "label": "PackageItem\nPK packageItemId\nFK packageId, contentId\nFK audioId (nullable)"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-7",
+        "line": 2635,
+        "label": "content_packages\nPK id UUID\nversion VARCHAR(40) UNIQUE\nstatus VARCHAR(20)\nscope_type VARCHAR(30)\npublished_at TIMESTAMPTZ"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-8",
+        "line": 2638,
+        "label": "content_package_items\nPK id UUID\nFK package_id UUID\nFK content_id UUID\nFK audio_id UUID NULL\nUNIQUE(package_id, content_id)"
+      }
+    ],
+    "issue": "Mô hình package chưa gắn phiên bản location data/integrity/manifest.",
+    "evidence": "PackageItem chỉ packageId/contentId/audioId; package chỉ version/status/scope/publishedAt. Không thấy location snapshot/version, checksum/signature/size/manifest hoặc archive changes.",
+    "requirement": "M09, G20/G21, D03/D04; UC-04 atomic install.",
+    "fix": "Mô tả manifest/location snapshot cùng version và metadata verification; có thể lưu manifest/file metadata thay vì thêm một bảng cho mỗi field. Giữ PackageItem nếu nhóm chọn, không coi bảng trung gian là sai UML/ERD."
+  },
+  {
+    "code": "SE-27",
+    "priority": "P1",
+    "pages": [
+      "ERD",
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-10",
+        "line": 2122,
+        "label": "Feedback\nPK feedbackId\nFK locationId (nullable)\nrating, content, status"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-9",
+        "line": 2641,
+        "label": "feedbacks\nPK id UUID\nFK location_id UUID NULL\nrating SMALLINT\ncontent TEXT\nstatus VARCHAR(20)\ncreated_at TIMESTAMPTZ"
+      }
+    ],
+    "issue": "Feedback thiếu dữ liệu để thực hiện UC-07 đầy đủ.",
+    "evidence": "ERD chỉ locationId/rating/content/status; schema thêm created_at nhưng vẫn thiếu category, languageCode và updatedAt.",
+    "requirement": "UC-07 category filter và update timestamp; G40.",
+    "fix": "Bổ sung category, languageCode, createdAt/updatedAt theo contract; locationId vẫn nullable, rating [1–5] là đề xuất."
+  },
+  {
+    "code": "SE-28",
+    "priority": "P1",
+    "pages": [
+      "ERD",
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-11",
+        "line": 2125,
+        "label": "AnalyticsEvent\nPK eventId\nFK locationId, languageCode\neventType, isOffline, occurredAt"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-10",
+        "line": 2644,
+        "label": "analytics_events\nPK id UUID\nFK location_id UUID NULL\nlanguage_code VARCHAR(10) NULL\nevent_type VARCHAR(40)\nis_offline BOOLEAN\noccurred_at TIMESTAMPTZ\nINDEX(occurred_at, event_type)"
+      }
+    ],
+    "issue": "Analytics model thiếu trường contract mới.",
+    "evidence": "Có eventType/location/language/isOffline/occurredAt; thiếu scriptType, source AUDIO/TTS và anonymousDeviceId.",
+    "requirement": "G38/G39; 08_Appendix.md external event schema.",
+    "fix": "Bổ sung trường cần thiết theo từng event type. isOffline có thể map sang connectivity và occurredAt map timestamp, không cần đổi tên vật lý một cách máy móc. Field applicability và metric formulas còn cần nhóm chốt."
+  },
+  {
+    "code": "SE-29",
+    "priority": "P2",
+    "pages": [
+      "ERD",
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-23",
+        "line": 2161,
+        "label": "Giả định demo: AudioAsset là tùy chọn; khi không có audio, UC-03 dùng TTS. Các quyết định chờ chốt trong PRD chưa trở thành ràng buộc cuối cùng."
+      },
+      {
+        "page": "ERD",
+        "id": "788LgLL0iBcuh2ai3rxh-29",
+        "line": 2176,
+        "label": "Location"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-5",
+        "line": 2629,
+        "label": "guide_content_revisions\nPK id UUID\nFK location_id UUID\nFK language_code VARCHAR(10)\nscript_type VARCHAR(10)\nscript_text TEXT\nstatus VARCHAR(20), revision_no INT\nUNIQUE(location_id, language_code, script_type, revision_no)"
+      }
+    ],
+    "issue": "Nhiều mức mô hình cùng tồn tại nhưng chưa nêu mapping/phiên bản thiết kế.",
+    "evidence": "ERD có crow-foot model khoảng 10 entity và Chen sketch chỉ 6 entity; vẫn ghi quyết định audio optional đang chờ chốt. GuideContentRevision/contentId/revisionNo khác tên GuideScript/scriptId trong bộ bổ sung.",
+    "requirement": "D08 đã chốt cách soạn audio optional; M13/S08 và R4.",
+    "fix": "Gắn rõ conceptual overview/logical/physical và bảng mapping tên; không xóa model chỉ vì khác ký pháp. Cập nhật note chờ quyết định đã hết hiệu lực. PackageItem/NotificationLog là lựa chọn triển khai cần duyệt, không tự xem là UC mới hoặc lỗi."
+  },
+  {
+    "code": "SE-30",
+    "priority": "P1",
+    "pages": [
+      "Class"
+    ],
+    "cells": [
+      {
+        "page": "Class",
+        "id": "HVPNqZoe89-B7RZm4jS7-11",
+        "line": 2560,
+        "label": "1 *"
+      },
+      {
+        "page": "Class",
+        "id": "HVPNqZoe89-B7RZm4jS7-13",
+        "line": 2568,
+        "label": "0..1"
+      },
+      {
+        "page": "Class",
+        "id": "HVPNqZoe89-B7RZm4jS7-14",
+        "line": 2571,
+        "label": "1 *"
+      }
+    ],
+    "issue": "Đầu hình thoi aggregation nằm phía đối tượng thành phần.",
+    "evidence": "Location → GuideContentRevision, GuideContentRevision → AudioAsset, ContentPackage → PackageItem đều endArrow=diamondThin tại target. Theo cách hiểu whole/part đang dùng, nó đảo phía aggregate.",
+    "requirement": "UML association aggregation notation: diamond ở aggregate end.",
+    "fix": "Ưu tiên association thường khi chưa có quyết định ownership/lifetime. Nếu giữ aggregation/composition, đặt diamond ở whole phù hợp; không dùng filled composition nếu chưa xác nhận vòng đời."
+  },
+  {
+    "code": "SE-31",
+    "priority": "P2",
+    "pages": [
+      "Class"
+    ],
+    "cells": [
+      {
+        "page": "Class",
+        "id": "HVPNqZoe89-B7RZm4jS7-7",
+        "line": 2546,
+        "label": "ContentPackage<hr>+ id: UUID\n+ version: String\n+ status: PackageStatus<hr>+ publish()"
+      },
+      {
+        "page": "Class",
+        "id": "HVPNqZoe89-B7RZm4jS7-9",
+        "line": 2552,
+        "label": "Feedback<hr>+ id: UUID\n+ rating: int\n+ content: String\n+ status: FeedbackStatus<hr>+ moveToNextStatus()"
+      }
+    ],
+    "issue": "Class diagram mới là domain subset, chưa thể hiện đủ trạng thái/quan hệ của contract mới.",
+    "evidence": "Thiếu localized data/audit/event/device version; ContentPackage.publish() và PackageStatus chưa chỉ rõ caller/enum; moveToNextStatus() chưa cho thấy RESOLVED final.",
+    "requirement": "M08/M09, G32/G38/G42; 05_Data_Models.md.",
+    "fix": "Bổ sung phần cần cho scope diagram hoặc ghi subset rõ; publish() chỉ được gọi qua external publication responsibility, không tự kết luận tên method publish là sai. PackageStatus khác ContentStatus có thể hợp lệ nhưng phải định nghĩa."
+  },
+  {
+    "code": "SE-32",
+    "priority": "P1",
+    "pages": [
+      "Database"
+    ],
+    "cells": [
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-8",
+        "line": 2638,
+        "label": "content_package_items\nPK id UUID\nFK package_id UUID\nFK content_id UUID\nFK audio_id UUID NULL\nUNIQUE(package_id, content_id)"
+      },
+      {
+        "page": "Database",
+        "id": "EiVs042G670gDdtjzgz2-17",
+        "line": 2665,
+        "label": ""
+      }
+    ],
+    "issue": "Cạnh package item–audio không khớp FK nullable và logical ERD.",
+    "evidence": "FK audio_id UUID NULL nhưng edge target AudioAsset dùng endArrow=ERone, trong khi ERD cùng quan hệ ghi 0..1.",
+    "requirement": "Audio optional theo D08; tính nhất quán logical/physical model.",
+    "fix": "Đầu AudioAsset của FK nullable phải cho phép không có audio (0..1) hoặc ghi rõ edge là tham chiếu khi giá trị tồn tại; giữ nullability đúng với fallback TTS."
+  },
+  {
+    "code": "SE-33",
+    "priority": "P2",
+    "pages": [
+      "Sequence"
+    ],
+    "cells": [
+      {
+        "page": "Sequence",
+        "id": "Lj0oNmU6l_Wy6ibREJ5j-8",
+        "line": 2451,
+        "label": "2. GET approved content"
+      },
+      {
+        "page": "Sequence",
+        "id": "Lj0oNmU6l_Wy6ibREJ5j-15",
+        "line": 2518,
+        "label": "alt: If no APPROVED content exists after fallback, Mobile shows an updating state and disables Listen to Guide."
+      }
+    ],
+    "issue": "Sequence hiện là online happy-path demo, không đại diện toàn UC-02/03.",
+    "evidence": "Luôn GET API → PostgreSQL, không Local Store. alt chỉ là note, chưa có combined fragment; không thể hiện SHORT-chain/FULL-chain, effective values/version, thiếu voice hoặc stream fail.",
+    "requirement": "D04/D05; UC_02/03.md.",
+    "fix": "Ghi rõ online happy-path nếu giữ nguyên mục đích demo; bổ sung alt/ref cho offline, fallback và unavailable-content path nếu dùng làm sequence hoàn chỉnh. Giữ Tourist Play Audio là explicit user action đang đúng."
+  },
+  {
+    "code": "SE-34",
+    "priority": "P1",
+    "pages": [
+      "Sequence"
+    ],
+    "cells": [
+      {
+        "page": "Sequence",
+        "id": "Lj0oNmU6l_Wy6ibREJ5j-11",
+        "line": 2480,
+        "label": "5. scriptText + optional audio metadata"
+      },
+      {
+        "page": "Sequence",
+        "id": "Lj0oNmU6l_Wy6ibREJ5j-14",
+        "line": 2508,
+        "label": "8. Play pre-rendered audio; otherwise read scriptText with TTS"
+      }
+    ],
+    "issue": "Kết quả UC-02 và bước phát chưa đảm bảo contract effective language/scriptType/version.",
+    "evidence": "Response chỉ scriptText + optional audio metadata; phát gộp pre-rendered otherwise TTS, không ràng buộc effective language/type/version hoặc no-voice branch.",
+    "requirement": "M10, G11, D04/D05.",
+    "fix": "Trả effective languageCode/scriptType và context version; phát matching audio hoặc TTS đúng effective language, E4 khi thiếu voice. Bảo đảm failure branch không đi tiếp vào Play như success."
+  },
+  {
+    "code": "SE-35",
+    "priority": "P2",
+    "pages": [
+      "Component"
+    ],
+    "cells": [
+      {
+        "page": "Component",
+        "id": "NgfgIbTTr13hrY4Ifimc-9",
+        "line": 2706,
+        "label": "<<component>> Feedback & Analytics\nFeedback status, event ingestion, reporting"
+      },
+      {
+        "page": "Component",
+        "id": "NgfgIbTTr13hrY4Ifimc-13",
+        "line": 2718,
+        "label": "<<external>>\nContent Reviewer / Publisher\nApproval and publication boundary"
+      }
+    ],
+    "issue": "External integration boundaries chưa đầy đủ hoặc chưa đồng bộ.",
+    "evidence": "Có Publisher external và OS APIs; thiếu Analytics Event Capture, Feedback Submission, Admin Authentication external. Feedback & Analytics có event ingestion nhưng không rõ dữ liệu được external capture cung cấp.",
+    "requirement": "S10, G38/G39/G44; 06_System_Architecture.md.",
+    "fix": "Bổ sung interfaces/dependencies còn thiếu và đường review/deactivate request; event ingestion có thể là consumer nội bộ hợp lệ, không tự chuyển mobile capture vào scope. Không biến Database/CDN nội bộ thành external actor."
+  },
+  {
+    "code": "SE-36",
+    "priority": "P2",
+    "pages": [
+      "Deployment"
+    ],
+    "cells": [
+      {
+        "page": "Deployment",
+        "id": "QpGeuMciNbdTkHpIz87U-6",
+        "line": 2786,
+        "label": "<<artifact>>\nSpring Scheduler / Worker\npackage and reporting jobs"
+      }
+    ],
+    "issue": "Deployment chưa chỉ ra vị trí external services và ownership package jobs.",
+    "evidence": "Worker package/reporting jobs nằm trong host; không có external Publication/Auth/Capture/Feedback boundaries. Không có bằng chứng worker đang thực hiện approval, nhưng người đọc có thể hiểu nhầm.",
+    "requirement": "D02; S09/S10; 06_System_Architecture.md.",
+    "fix": "Thêm external nodes/communications, phân biệt prepare/distribute jobs với external review/archive/version authority. Không mặc định worker là sai hoặc thêm queue/vendor mới."
+  },
+  {
+    "code": "SE-37",
+    "priority": "P2",
+    "pages": [
+      "Component",
+      "Deployment",
+      "Database",
+      "Sequence"
+    ],
+    "cells": [],
+    "issue": "Công nghệ/khóa/cardinality triển khai vẫn là lựa chọn demo, không phải yêu cầu đã chốt trong nguồn hiện tại.",
+    "evidence": "Các trang tự ghi demo nhưng dùng Flutter, React/Vite, Spring Boot, PostgreSQL/PostGIS, S3/MinIO, UUID và các UNIQUE cụ thể.",
+    "requirement": "R5; phần Architecture/Data của bộ bổ sung cố ý không tự chốt vendor/physical keys.",
+    "fix": "Giữ nếu nhóm xác nhận đây là architecture decision; ghi assumption/mapping. Không kết luận những công nghệ này sai kỹ thuật chỉ vì PRD chức năng chưa quy định."
+  }
+]

@@ -1,0 +1,33 @@
+flowchart LR
+    subgraph Device[Mobile device]
+        App[Mobile App]
+        Local[Local Content Store]
+        OS[OS location, geofencing, notification, audio and TTS]
+        Events[External mobile-side Analytics Event Capture]
+        App --> Local
+        App --> OS
+    end
+    subgraph Client[Web Admin client]
+        Web[Web Admin]
+    end
+    subgraph Server[Server infrastructure — physical allocation to confirm]
+        API[Backend API]
+        DB[Server Database]
+        CDN[Object Storage / Content Server / CDN]
+        API --> DB
+        API --> CDN
+    end
+    Publication[External Content Publication Service]
+    Auth[External Admin Authentication]
+    Feedback[External Feedback Submission]
+    Map[Map Service]
+    App -->|HTTPS| API
+    App -->|HTTPS packages and audio| CDN
+    Web -->|HTTPS| API
+    Web --> Auth
+    App --> Map
+    Events -.->|batch upload when connected| API
+    Feedback -.->|supplied feedback records| API
+    API -.->|review and deactivation integration| Publication
+    Publication -->|versioned APPROVED packages| CDN
+    Note["Proposed deployment boundaries only<br/>Providers, environments, node counts and capacities: team to fill"]

@@ -1,0 +1,1254 @@
+
+PAGE 1: UC1 [JsARGdRMKTHz8LommsTE]
+NODE l6gUrB6x_EQWfJ_jqTOL-1 parent=1: Tourist
+NODE 8gZ0zZ8CvG5_-fD3btZH-1 parent=1: UC1Explore  & Select a location
+NODE bvP36bN4hZfBLw0Po1_--1 parent=1: UC1 - Explore & Select a location by 4 method in map
+NODE AvO_44uf7ePXLSYSitZW-2 parent=1: GPS Location
+EDGE 8gZ0zZ8CvG5_-fD3btZH-4: Tourist --[]--> UC1Explore  & Select a location STYLE=rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Helvetica;
+EDGE gAk2jW1bffTvXic_H5ub-1: GPS Location --[<<extend>>]--> UC1Explore  & Select a location STYLE=endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=-0.008;exitY=0.631;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+
+PAGE 2: UC1_activity [gAbnMXsXVYD0ndn5ILMC]
+NODE UC1_activity-actor-lane parent=1: ACTOR — Tourist
+NODE vza5PDOPSUm6RJ7DLLyD-9 parent=UC1_activity-actor-lane: A2: Enter search keyword
+NODE vza5PDOPSUm6RJ7DLLyD-13 parent=UC1_activity-actor-lane: A4: Select a category
+NODE vza5PDOPSUm6RJ7DLLyD-17 parent=UC1_activity-actor-lane: A3: Open Map View
+NODE vza5PDOPSUm6RJ7DLLyD-19 parent=UC1_activity-actor-lane: Pan / zoom map and
+select a marker
+NODE vza5PDOPSUm6RJ7DLLyD-21 parent=UC1_activity-actor-lane: Tourist selects and confirms a location
+NODE UC1_activity-system-lane parent=1: SYSTEM — Mobile App / Location Services
+NODE vza5PDOPSUm6RJ7DLLyD-18 parent=UC1_activity-system-lane: Display location markers
+NODE vza5PDOPSUm6RJ7DLLyD-22 parent=UC1_activity-system-lane: Store locationId and navigate to
+Location Details Screen
+NODE vza5PDOPSUm6RJ7DLLyD-8 parent=UC1_activity-system-lane: A1: Display 3–5 nearest
+locations with distances
+NODE vza5PDOPSUm6RJ7DLLyD-10 parent=UC1_activity-system-lane: Search location database
+by keyword
+NODE vza5PDOPSUm6RJ7DLLyD-78 parent=UC1_activity-system-lane: 
+NODE vza5PDOPSUm6RJ7DLLyD-79 parent=vza5PDOPSUm6RJ7DLLyD-78: 
+NODE vza5PDOPSUm6RJ7DLLyD-80 parent=vza5PDOPSUm6RJ7DLLyD-78: Results<br style="forced-color-adjust: none; color: rgb(0, 0, 0); font-family: Helvetica; font-size: 11px; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">found?
+NODE vza5PDOPSUm6RJ7DLLyD-11 parent=UC1_activity-system-lane: E3: Display Empty State
+and suggest alternatives
+NODE vza5PDOPSUm6RJ7DLLyD-12 parent=UC1_activity-system-lane: Display matching
+locations
+NODE vza5PDOPSUm6RJ7DLLyD-7 parent=UC1_activity-system-lane: Display nearest
+matching location
+NODE vza5PDOPSUm6RJ7DLLyD-75 parent=UC1_activity-system-lane: 
+NODE vza5PDOPSUm6RJ7DLLyD-76 parent=vza5PDOPSUm6RJ7DLLyD-75: 
+NODE vza5PDOPSUm6RJ7DLLyD-77 parent=vza5PDOPSUm6RJ7DLLyD-75: Nearby<br style="forced-color-adjust: none; font-family: Helvetica; font-size: 11px; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">results?
+NODE vza5PDOPSUm6RJ7DLLyD-6 parent=UC1_activity-system-lane: E2: Show “No attractions
+found nearby”; offer radius expansion or alternatives
+NODE vza5PDOPSUm6RJ7DLLyD-5 parent=UC1_activity-system-lane: Search locations within
+configured radius
+NODE vza5PDOPSUm6RJ7DLLyD-15 parent=UC1_activity-system-lane: E4: Display Empty State
+and suggest other categories
+NODE vza5PDOPSUm6RJ7DLLyD-23 parent=UC1_activity-system-lane: 
+NODE vza5PDOPSUm6RJ7DLLyD-1 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-2 parent=1: Request location
+permission
+NODE vza5PDOPSUm6RJ7DLLyD-3 parent=1: E1: Show location-access warning
+and manual alternatives
+NODE vza5PDOPSUm6RJ7DLLyD-4 parent=1: Retrieve current
+GPS coordinates
+NODE vza5PDOPSUm6RJ7DLLyD-14 parent=1: Retrieve locations in
+selected category
+NODE vza5PDOPSUm6RJ7DLLyD-16 parent=1: Display locations in
+selected category
+NODE vza5PDOPSUm6RJ7DLLyD-20 parent=1: Display location preview
+(Bottom Sheet)
+NODE vza5PDOPSUm6RJ7DLLyD-63 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-64 parent=vza5PDOPSUm6RJ7DLLyD-63: 
+NODE vza5PDOPSUm6RJ7DLLyD-65 parent=vza5PDOPSUm6RJ7DLLyD-63: How would the Tourist<br style="font-family: Helvetica; font-size: 12px;">select a location?
+NODE vza5PDOPSUm6RJ7DLLyD-66 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-67 parent=vza5PDOPSUm6RJ7DLLyD-66: 
+NODE vza5PDOPSUm6RJ7DLLyD-68 parent=vza5PDOPSUm6RJ7DLLyD-66: Location permission<br style="font-family: Helvetica; font-size: 11px;">granted?
+NODE vza5PDOPSUm6RJ7DLLyD-69 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-70 parent=vza5PDOPSUm6RJ7DLLyD-69: 
+NODE vza5PDOPSUm6RJ7DLLyD-71 parent=vza5PDOPSUm6RJ7DLLyD-69: Permission<br style="font-family: Helvetica; font-size: 11px;">granted?
+NODE vza5PDOPSUm6RJ7DLLyD-72 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-73 parent=vza5PDOPSUm6RJ7DLLyD-72: 
+NODE vza5PDOPSUm6RJ7DLLyD-74 parent=vza5PDOPSUm6RJ7DLLyD-72: Location<br style="forced-color-adjust: none; color: rgb(0, 0, 0); font-family: Helvetica; font-size: 11px; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">available?
+NODE vza5PDOPSUm6RJ7DLLyD-81 parent=1: 
+NODE vza5PDOPSUm6RJ7DLLyD-82 parent=vza5PDOPSUm6RJ7DLLyD-81: 
+NODE vza5PDOPSUm6RJ7DLLyD-83 parent=vza5PDOPSUm6RJ7DLLyD-81: Results<br style="forced-color-adjust: none; color: rgb(0, 0, 0); font-family: Helvetica; font-size: 11px; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">found?
+NODE vza5PDOPSUm6RJ7DLLyD-84 parent=1: UC1 - Explore & Select a location by 4 method in map
+NODE 3uTMfyMZvL_de9KM9Xpx-75 parent=1: Activity Diagram – UC-01: Explore & Select Location
+NODE 3uTMfyMZvL_de9KM9Xpx-76 parent=1: 
+NODE 3uTMfyMZvL_de9KM9Xpx-77 parent=1: Tourist (Actor)
+NODE 3uTMfyMZvL_de9KM9Xpx-78 parent=1: System (GPS locator, Map Service)
+NODE 3uTMfyMZvL_de9KM9Xpx-79 parent=1: 
+NODE 3uTMfyMZvL_de9KM9Xpx-80 parent=1: Tourist opens the application
+NODE 3uTMfyMZvL_de9KM9Xpx-81 parent=1: Tourist selects an option
+NODE 3uTMfyMZvL_de9KM9Xpx-82 parent=1: 1. Select “Find Nearby Locations”
+NODE 3uTMfyMZvL_de9KM9Xpx-83 parent=1: 2. Initiate the nearby-location detection process
+NODE 3uTMfyMZvL_de9KM9Xpx-85 parent=3uTMfyMZvL_de9KM9Xpx-84: No
+NODE 3uTMfyMZvL_de9KM9Xpx-86 parent=1: 3. Location permission granted?
+NODE 3uTMfyMZvL_de9KM9Xpx-88 parent=1: 4. Retrieve current latitude, longitude and accuracy
+NODE 3uTMfyMZvL_de9KM9Xpx-90 parent=1: [E1] Display “Location access is required to automatically find tourist attractions near you” with “Open Settings” option
+NODE 3uTMfyMZvL_de9KM9Xpx-91 parent=1: 5. Search locations within configured radius (50–500 m), sort by distance ascending
+NODE 3uTMfyMZvL_de9KM9Xpx-93 parent=1: Any location found within radius?
+NODE 3uTMfyMZvL_de9KM9Xpx-95 parent=1: [E2] Display “No tourist attractions were found nearby.”
+NODE 3uTMfyMZvL_de9KM9Xpx-96 parent=1: More than one location found?
+NODE 3uTMfyMZvL_de9KM9Xpx-97 parent=1: 6. Display the nearest matching location
+NODE 3uTMfyMZvL_de9KM9Xpx-98 parent=1: [A1] Display shortlist of 3–5 nearest locations with distances
+NODE 3uTMfyMZvL_de9KM9Xpx-99 parent=1: [A2] Select “Search by Keyword”
+NODE 3uTMfyMZvL_de9KM9Xpx-100 parent=1: Search location database and display matching results
+NODE 3uTMfyMZvL_de9KM9Xpx-101 parent=1: Matching results found?
+NODE 3uTMfyMZvL_de9KM9Xpx-102 parent=1: [E3] Display Empty State; suggest alternative keywords or popular locations
+NODE 3uTMfyMZvL_de9KM9Xpx-103 parent=1: [A3] Select “Map View and browses”
+NODE 3uTMfyMZvL_de9KM9Xpx-104 parent=1: Iterate through markers on the map (supports zooming and panning)
+NODE 3uTMfyMZvL_de9KM9Xpx-105 parent=1: [A4] Select “Browse by Category”
+NODE 3uTMfyMZvL_de9KM9Xpx-106 parent=1: Display locations belonging to the selected category
+NODE 3uTMfyMZvL_de9KM9Xpx-107 parent=1: Locations in category?
+NODE 3uTMfyMZvL_de9KM9Xpx-108 parent=1: [E4] Display Empty State; suggest other categories or popular locations
+NODE 3uTMfyMZvL_de9KM9Xpx-109 parent=1: 7. Select and confirm the location
+NODE 3uTMfyMZvL_de9KM9Xpx-110 parent=1: 8. Store corresponding locationId and navigate to Location Details Screen
+NODE 3uTMfyMZvL_de9KM9Xpx-111 parent=1: 
+NODE 3uTMfyMZvL_de9KM9Xpx-142 parent=3uTMfyMZvL_de9KM9Xpx-141: yes
+NODE 3uTMfyMZvL_de9KM9Xpx-144 parent=3uTMfyMZvL_de9KM9Xpx-143: No
+NODE 3uTMfyMZvL_de9KM9Xpx-145 parent=1: Tourist grants location permission?
+NODE 3uTMfyMZvL_de9KM9Xpx-147 parent=3uTMfyMZvL_de9KM9Xpx-146: No
+EDGE vza5PDOPSUm6RJ7DLLyD-45:  --[No]--> E3: Display Empty State
+and suggest alternatives STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-46:  --[Yes]--> Display matching
+locations STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-44: Search location database
+by keyword --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-39:  --[One]--> Display nearest
+matching location STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;curved=1;
+EDGE vza5PDOPSUm6RJ7DLLyD-40:  --[Multiple]--> A1: Display 3–5 nearest
+locations with distances STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-38:  --[None]--> E2: Show “No attractions
+found nearby”; offer radius expansion or alternatives STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;edgeStyle=orthogonalEdgeStyle;
+EDGE vza5PDOPSUm6RJ7DLLyD-37: Search locations within
+configured radius --[]-->  STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;edgeStyle=orthogonalEdgeStyle;
+EDGE vza5PDOPSUm6RJ7DLLyD-42: E2: Show “No attractions
+found nearby”; offer radius expansion or alternatives --[Expand radius (100–500 m)]--> Search locations within
+configured radius STYLE=rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;edgeStyle=orthogonalEdgeStyle;
+EDGE vza5PDOPSUm6RJ7DLLyD-62: Store locationId and navigate to
+Location Details Screen --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-24:  --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-25:  --[GPS / Nearby]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-26:  --[Keyword]--> A2: Enter search keyword STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;textOpacity=90;
+EDGE vza5PDOPSUm6RJ7DLLyD-27:  --[Category]--> A4: Select a category STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-28:  --[Map]--> A3: Open Map View STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-29:  --[No]--> Request location
+permission STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-30:  --[Yes]--> Retrieve current
+GPS coordinates STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-31: Request location
+permission --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-32:  --[Yes]--> Retrieve current
+GPS coordinates STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-33:  --[No]--> E1: Show location-access warning
+and manual alternatives STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-34: Retrieve current
+GPS coordinates --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-35:  --[Yes]--> Search locations within
+configured radius STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-36:  --[No]--> E1: Show location-access warning
+and manual alternatives STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;curved=1;
+EDGE vza5PDOPSUm6RJ7DLLyD-41: E1: Show location-access warning
+and manual alternatives --[Choose another method]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE uc1-e2-other-method: E2: Show “No attractions
+found nearby”; offer radius expansion or alternatives --[Chooseanothermethod]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-47: E3: Display Empty State
+and suggest alternatives --[Try another keyword]--> A2: Enter search keyword STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-48: A4: Select a category --[]--> Retrieve locations in
+selected category STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-49: Retrieve locations in
+selected category --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-50:  --[No]--> E4: Display Empty State
+and suggest other categories STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;curved=1;
+EDGE vza5PDOPSUm6RJ7DLLyD-51:  --[Yes]--> Display locations in
+selected category STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;curved=1;
+EDGE vza5PDOPSUm6RJ7DLLyD-52: E4: Display Empty State
+and suggest other categories --[Choose another 
+category]--> A4: Select a category STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-53: A3: Open Map View --[]--> Display location markers STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-54: Display location markers --[]--> Pan / zoom map and
+select a marker STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-55: Pan / zoom map and
+select a marker --[]--> Display location preview
+(Bottom Sheet) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-56: Display nearest
+matching location --[]--> Tourist selects and confirms a location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-57: A1: Display 3–5 nearest
+locations with distances --[]--> Tourist selects and confirms a location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-58: Display matching
+locations --[]--> Tourist selects and confirms a location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-59: Display locations in
+selected category --[]--> Tourist selects and confirms a location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-60: Display location preview
+(Bottom Sheet) --[]--> Tourist selects and confirms a location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-61: Tourist selects and confirms a location --[]--> Store locationId and navigate to
+Location Details Screen STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE vza5PDOPSUm6RJ7DLLyD-43: A2: Enter search keyword --[]--> Search location database
+by keyword STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#4A5568;
+EDGE 3uTMfyMZvL_de9KM9Xpx-84: 3. Location permission granted? --[]--> [E1] Display “Location access is required to automatically find tourist attractions near you” with “Open Settings” option STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-87: 4. Retrieve current latitude, longitude and accuracy --[]--> 5. Search locations within configured radius (50–500 m), sort by distance ascending STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-89: [E1] Display “Location access is required to automatically find tourist attractions near you” with “Open Settings” option --[]--> Tourist grants location permission? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-92: Any location found within radius? --[]--> More than one location found? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+EDGE 3uTMfyMZvL_de9KM9Xpx-94: [E2] Display “No tourist attractions were found nearby.” --[]--> Tourist selects an option STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-112:  --[]--> Tourist opens the application STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-113: Tourist opens the application --[]--> Tourist selects an option STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-114: Tourist selects an option --[]--> 1. Select “Find Nearby Locations” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-115: Tourist selects an option --[]--> [A2] Select “Search by Keyword” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-116: Tourist selects an option --[]--> [A3] Select “Map View and browses” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-117: Tourist selects an option --[]--> [A4] Select “Browse by Category” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-118: 1. Select “Find Nearby Locations” --[]--> 2. Initiate the nearby-location detection process STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-119: 2. Initiate the nearby-location detection process --[]--> 3. Location permission granted? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-120: 3. Location permission granted? --[Yes]--> 4. Retrieve current latitude, longitude and accuracy STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-121: 5. Search locations within configured radius (50–500 m), sort by distance ascending --[]--> Any location found within radius? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-122: Any location found within radius? --[Yes]--> More than one location found? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-123: More than one location found? --[Yes (A1)]--> [A1] Display shortlist of 3–5 nearest locations with distances STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-124: More than one location found? --[No]--> 6. Display the nearest matching location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-125: 6. Display the nearest matching location --[]--> 7. Select and confirm the location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-126: [A1] Display shortlist of 3–5 nearest locations with distances --[]--> 7. Select and confirm the location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-127: [A2] Select “Search by Keyword” --[]--> Search location database and display matching results STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-128: Search location database and display matching results --[]--> Matching results found? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-129: Matching results found? --[No (E3)]--> [E3] Display Empty State; suggest alternative keywords or popular locations STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-130: Matching results found? --[Yes]--> 7. Select and confirm the location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-131: [E3] Display Empty State; suggest alternative keywords or popular locations --[Enter another keyword]--> [A2] Select “Search by Keyword” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-132: [A3] Select “Map View and browses” --[]--> Iterate through markers on the map (supports zooming and panning) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-133: Iterate through markers on the map (supports zooming and panning) --[]--> 7. Select and confirm the location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-134: [A4] Select “Browse by Category” --[]--> Display locations belonging to the selected category STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-135: Display locations belonging to the selected category --[]--> Locations in category? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-136: Locations in category? --[No (E4)]--> [E4] Display Empty State; suggest other categories or popular locations STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-137: Locations in category? --[Yes]--> 7. Select and confirm the location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-138: [E4] Display Empty State; suggest other categories or popular locations --[Select another category]--> [A4] Select “Browse by Category” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-139: 7. Select and confirm the location --[]--> 8. Store corresponding locationId and navigate to Location Details Screen STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-140: 8. Store corresponding locationId and navigate to Location Details Screen --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;fontSize=11;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-141: Tourist grants location permission? --[]--> 2. Initiate the nearby-location detection process STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-143: Tourist grants location permission? --[]--> Tourist selects an option STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;
+EDGE 3uTMfyMZvL_de9KM9Xpx-146: Any location found within radius? --[]--> [E2] Display “No tourist attractions were found nearby.” STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.991;entryY=0.587;entryDx=0;entryDy=0;entryPerimeter=0;
+
+PAGE 3: UC2 [kMkDm0i-vE9I-AaGQR1F]
+NODE BU4QvzI7zhPzNgJ9YRxL-1 parent=1: UC2 -  Access Multilingual Guide Content
+NODE csGr4cPwT6Skh8v9m3J9-2 parent=1: Tourist
+NODE csGr4cPwT6Skh8v9m3J9-11 parent=1: UC2 Access Multilingual Guide Content
+EDGE csGr4cPwT6Skh8v9m3J9-1: Tourist --[]--> UC2 Access Multilingual Guide Content STYLE=rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Helvetica;
+
+PAGE 4: UC2_activity [R9HvHK-UM_mY4P1uSNvN]
+NODE UC2_activity-actor-lane parent=1: ACTOR — Tourist
+NODE jr7hXPGmXHG0paXlPZda-12 parent=UC2_activity-actor-lane: A1 – Select another language
+NODE jr7hXPGmXHG0paXlPZda-13 parent=UC2_activity-actor-lane: A2 – Select Short Summary mode
+NODE UC2_activity-system-lane parent=1: SYSTEM — Mobile App / Approved Content Source
+NODE jr7hXPGmXHG0paXlPZda-1 parent=1: 
+NODE jr7hXPGmXHG0paXlPZda-2 parent=1: Receive locationId, languageCode,
+scriptType = FULL
+(valid Location Details navigation)
+NODE jr7hXPGmXHG0paXlPZda-3 parent=1: Retrieve guide content by
+locationId, languageCode, scriptType
+NODE jr7hXPGmXHG0paXlPZda-5 parent=1: Load scriptText
+NODE jr7hXPGmXHG0paXlPZda-6 parent=1: E1 – Approved content unavailable;
+apply fallback Selected → EN → VI
+NODE jr7hXPGmXHG0paXlPZda-8 parent=1: E2 – No approved content
+for this location
+NODE jr7hXPGmXHG0paXlPZda-9 parent=1: Display "Content is currently
+being updated"; disable Listen to
+Guide; show Send Feedback option
+NODE jr7hXPGmXHG0paXlPZda-10 parent=1: Display guide content on
+Location Details Screen
+NODE jr7hXPGmXHG0paXlPZda-14 parent=1: 
+NODE jr7hXPGmXHG0paXlPZda-15 parent=jr7hXPGmXHG0paXlPZda-14: 
+NODE jr7hXPGmXHG0paXlPZda-16 parent=jr7hXPGmXHG0paXlPZda-14: 
+NODE jr7hXPGmXHG0paXlPZda-41 parent=1: 
+NODE jr7hXPGmXHG0paXlPZda-7 parent=jr7hXPGmXHG0paXlPZda-41: 
+NODE jr7hXPGmXHG0paXlPZda-40 parent=jr7hXPGmXHG0paXlPZda-41: APPROVED fallback<br style="forced-color-adjust: none;">found in EN then VI?
+NODE jr7hXPGmXHG0paXlPZda-42 parent=1: 
+NODE jr7hXPGmXHG0paXlPZda-11 parent=jr7hXPGmXHG0paXlPZda-42: 
+NODE jr7hXPGmXHG0paXlPZda-39 parent=jr7hXPGmXHG0paXlPZda-42: Tourist changes<br style="forced-color-adjust: none;">selection?
+NODE jr7hXPGmXHG0paXlPZda-47 parent=1: 
+NODE jr7hXPGmXHG0paXlPZda-4 parent=jr7hXPGmXHG0paXlPZda-47: 
+NODE jr7hXPGmXHG0paXlPZda-46 parent=jr7hXPGmXHG0paXlPZda-47: Approved content<br style="forced-color-adjust: none;">found?
+NODE GUnSW37v7haufRIRO7U0-1 parent=1: UC2 -  Access Multilingual Guide Content
+EDGE diEoupAUMjpGpEfyS3mI-1: A2 – Select Short Summary mode --[]--> A2 – Select Short Summary mode STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;innerLoopWaypoints=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;
+EDGE jr7hXPGmXHG0paXlPZda-17:  --[]--> Receive locationId, languageCode,
+scriptType = FULL
+(valid Location Details navigation) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-18: Receive locationId, languageCode,
+scriptType = FULL
+(valid Location Details navigation) --[]--> Retrieve guide content by
+locationId, languageCode, scriptType STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-19: Retrieve guide content by
+locationId, languageCode, scriptType --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-20:  --[Yes]--> Load scriptText STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-21:  --[No]--> E1 – Approved content unavailable;
+apply fallback Selected → EN → VI STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-22: E1 – Approved content unavailable;
+apply fallback Selected → EN → VI --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-23:  --[Yes]--> Load scriptText STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-24:  --[No]--> E2 – No approved content
+for this location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-25: E2 – No approved content
+for this location --[]--> Display "Content is currently
+being updated"; disable Listen to
+Guide; show Send Feedback option STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-26: Display "Content is currently
+being updated"; disable Listen to
+Guide; show Send Feedback option --[UC ends without content]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-27: Load scriptText --[]--> Display guide content on
+Location Details Screen STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-28: Display guide content on
+Location Details Screen --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE jr7hXPGmXHG0paXlPZda-29:  --[Language]--> A1 – Select another language STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-30:  --[Duration mode]--> A2 – Select Short Summary mode STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-31: A1 – Select another language --[New languageCode]--> Retrieve guide content by
+locationId, languageCode, scriptType STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-32: A2 – Select Short Summary mode --[scriptType = SHORT]--> Retrieve guide content by
+locationId, languageCode, scriptType STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE jr7hXPGmXHG0paXlPZda-33:  --[No further change]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+
+PAGE 5: UC3 [8ts0uS1Nlt1qEo0LBbB4]
+NODE DY7FlNYAs_kCOqQ46CdI-1 parent=1: Tourist
+NODE DY7FlNYAs_kCOqQ46CdI-2 parent=1: UC3Play Audio Guide
+NODE DY7FlNYAs_kCOqQ46CdI-4 parent=1: UC3 - Play Audio Guide
+EDGE DY7FlNYAs_kCOqQ46CdI-3: Tourist --[]--> UC3Play Audio Guide STYLE=rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;labelBorderColor=none;fontFamily=Helvetica;
+
+PAGE 6: UC3_activity [9_ASWjqrjjYWMB4x_1ww]
+NODE UC3_activity-actor-lane parent=1: ACTOR — Tourist
+NODE o0_6KubHvzofkxdgklQR-16 parent=UC3_activity-actor-lane: A1 – Playback control
+NODE UC3_activity-system-lane parent=1: SYSTEM — Mobile App / OS Audio and TTS
+NODE ZE_orUKCMDMedaNMvrc7-12 parent=o0_6KubHvzofkxdgklQR-46: Playback Completed
+NODE o0_6KubHvzofkxdgklQR-2 parent=1: 
+NODE o0_6KubHvzofkxdgklQR-3 parent=1: Select Play Audio
+NODE o0_6KubHvzofkxdgklQR-4 parent=1: Update state
+NODE o0_6KubHvzofkxdgklQR-8 parent=1: Receive playback request for current location
+NODE o0_6KubHvzofkxdgklQR-9 parent=1: Identify audio using
+<code>locationId, languageCode, scriptType</code>
+NODE o0_6KubHvzofkxdgklQR-11 parent=1: Load audio and prepare playback session
+NODE o0_6KubHvzofkxdgklQR-13 parent=1: E1 – Audio unavailable/invalid
+Fallback to OS Text-to-Speech using <code>scriptText</code>
+NODE o0_6KubHvzofkxdgklQR-17 parent=1: E2 – Audio focus lost
+NODE o0_6KubHvzofkxdgklQR-19 parent=1: Resume from stored position
+NODE o0_6KubHvzofkxdgklQR-20 parent=1: E3 – Output device disconected
+NODE o0_6KubHvzofkxdgklQR-21 parent=1: Pause and save position
+NODE o0_6KubHvzofkxdgklQR-22 parent=1: Playback completed
+NODE lE4GIfzPnlLvO40OvJAq-2 parent=1: 
+NODE o0_6KubHvzofkxdgklQR-23 parent=lE4GIfzPnlLvO40OvJAq-2: 
+NODE o0_6KubHvzofkxdgklQR-24 parent=lE4GIfzPnlLvO40OvJAq-2: 
+NODE fixNo-remainsPaused parent=1: Remain paused
+NODE uhkwDJE-z9PTH0OzHTSF-2 parent=1: 
+NODE o0_6KubHvzofkxdgklQR-15 parent=uhkwDJE-z9PTH0OzHTSF-2: 
+NODE QD5AvYk7zHcpRE68wpJq-3 parent=uhkwDJE-z9PTH0OzHTSF-2: Playback event?
+NODE uhkwDJE-z9PTH0OzHTSF-3 parent=1: 
+NODE o0_6KubHvzofkxdgklQR-10 parent=uhkwDJE-z9PTH0OzHTSF-3: 
+NODE QD5AvYk7zHcpRE68wpJq-1 parent=uhkwDJE-z9PTH0OzHTSF-3: Audio file available<br style="forced-color-adjust: none; color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">and playable?
+NODE ZE_orUKCMDMedaNMvrc7-7 parent=1: Pause and store current position
+NODE ZE_orUKCMDMedaNMvrc7-9 parent=1: 
+NODE o0_6KubHvzofkxdgklQR-18 parent=ZE_orUKCMDMedaNMvrc7-9: 
+NODE lE4GIfzPnlLvO40OvJAq-3 parent=ZE_orUKCMDMedaNMvrc7-9: Audio focus restored?
+NODE exYvOn9TME_nAvJOe0w7-1 parent=ZE_orUKCMDMedaNMvrc7-10: No
+NODE 6f-kyTu-LQQU_ASv9KUI-1 parent=1: UC3 - Play Audio Guide
+EDGE o0_6KubHvzofkxdgklQR-25:  --[]--> Select Play Audio STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-28: Select Play Audio --[User]--> Receive playback request for current location STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-29: Receive playback request for current location --[]--> Identify audio using
+<code>locationId, languageCode, scriptType</code> STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-30: Identify audio using
+<code>locationId, languageCode, scriptType</code> --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-31:  --[Yes]--> Load audio and prepare playback session STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-32:  --[No → E1]--> E1 – Audio unavailable/invalid
+Fallback to OS Text-to-Speech using <code>scriptText</code> STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-36: E1 – Audio unavailable/invalid
+Fallback to OS Text-to-Speech using <code>scriptText</code> --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-37:  --[Tourist control → A1]--> A1 – Playback control STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-39: Update state --[Continue]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-40:  --[Audio focus lost]--> E2 – Audio focus lost STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-41: E2 – Audio focus lost --[]--> Pause and store current position STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-42:  --[Yes]--> Resume from stored position STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE o0_6KubHvzofkxdgklQR-43: Resume from stored position --[Continue playback]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-44:  --[Output device disconnected → E3]--> E3 – Output device disconected STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-45: E3 – Output device disconected --[]--> Pause and save position STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-46:  --[]--> Playback completed STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-47: Playback completed --[UC ends successfully]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE o0_6KubHvzofkxdgklQR-48: Pause and save position --[UC ends in paused state]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE ZE_orUKCMDMedaNMvrc7-11: Load audio and prepare playback session --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;curved=0;
+EDGE ZE_orUKCMDMedaNMvrc7-6: A1 – Playback control --[]--> Update state STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;curved=0;
+EDGE uc3-remain-paused-end: Remain paused --[UC ends in paused state]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE ZE_orUKCMDMedaNMvrc7-8: Pause and store current position --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+EDGE ZE_orUKCMDMedaNMvrc7-10:  --[]--> Remain paused STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 7: UC4 [kdPTePVoHYEk4S804hV7]
+NODE PcLF6YpI0BY1yokieWmn-1 parent=1: Tourist
+NODE JnVH814kH2_JbBC0MEow-2 parent=1: UC4 - Manage & Update Offline Content
+EDGE JnVH814kH2_JbBC0MEow-1: Tourist --[]--> UC4 - Manage & Update Offline Content STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 8: UC4_activity [a8i6Yvfq26tMXxvVdQIH]
+NODE UC4_activity-actor-lane parent=1: ACTOR — Tourist
+NODE g45D0m5QW9cc8jciQBO7-18 parent=UC4_activity-actor-lane: A3 – Tourist cancels, current content unchanged
+NODE UC4_activity-system-lane parent=1: SYSTEM — Mobile App / Package Server
+NODE uc4-download-bytes parent=UC4_activity-system-lane: Download package bytes
+NODE uc4-report-progress parent=UC4_activity-system-lane: Update download progress on UI
+NODE uc4-delete-confirmed parent=UC4_activity-system-lane: Remove selected optional content and update status
+NODE g45D0m5QW9cc8jciQBO7-30 parent=UC4_activity-system-lane: E2 – Network lost, pause and keep progress
+NODE uc4-fork-download-progress parent=UC4_activity-system-lane: 
+NODE g45D0m5QW9cc8jciQBO7-32 parent=UC4_activity-system-lane: Verify integrity of downloaded content
+NODE uc4-join-download-progress parent=UC4_activity-system-lane: 
+NODE g45D0m5QW9cc8jciQBO7-1 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-2 parent=1: Open Offline Content Management
+NODE g45D0m5QW9cc8jciQBO7-6 parent=1: A2 – Select optional offline content to delete
+NODE g45D0m5QW9cc8jciQBO7-8 parent=1: Check Server for newer APPROVED package version
+NODE g45D0m5QW9cc8jciQBO7-12 parent=1: A1 – No update available, inform Tourist
+NODE g45D0m5QW9cc8jciQBO7-14 parent=1: Display update information
+NODE g45D0m5QW9cc8jciQBO7-20 parent=1: Check required storage
+NODE g45D0m5QW9cc8jciQBO7-24 parent=1: E1 – Insufficient storage, show required space
+NODE g45D0m5QW9cc8jciQBO7-26 parent=1: Start package download
+NODE g45D0m5QW9cc8jciQBO7-36 parent=1: E3 – Invalid package, discard data and keep current version
+NODE g45D0m5QW9cc8jciQBO7-38 parent=1: Atomically install matching scripts and audio; update version
+NODE g45D0m5QW9cc8jciQBO7-40 parent=1: Display Up to Date / Offline Ready
+NODE g45D0m5QW9cc8jciQBO7-42 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-43 parent=g45D0m5QW9cc8jciQBO7-42: 
+NODE g45D0m5QW9cc8jciQBO7-44 parent=g45D0m5QW9cc8jciQBO7-42: 
+NODE g45D0m5QW9cc8jciQBO7-53 parent=1: 
+NODE zTTOlW-r0W_R5FEyqnND-17 parent=g45D0m5QW9cc8jciQBO7-53: 
+NODE g45D0m5QW9cc8jciQBO7-4 parent=zTTOlW-r0W_R5FEyqnND-17: 
+NODE g45D0m5QW9cc8jciQBO7-52 parent=zTTOlW-r0W_R5FEyqnND-17: Tourist selects action?
+NODE g45D0m5QW9cc8jciQBO7-55 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-10 parent=g45D0m5QW9cc8jciQBO7-55: 
+NODE g45D0m5QW9cc8jciQBO7-54 parent=g45D0m5QW9cc8jciQBO7-55: Newer version available?
+NODE g45D0m5QW9cc8jciQBO7-57 parent=1: 
+NODE zTTOlW-r0W_R5FEyqnND-13 parent=g45D0m5QW9cc8jciQBO7-57: 
+NODE g45D0m5QW9cc8jciQBO7-16 parent=zTTOlW-r0W_R5FEyqnND-13: 
+NODE g45D0m5QW9cc8jciQBO7-56 parent=zTTOlW-r0W_R5FEyqnND-13: Tourist confirms update?
+NODE g45D0m5QW9cc8jciQBO7-59 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-22 parent=g45D0m5QW9cc8jciQBO7-59: 
+NODE g45D0m5QW9cc8jciQBO7-58 parent=g45D0m5QW9cc8jciQBO7-59: Enough storage?
+NODE g45D0m5QW9cc8jciQBO7-61 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-28 parent=g45D0m5QW9cc8jciQBO7-61: 
+NODE g45D0m5QW9cc8jciQBO7-63 parent=1: 
+NODE g45D0m5QW9cc8jciQBO7-34 parent=g45D0m5QW9cc8jciQBO7-63: 
+NODE g45D0m5QW9cc8jciQBO7-62 parent=g45D0m5QW9cc8jciQBO7-63: Package valid?
+NODE g45D0m5QW9cc8jciQBO7-60 parent=1: Download completed?
+NODE uc4-delete-confirm parent=1: B1: Confirm deletion?
+NODE uc4-delete-cancelled parent=1: A2: Cancel deletion; current content unchanged
+EDGE uc4-fork-to-download:  --[]--> Download package bytes STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE uc4-fork-to-progress:  --[]--> Update download progress on UI STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE uc4-download-to-join: Download package bytes --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE uc4-progress-to-join: Update download progress on UI --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;
+EDGE g45D0m5QW9cc8jciQBO7-3:  --[]--> Open Offline Content Management STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-5: Open Offline Content Management --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-7:  --[Delete]--> A2 – Select optional offline content to delete STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-9:  --[Check / Update]--> Check Server for newer APPROVED package version STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-11: Check Server for newer APPROVED package version --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-13:  --[No]--> A1 – No update available, inform Tourist STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-15:  --[Yes]--> Display update information STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-17: Display update information --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-19:  --[No]--> A3 – Tourist cancels, current content unchanged STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-21:  --[Yes]--> Check required storage STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-23: Check required storage --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-25:  --[No]--> E1 – Insufficient storage, show required space STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-27:  --[Yes]--> Start package download STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-29: Start package download --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-31:  --[No]--> E2 – Network lost, pause and keep progress STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-33:  --[Yes]--> Verify integrity of downloaded content STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-35: Verify integrity of downloaded content --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-37:  --[No]--> E3 – Invalid package, discard data and keep current version STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-39:  --[Yes]--> Atomically install matching scripts and audio; update version STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-41: Atomically install matching scripts and audio; update version --[]--> Display Up to Date / Offline Ready STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-45: Display Up to Date / Offline Ready --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-46: A2 – Select optional offline content to delete --[]--> B1: Confirm deletion? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-47: A1 – No update available, inform Tourist --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-48: A3 – Tourist cancels, current content unchanged --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-49: E1 – Insufficient storage, show required space --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE g45D0m5QW9cc8jciQBO7-50: E2 – Network lost, pause and keep progress --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;
+EDGE g45D0m5QW9cc8jciQBO7-51: E3 – Invalid package, discard data and keep current version --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE uc4-delete-confirmed-edge: B1: Confirm deletion? --[Yes]--> Remove selected optional content and update status STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;
+EDGE uc4-delete-cancelled-edge: B1: Confirm deletion? --[No]--> A2: Cancel deletion; current content unchanged STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;
+EDGE uc4-delete-confirmed-end: Remove selected optional content and update status --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;
+EDGE uc4-delete-cancelled-end: A2: Cancel deletion; current content unchanged --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;
+EDGE uc4-join-to-complete:  --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;curved=1;
+
+PAGE 9: UC5 [3BIjDnVTAncS53SsDC-1]
+NODE C6LkyhZUpkCOvxHITEUt-2 parent=1: Tourist
+NODE C6LkyhZUpkCOvxHITEUt-3 parent=1: UC5 - Receive Location-Based Notifications
+EDGE C6LkyhZUpkCOvxHITEUt-1: Tourist --[]--> UC5 - Receive Location-Based Notifications STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 10: UC5_activity [A8274-W0UKYs8lqE-gz7]
+NODE UC5_activity-actor-lane parent=1: ACTOR — Tourist
+NODE UC5_activity-system-lane parent=1: SYSTEM — Mobile App / OS Geofence and Notifications
+NODE 9Oq7mpxagojBVmxwowkJ-1 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-4 parent=1: E1 – Location permission unavailable: no geofence monitoring, no notification (Tourist explores manually via UC-01)
+NODE 9Oq7mpxagojBVmxwowkJ-6 parent=1: Detect geofence entry and identify location (locationId)
+NODE 9Oq7mpxagojBVmxwowkJ-10 parent=1: A1 – Select nearest location and prioritize its notification (others remain available via UC-01)
+NODE 9Oq7mpxagojBVmxwowkJ-15 parent=1: A4 – Cooldown active: no notification is displayed (BR1)
+NODE 9Oq7mpxagojBVmxwowkJ-19 parent=1: A2 – Show In-App Banner (contains locationId) instead of OS notification
+NODE 9Oq7mpxagojBVmxwowkJ-21 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-23 parent=1: E2 – Notification permission unavailable: no OS notification can be displayed
+NODE 9Oq7mpxagojBVmxwowkJ-25 parent=1: Display OS notification (current app language, locationId)
+NODE 9Oq7mpxagojBVmxwowkJ-30 parent=1: A3 – Notification not selected: no navigation, Tourist continues using the app
+NODE 9Oq7mpxagojBVmxwowkJ-32 parent=1: Read locationId of the notification
+NODE 9Oq7mpxagojBVmxwowkJ-36 parent=1: E3 – Invalid locationId: screen not opened, inform Tourist that the location is unavailable
+NODE 9Oq7mpxagojBVmxwowkJ-38 parent=1: Open Location Details Screen and trigger UC-02 with locationId
+NODE 9Oq7mpxagojBVmxwowkJ-40 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-41 parent=9Oq7mpxagojBVmxwowkJ-40: 
+NODE 9Oq7mpxagojBVmxwowkJ-42 parent=9Oq7mpxagojBVmxwowkJ-40: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-2 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-12 parent=zzgoSdxd4NCH2Uh3L3Jj-2: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-4 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-8 parent=zzgoSdxd4NCH2Uh3L3Jj-4: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-3 parent=zzgoSdxd4NCH2Uh3L3Jj-4: Multiple geofences entered?
+NODE zzgoSdxd4NCH2Uh3L3Jj-1 parent=1: Notification cooldown expired?
+NODE zzgoSdxd4NCH2Uh3L3Jj-6 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-2 parent=zzgoSdxd4NCH2Uh3L3Jj-6: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-5 parent=zzgoSdxd4NCH2Uh3L3Jj-6: Location permission available?
+NODE zzgoSdxd4NCH2Uh3L3Jj-8 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-17 parent=zzgoSdxd4NCH2Uh3L3Jj-8: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-7 parent=zzgoSdxd4NCH2Uh3L3Jj-8: Application in foreground?
+NODE zzgoSdxd4NCH2Uh3L3Jj-9 parent=1: Notification permission available?
+NODE zzgoSdxd4NCH2Uh3L3Jj-12 parent=1: 
+NODE ZkUvjB0HBEacZ4SLLGUk-2 parent=zzgoSdxd4NCH2Uh3L3Jj-12: 
+NODE 9Oq7mpxagojBVmxwowkJ-27 parent=ZkUvjB0HBEacZ4SLLGUk-2: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-11 parent=ZkUvjB0HBEacZ4SLLGUk-2: Tourist selects notification?
+NODE zzgoSdxd4NCH2Uh3L3Jj-14 parent=1: 
+NODE 9Oq7mpxagojBVmxwowkJ-34 parent=zzgoSdxd4NCH2Uh3L3Jj-14: 
+NODE zzgoSdxd4NCH2Uh3L3Jj-13 parent=zzgoSdxd4NCH2Uh3L3Jj-14: locationId valid?
+EDGE 9Oq7mpxagojBVmxwowkJ-3:  --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-5:  --[No]--> E1 – Location permission unavailable: no geofence monitoring, no notification (Tourist explores manually via UC-01) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-7:  --[Yes]--> Detect geofence entry and identify location (locationId) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-9: Detect geofence entry and identify location (locationId) --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-11:  --[Yes]--> A1 – Select nearest location and prioritize its notification (others remain available via UC-01) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-13:  --[No]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-14: A1 – Select nearest location and prioritize its notification (others remain available via UC-01) --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-16:  --[No]--> A4 – Cooldown active: no notification is displayed (BR1) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-18:  --[Yes]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-20:  --[Yes]--> A2 – Show In-App Banner (contains locationId) instead of OS notification STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-22:  --[No]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-24:  --[No]--> E2 – Notification permission unavailable: no OS notification can be displayed STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-26:  --[Yes]--> Display OS notification (current app language, locationId) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-28: Display OS notification (current app language, locationId) --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-29: A2 – Show In-App Banner (contains locationId) instead of OS notification --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-31:  --[No]--> A3 – Notification not selected: no navigation, Tourist continues using the app STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-33:  --[Yes]--> Read locationId of the notification STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-35: Read locationId of the notification --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-37:  --[No]--> E3 – Invalid locationId: screen not opened, inform Tourist that the location is unavailable STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-39:  --[Yes]--> Open Location Details Screen and trigger UC-02 with locationId STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-43: Open Location Details Screen and trigger UC-02 with locationId --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-44: E1 – Location permission unavailable: no geofence monitoring, no notification (Tourist explores manually via UC-01) --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-45: A4 – Cooldown active: no notification is displayed (BR1) --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-46: E2 – Notification permission unavailable: no OS notification can be displayed --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-47: A3 – Notification not selected: no navigation, Tourist continues using the app --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE 9Oq7mpxagojBVmxwowkJ-48: E3 – Invalid locationId: screen not opened, inform Tourist that the location is unavailable --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+
+PAGE 11: UC6 [cOmVx_s1Ll4WYu5x8bba]
+NODE iA_47EVZrF2NrLpTxS1p-2 parent=1: Admin/Manager
+NODE iA_47EVZrF2NrLpTxS1p-3 parent=1: UC6 - Manage Location Content & Audio Assets
+EDGE iA_47EVZrF2NrLpTxS1p-1: Admin/Manager --[]--> UC6 - Manage Location Content & Audio Assets STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 12: UC6_activity [Vnzg7BaLNtyB7pySamTR]
+NODE UC6_activity-actor-lane parent=1: ACTOR — Content Admin
+NODE UC6_activity-system-lane parent=1: SYSTEM — Web Admin / Content Service
+NODE zETJm5G_Df36_UZA9jXr-17 parent=UC6_activity-system-lane: E1 – Invalid audio file or upload failed: reject file, keep form data, Admin uploads again
+NODE zETJm5G_Df36_UZA9jXr-15 parent=UC6_activity-system-lane: Audio file valid?
+NODE zETJm5G_Df36_UZA9jXr-1 parent=1: 
+NODE zETJm5G_Df36_UZA9jXr-2 parent=1: Create or edit location?
+NODE zETJm5G_Df36_UZA9jXr-4 parent=1: A2 – Edit existing location: load existing data into the form (audio may be replaced for a single language only)
+NODE zETJm5G_Df36_UZA9jXr-6 parent=1: Open empty location form
+NODE zETJm5G_Df36_UZA9jXr-8 parent=1: Enter / edit location information (name, category, GPS, geofence radius)
+NODE zETJm5G_Df36_UZA9jXr-11 parent=1: Enter / edit guide content for each supported language
+NODE zETJm5G_Df36_UZA9jXr-13 parent=1: Upload audio for each language
+NODE zETJm5G_Df36_UZA9jXr-20 parent=1: Preview audio and review entered content
+NODE zETJm5G_Df36_UZA9jXr-22 parent=1: Save option?
+NODE zETJm5G_Df36_UZA9jXr-24 parent=1: A1 – Save as Draft: incomplete content allowed, status DRAFT, not available to the Mobile App
+NODE zETJm5G_Df36_UZA9jXr-26 parent=1: Required data complete?
+NODE zETJm5G_Df36_UZA9jXr-28 parent=1: E2 – Missing required data: block submission, highlight fields, Admin returns to the form
+NODE zETJm5G_Df36_UZA9jXr-31 parent=1: Save PENDING_REVIEW; retain the current published version
+NODE zETJm5G_Df36_UZA9jXr-33 parent=1: 
+NODE zETJm5G_Df36_UZA9jXr-34 parent=zETJm5G_Df36_UZA9jXr-33: 
+NODE zETJm5G_Df36_UZA9jXr-35 parent=zETJm5G_Df36_UZA9jXr-33: 
+EDGE zETJm5G_Df36_UZA9jXr-18: Audio file valid? --[No]--> E1 – Invalid audio file or upload failed: reject file, keep form data, Admin uploads again STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-3:  --[]--> Create or edit location? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-5: Create or edit location? --[Edit]--> A2 – Edit existing location: load existing data into the form (audio may be replaced for a single language only) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-7: Create or edit location? --[Create]--> Open empty location form STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-9: Open empty location form --[]--> Enter / edit location information (name, category, GPS, geofence radius) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-10: A2 – Edit existing location: load existing data into the form (audio may be replaced for a single language only) --[]--> Enter / edit location information (name, category, GPS, geofence radius) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-12: Enter / edit location information (name, category, GPS, geofence radius) --[]--> Enter / edit guide content for each supported language STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-14: Enter / edit guide content for each supported language --[]--> Upload audio for each language STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-16: Upload audio for each language --[]--> Audio file valid? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-19: E1 – Invalid audio file or upload failed: reject file, keep form data, Admin uploads again --[]--> Upload audio for each language STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-21: Audio file valid? --[Yes]--> Preview audio and review entered content STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-23: Preview audio and review entered content --[]--> Save option? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE zETJm5G_Df36_UZA9jXr-25: Save option? --[Save Draft]--> A1 – Save as Draft: incomplete content allowed, status DRAFT, not available to the Mobile App STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-27: Save option? --[Submit]--> Required data complete? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-29: Required data complete? --[No]--> E2 – Missing required data: block submission, highlight fields, Admin returns to the form STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-30: E2 – Missing required data: block submission, highlight fields, Admin returns to the form --[]--> Enter / edit location information (name, category, GPS, geofence radius) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-32: Required data complete? --[Yes]--> Save PENDING_REVIEW; retain the current published version STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-36: Save PENDING_REVIEW; retain the current published version --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE zETJm5G_Df36_UZA9jXr-37: A1 – Save as Draft: incomplete content allowed, status DRAFT, not available to the Mobile App --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+
+PAGE 13: UC7 [VbtyACkuVeeqG7VovOzd]
+NODE TjRQBHKusHSHiObb22YL-2 parent=1: Admin/Manager
+NODE TjRQBHKusHSHiObb22YL-3 parent=1: <h1>UC7 - System Analytics & Tourist Feedback Management</h1>
+EDGE TjRQBHKusHSHiObb22YL-1: Admin/Manager --[]--> <h1>UC7 - System Analytics & Tourist Feedback Management</h1> STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 14: UC7_activity [iwxB2-7GmfBl-VOJx-pb]
+NODE UC7_activity-actor-lane parent=1: ACTOR — System Admin / Product Owner
+NODE UC7_activity-system-lane parent=1: SYSTEM — Web Admin / Analytics and Feedback Services
+NODE Q8Nx3ErHPsax8sTNVdMS-1 parent=1: 
+NODE Q8Nx3ErHPsax8sTNVdMS-2 parent=1: Open Analytics & Feedback
+NODE Q8Nx3ErHPsax8sTNVdMS-4 parent=1: Load analytics for the last 30 days
+NODE Q8Nx3ErHPsax8sTNVdMS-6 parent=1: Data available?
+NODE Q8Nx3ErHPsax8sTNVdMS-8 parent=1: E1 – No data for the selected period / filter: display Empty State instead of charts or records
+NODE Q8Nx3ErHPsax8sTNVdMS-10 parent=1: Display Total Playbacks, Top Locations, Language Distribution, Offline/Online ratio
+NODE Q8Nx3ErHPsax8sTNVdMS-12 parent=1: Change reporting period?
+NODE Q8Nx3ErHPsax8sTNVdMS-14 parent=1: A1 – Change reporting period: reload analytics for the selected period
+NODE Q8Nx3ErHPsax8sTNVdMS-17 parent=1: Open feedback list: display recent feedback (category, content, rating, status)
+NODE Q8Nx3ErHPsax8sTNVdMS-20 parent=1: Filter feedback?
+NODE Q8Nx3ErHPsax8sTNVdMS-22 parent=1: A2 – Filter feedback: show only records matching the selected category / status
+NODE Q8Nx3ErHPsax8sTNVdMS-24 parent=1: Select a feedback record and display its details
+NODE Q8Nx3ErHPsax8sTNVdMS-27 parent=1: Update feedback status; save new status and update timestamp (BR2)
+NODE Q8Nx3ErHPsax8sTNVdMS-29 parent=1: Export report?
+NODE Q8Nx3ErHPsax8sTNVdMS-31 parent=1: A3 – Export Report: generate .xlsx with analytics and feedback data
+NODE Q8Nx3ErHPsax8sTNVdMS-33 parent=1: Report generated?
+NODE Q8Nx3ErHPsax8sTNVdMS-35 parent=1: E2 – Export failed: show error, Admin may retry
+NODE Q8Nx3ErHPsax8sTNVdMS-38 parent=1: Make the .xlsx file available for download
+NODE Q8Nx3ErHPsax8sTNVdMS-40 parent=1: 
+NODE Q8Nx3ErHPsax8sTNVdMS-41 parent=Q8Nx3ErHPsax8sTNVdMS-40: 
+NODE Q8Nx3ErHPsax8sTNVdMS-42 parent=Q8Nx3ErHPsax8sTNVdMS-40: 
+EDGE Q8Nx3ErHPsax8sTNVdMS-3:  --[]--> Open Analytics & Feedback STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-5: Open Analytics & Feedback --[]--> Load analytics for the last 30 days STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-7: Load analytics for the last 30 days --[]--> Data available? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE HADqblYxAsgMyT8aRhVX-1: E1 – No data for the selected period / filter: display Empty State instead of charts or records --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-9: Data available? --[No]--> E1 – No data for the selected period / filter: display Empty State instead of charts or records STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-11: Data available? --[Yes]--> Display Total Playbacks, Top Locations, Language Distribution, Offline/Online ratio STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-13: Display Total Playbacks, Top Locations, Language Distribution, Offline/Online ratio --[]--> Change reporting period? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-15: Change reporting period? --[Yes]--> A1 – Change reporting period: reload analytics for the selected period STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-16: A1 – Change reporting period: reload analytics for the selected period --[]--> Load analytics for the last 30 days STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-18: Change reporting period? --[No]--> Open feedback list: display recent feedback (category, content, rating, status) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-21: Open feedback list: display recent feedback (category, content, rating, status) --[]--> Filter feedback? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-23: Filter feedback? --[Yes]--> A2 – Filter feedback: show only records matching the selected category / status STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-25: Filter feedback? --[No]--> Select a feedback record and display its details STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-26: A2 – Filter feedback: show only records matching the selected category / status --[]--> Select a feedback record and display its details STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-28: Select a feedback record and display its details --[]--> Update feedback status; save new status and update timestamp (BR2) STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-30: Update feedback status; save new status and update timestamp (BR2) --[]--> Export report? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-32: Export report? --[Yes]--> A3 – Export Report: generate .xlsx with analytics and feedback data STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-34: A3 – Export Report: generate .xlsx with analytics and feedback data --[]--> Report generated? STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-36: Report generated? --[No]--> E2 – Export failed: show error, Admin may retry STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-37: E2 – Export failed: show error, Admin may retry --[]--> A3 – Export Report: generate .xlsx with analytics and feedback data STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-39: Report generated? --[Yes]--> Make the .xlsx file available for download STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-43: Make the .xlsx file available for download --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;
+EDGE Q8Nx3ErHPsax8sTNVdMS-44: Export report? --[No]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;endArrow=block;endFill=1;curved=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;
+
+PAGE 15: ERD [EAI5jYq_YReIlgwmbndd]
+NODE UaL6CF9cr2FrcrZ33t9j-2 parent=1: Question: what data does the system need to store to correctly perform 7 use cases?
+NODE 788LgLL0iBcuh2ai3rxh-1 parent=1: Core ERD logic — Multilingual Audio Guide MVP
+NODE 788LgLL0iBcuh2ai3rxh-2 parent=1: Category
+PK categoryId
+name
+isActive
+NODE 788LgLL0iBcuh2ai3rxh-3 parent=1: Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status
+NODE 788LgLL0iBcuh2ai3rxh-4 parent=1: Language
+PK languageCode
+displayName
+isActive
+NODE 788LgLL0iBcuh2ai3rxh-5 parent=1: GuideContentRevision
+PK contentId
+FK locationId, languageCode
+scriptType, scriptText
+status, revisionNo
+NODE 788LgLL0iBcuh2ai3rxh-6 parent=1: AudioAsset
+PK audioId
+FK contentId
+storageKey, format
+durationSeconds
+NODE 788LgLL0iBcuh2ai3rxh-7 parent=1: ContentPackage
+PK packageId
+version, status
+scopeType, publishedAt
+NODE 788LgLL0iBcuh2ai3rxh-8 parent=1: PackageItem
+PK packageItemId
+FK packageId, contentId
+FK audioId (nullable)
+NODE 788LgLL0iBcuh2ai3rxh-9 parent=1: NotificationLog
+PK notificationId
+FK locationId
+notifiedAt, channel
+NODE 788LgLL0iBcuh2ai3rxh-10 parent=1: Feedback
+PK feedbackId
+FK locationId (nullable)
+rating, content, status
+NODE 788LgLL0iBcuh2ai3rxh-11 parent=1: AnalyticsEvent
+PK eventId
+FK locationId, languageCode
+eventType, isOffline, occurredAt
+NODE 788LgLL0iBcuh2ai3rxh-23 parent=1: Giả định demo: AudioAsset là tùy chọn; khi không có audio, UC-03 dùng TTS. Các quyết định chờ chốt trong PRD chưa trở thành ràng buộc cuối cùng.
+NODE 788LgLL0iBcuh2ai3rxh-26 parent=1: 
+NODE 788LgLL0iBcuh2ai3rxh-24 parent=788LgLL0iBcuh2ai3rxh-26: 
+NODE 788LgLL0iBcuh2ai3rxh-25 parent=788LgLL0iBcuh2ai3rxh-26: FIRST ERD DESIGN INSIGHT
+NODE 788LgLL0iBcuh2ai3rxh-28 parent=1: Category
+NODE 788LgLL0iBcuh2ai3rxh-29 parent=1: Location
+NODE 788LgLL0iBcuh2ai3rxh-30 parent=1: GuideContentRevision
+NODE 788LgLL0iBcuh2ai3rxh-31 parent=1: AudioAsset
+NODE 788LgLL0iBcuh2ai3rxh-32 parent=1: Language
+NODE 788LgLL0iBcuh2ai3rxh-33 parent=1: ContentPackage
+NODE 788LgLL0iBcuh2ai3rxh-34 parent=1: Phân loại
+NODE 788LgLL0iBcuh2ai3rxh-35 parent=1: Có nội dung
+NODE 788LgLL0iBcuh2ai3rxh-36 parent=1: Có audio
+NODE 788LgLL0iBcuh2ai3rxh-37 parent=1: Viết bằng
+NODE 788LgLL0iBcuh2ai3rxh-38 parent=1: Chứa
+NODE 788LgLL0iBcuh2ai3rxh-49 parent=1: categoryId
+NODE 788LgLL0iBcuh2ai3rxh-50 parent=1: name
+NODE 788LgLL0iBcuh2ai3rxh-51 parent=1: isActive
+NODE 788LgLL0iBcuh2ai3rxh-52 parent=1: locationId
+NODE 788LgLL0iBcuh2ai3rxh-53 parent=1: name
+NODE 788LgLL0iBcuh2ai3rxh-54 parent=1: latitude
+NODE 788LgLL0iBcuh2ai3rxh-55 parent=1: longitude
+NODE 788LgLL0iBcuh2ai3rxh-56 parent=1: geofenceRadius
+NODE 788LgLL0iBcuh2ai3rxh-57 parent=1: status
+NODE 788LgLL0iBcuh2ai3rxh-58 parent=1: contentId
+NODE 788LgLL0iBcuh2ai3rxh-59 parent=1: revisionNo
+NODE 788LgLL0iBcuh2ai3rxh-60 parent=1: scriptType
+NODE 788LgLL0iBcuh2ai3rxh-61 parent=1: scriptText
+NODE 788LgLL0iBcuh2ai3rxh-62 parent=1: status
+NODE 788LgLL0iBcuh2ai3rxh-63 parent=1: audioId
+NODE 788LgLL0iBcuh2ai3rxh-64 parent=1: storageKey
+NODE 788LgLL0iBcuh2ai3rxh-65 parent=1: format
+NODE 788LgLL0iBcuh2ai3rxh-66 parent=1: durationSeconds
+NODE 788LgLL0iBcuh2ai3rxh-67 parent=1: languageCode
+NODE 788LgLL0iBcuh2ai3rxh-68 parent=1: displayName
+NODE 788LgLL0iBcuh2ai3rxh-69 parent=1: isActive
+NODE 788LgLL0iBcuh2ai3rxh-70 parent=1: packageId
+NODE 788LgLL0iBcuh2ai3rxh-71 parent=1: version
+NODE 788LgLL0iBcuh2ai3rxh-72 parent=1: status
+NODE 788LgLL0iBcuh2ai3rxh-73 parent=1: scopeType
+NODE 788LgLL0iBcuh2ai3rxh-74 parent=1: publishedAt
+NODE 788LgLL0iBcuh2ai3rxh-101 parent=1: Chú thích
+Chữ nhật: thực thể · Thoi: quan hệ · Elip: thuộc tính (gạch chân = khóa chính)
+Nối đôi: tham gia bắt buộc · Nối đơn: tham gia tùy chọn
+Content–Audio: mỗi nội dung có tối đa 1 audio (có thể chưa có), mỗi audio thuộc đúng 1 nội dung
+ContentPackage–Content: quan hệ N–M, thay cho bảng trung gian PackageItem
+EDGE 788LgLL0iBcuh2ai3rxh-12: Category
+PK categoryId
+name
+isActive --[1 : *]--> Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=ERmany;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-13: Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status --[1 : *]--> GuideContentRevision
+PK contentId
+FK locationId, languageCode
+scriptType, scriptText
+status, revisionNo STYLE=html=1;endArrow=ERmany;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-14: Language
+PK languageCode
+displayName
+isActive --[1 : *]--> GuideContentRevision
+PK contentId
+FK locationId, languageCode
+scriptType, scriptText
+status, revisionNo STYLE=html=1;endArrow=ERmany;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-15: GuideContentRevision
+PK contentId
+FK locationId, languageCode
+scriptType, scriptText
+status, revisionNo --[1 : 0..1]--> AudioAsset
+PK audioId
+FK contentId
+storageKey, format
+durationSeconds STYLE=html=1;endArrow=ERzeroToOne;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-16: ContentPackage
+PK packageId
+version, status
+scopeType, publishedAt --[1 : *]--> PackageItem
+PK packageItemId
+FK packageId, contentId
+FK audioId (nullable) STYLE=html=1;endArrow=ERmany;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-17: PackageItem
+PK packageItemId
+FK packageId, contentId
+FK audioId (nullable) --[* : 1]--> GuideContentRevision
+PK contentId
+FK locationId, languageCode
+scriptType, scriptText
+status, revisionNo STYLE=html=1;endArrow=ERone;startArrow=ERmany;
+EDGE 788LgLL0iBcuh2ai3rxh-18: PackageItem
+PK packageItemId
+FK packageId, contentId
+FK audioId (nullable) --[0..* : 0..1]--> AudioAsset
+PK audioId
+FK contentId
+storageKey, format
+durationSeconds STYLE=html=1;dashed=1;endArrow=ERzeroToOne;startArrow=ERzeroToMany;
+EDGE 788LgLL0iBcuh2ai3rxh-19: Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status --[1 : *]--> NotificationLog
+PK notificationId
+FK locationId
+notifiedAt, channel STYLE=html=1;endArrow=ERmany;startArrow=ERone;
+EDGE 788LgLL0iBcuh2ai3rxh-20: Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status --[0..1 : *]--> Feedback
+PK feedbackId
+FK locationId (nullable)
+rating, content, status STYLE=html=1;endArrow=ERmany;startArrow=ERzeroToOne;
+EDGE 788LgLL0iBcuh2ai3rxh-21: Location
+PK locationId
+FK categoryId
+name, latitude, longitude
+geofenceRadius, status --[0..1 : *]--> AnalyticsEvent
+PK eventId
+FK locationId, languageCode
+eventType, isOffline, occurredAt STYLE=html=1;endArrow=ERmany;startArrow=ERzeroToOne;
+EDGE 788LgLL0iBcuh2ai3rxh-22: Language
+PK languageCode
+displayName
+isActive --[0..1 : *]--> AnalyticsEvent
+PK eventId
+FK locationId, languageCode
+eventType, isOffline, occurredAt STYLE=html=1;endArrow=ERmany;startArrow=ERzeroToOne;
+EDGE 788LgLL0iBcuh2ai3rxh-39: Category --[1]--> Phân loại STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-40: Location --[N]--> Phân loại STYLE=shape=link;html=1;endArrow=none;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;rounded=0;curved=0;strokeColor=default;
+EDGE 788LgLL0iBcuh2ai3rxh-41: Location --[1]--> Có nội dung STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-42: GuideContentRevision --[N]--> Có nội dung STYLE=shape=link;html=1;endArrow=none;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-43: Language --[1]--> Viết bằng STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-44: GuideContentRevision --[N]--> Viết bằng STYLE=shape=link;html=1;endArrow=none;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-45: GuideContentRevision --[1]--> Có audio STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-46: AudioAsset --[1]--> Có audio STYLE=shape=link;html=1;endArrow=none;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-47: ContentPackage --[N]--> Chứa STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-48: GuideContentRevision --[M]--> Chứa STYLE=endArrow=none;html=1;labelBackgroundColor=#ffffff;fontStyle=1;fontSize=13;
+EDGE 788LgLL0iBcuh2ai3rxh-75: categoryId --[]--> Category STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-76: name --[]--> Category STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-77: isActive --[]--> Category STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-78: locationId --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-79: name --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-80: latitude --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-81: longitude --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-82: geofenceRadius --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-83: status --[]--> Location STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-84: contentId --[]--> GuideContentRevision STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-85: revisionNo --[]--> GuideContentRevision STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-86: scriptType --[]--> GuideContentRevision STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-87: scriptText --[]--> GuideContentRevision STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-88: status --[]--> GuideContentRevision STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-89: audioId --[]--> AudioAsset STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-90: storageKey --[]--> AudioAsset STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-91: format --[]--> AudioAsset STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-92: durationSeconds --[]--> AudioAsset STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-93: languageCode --[]--> Language STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-94: displayName --[]--> Language STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-95: isActive --[]--> Language STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-96: packageId --[]--> ContentPackage STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-97: version --[]--> ContentPackage STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-98: status --[]--> ContentPackage STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-99: scopeType --[]--> ContentPackage STYLE=endArrow=none;html=1;strokeColor=#666666;
+EDGE 788LgLL0iBcuh2ai3rxh-100: publishedAt --[]--> ContentPackage STYLE=endArrow=none;html=1;strokeColor=#666666;
+
+PAGE 16: Sequence [E8i4BTlIN_FYtrt-S7nd]
+NODE Lj0oNmU6l_Wy6ibREJ5j-1 parent=1: Sequence Diagram demo — UC-02 load approved content, then UC-03 playback
+NODE Lj0oNmU6l_Wy6ibREJ5j-2 parent=1: Tourist
+NODE Lj0oNmU6l_Wy6ibREJ5j-3 parent=1: Mobile App
+NODE Lj0oNmU6l_Wy6ibREJ5j-4 parent=1: Guide Content API
+NODE Lj0oNmU6l_Wy6ibREJ5j-5 parent=1: PostgreSQL
+NODE Lj0oNmU6l_Wy6ibREJ5j-6 parent=1: Audio / OS TTS
+NODE Lj0oNmU6l_Wy6ibREJ5j-15 parent=1: alt: If no APPROVED content exists after fallback, Mobile shows an updating state and disables Listen to Guide.
+EDGE Lj0oNmU6l_Wy6ibREJ5j-7: Tourist --[1. Open Location Details(locationId, languageCode, FULL)]--> Mobile App STYLE=endArrow=block;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-8: Mobile App --[2. GET approved content]--> Guide Content API STYLE=endArrow=block;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-9: Guide Content API --[3. Query APPROVED content by location, language, script type]--> PostgreSQL STYLE=endArrow=block;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-10: PostgreSQL --[4. Approved revision / EN / VI fallback result]--> Guide Content API STYLE=endArrow=open;dashed=1;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-11: Guide Content API --[5. scriptText + optional audio metadata]--> Mobile App STYLE=endArrow=open;dashed=1;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-12: Mobile App --[6. Display guide content]--> Tourist STYLE=endArrow=open;dashed=1;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-13: Tourist --[7. Play Audio]--> Mobile App STYLE=endArrow=block;html=1;
+EDGE Lj0oNmU6l_Wy6ibREJ5j-14: Mobile App --[8. Play pre-rendered audio; otherwise read scriptText with TTS]--> Audio / OS TTS STYLE=endArrow=block;html=1;
+
+PAGE 17: Class [l8kGqDN-yJws8Ul_NXJY]
+NODE HVPNqZoe89-B7RZm4jS7-1 parent=1: Class Diagram demo — domain model
+NODE HVPNqZoe89-B7RZm4jS7-3 parent=1: Category<hr>+ id: UUID
++ name: String
++ active: boolean
+NODE HVPNqZoe89-B7RZm4jS7-4 parent=1: Language<hr>+ code: String
++ displayName: String
++ active: boolean
+NODE HVPNqZoe89-B7RZm4jS7-5 parent=1: GuideContentRevision<hr>+ id: UUID
++ scriptType: ScriptType
++ scriptText: Text
++ status: ContentStatus
++ revisionNo: int<hr>+ isApproved(): boolean
+NODE HVPNqZoe89-B7RZm4jS7-6 parent=1: AudioAsset<hr>+ id: UUID
++ storageKey: String
++ format: String
++ durationSeconds: int
+NODE HVPNqZoe89-B7RZm4jS7-7 parent=1: ContentPackage<hr>+ id: UUID
++ version: String
++ status: PackageStatus<hr>+ publish()
+NODE HVPNqZoe89-B7RZm4jS7-8 parent=1: PackageItem<hr>+ id: UUID
++ contentId: UUID
++ audioId: UUID?<hr>+ validateMatchingAssets()
+NODE HVPNqZoe89-B7RZm4jS7-9 parent=1: Feedback<hr>+ id: UUID
++ rating: int
++ content: String
++ status: FeedbackStatus<hr>+ moveToNextStatus()
+NODE HVPNqZoe89-B7RZm4jS7-18 parent=1: Location
+NODE HVPNqZoe89-B7RZm4jS7-19 parent=HVPNqZoe89-B7RZm4jS7-18: + id: UUID<br style="text-align: center; white-space: nowrap;">
+NODE HVPNqZoe89-B7RZm4jS7-20 parent=HVPNqZoe89-B7RZm4jS7-18: + coordinate: GeoPoint
+NODE HVPNqZoe89-B7RZm4jS7-21 parent=HVPNqZoe89-B7RZm4jS7-18: + geofenceRadiusM: int
+NODE HVPNqZoe89-B7RZm4jS7-25 parent=HVPNqZoe89-B7RZm4jS7-18: 
+NODE HVPNqZoe89-B7RZm4jS7-26 parent=HVPNqZoe89-B7RZm4jS7-18: + isWithinRadius(point): boolean
+NODE HVPNqZoe89-B7RZm4jS7-22 parent=1: 
+EDGE HVPNqZoe89-B7RZm4jS7-10: Category<hr>+ id: UUID
++ name: String
++ active: boolean --[1 *]--> Location STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-11: Location --[1 *]--> GuideContentRevision<hr>+ id: UUID
++ scriptType: ScriptType
++ scriptText: Text
++ status: ContentStatus
++ revisionNo: int<hr>+ isApproved(): boolean STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-12: Language<hr>+ code: String
++ displayName: String
++ active: boolean --[1 *]--> GuideContentRevision<hr>+ id: UUID
++ scriptType: ScriptType
++ scriptText: Text
++ status: ContentStatus
++ revisionNo: int<hr>+ isApproved(): boolean STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-13: GuideContentRevision<hr>+ id: UUID
++ scriptType: ScriptType
++ scriptText: Text
++ status: ContentStatus
++ revisionNo: int<hr>+ isApproved(): boolean --[0..1]--> AudioAsset<hr>+ id: UUID
++ storageKey: String
++ format: String
++ durationSeconds: int STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-14: ContentPackage<hr>+ id: UUID
++ version: String
++ status: PackageStatus<hr>+ publish() --[1 *]--> PackageItem<hr>+ id: UUID
++ contentId: UUID
++ audioId: UUID?<hr>+ validateMatchingAssets() STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-15: PackageItem<hr>+ id: UUID
++ contentId: UUID
++ audioId: UUID?<hr>+ validateMatchingAssets() --[*]--> GuideContentRevision<hr>+ id: UUID
++ scriptType: ScriptType
++ scriptText: Text
++ status: ContentStatus
++ revisionNo: int<hr>+ isApproved(): boolean STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-16: PackageItem<hr>+ id: UUID
++ contentId: UUID
++ audioId: UUID?<hr>+ validateMatchingAssets() --[0..1]--> AudioAsset<hr>+ id: UUID
++ storageKey: String
++ format: String
++ durationSeconds: int STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;dashed=1;
+EDGE HVPNqZoe89-B7RZm4jS7-17: Location --[0..*]--> Feedback<hr>+ id: UUID
++ rating: int
++ content: String
++ status: FeedbackStatus<hr>+ moveToNextStatus() STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=none;startArrow=none;html=1;
+EDGE HVPNqZoe89-B7RZm4jS7-23: Location --[]-->  STYLE=edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;
+
+PAGE 18: Database [NEB4SnwUlTECg1bLocFX]
+NODE EiVs042G670gDdtjzgz2-1 parent=1: Database schema demo — PostgreSQL + PostGIS
+NODE EiVs042G670gDdtjzgz2-2 parent=1: categories
+PK id UUID
+name VARCHAR(100) UNIQUE
+is_active BOOLEAN
+NODE EiVs042G670gDdtjzgz2-3 parent=1: locations
+PK id UUID
+FK category_id UUID
+name VARCHAR(255)
+coordinates GEOGRAPHY(Point,4326)
+geofence_radius_m INTEGER
+INDEX GIST(coordinates)
+NODE EiVs042G670gDdtjzgz2-4 parent=1: languages
+PK code VARCHAR(10)
+display_name VARCHAR(80)
+is_active BOOLEAN
+NODE EiVs042G670gDdtjzgz2-5 parent=1: guide_content_revisions
+PK id UUID
+FK location_id UUID
+FK language_code VARCHAR(10)
+script_type VARCHAR(10)
+script_text TEXT
+status VARCHAR(20), revision_no INT
+UNIQUE(location_id, language_code, script_type, revision_no)
+NODE EiVs042G670gDdtjzgz2-6 parent=1: audio_assets
+PK id UUID
+FK content_id UUID UNIQUE
+storage_key TEXT
+format VARCHAR(20)
+duration_seconds INT
+NODE EiVs042G670gDdtjzgz2-7 parent=1: content_packages
+PK id UUID
+version VARCHAR(40) UNIQUE
+status VARCHAR(20)
+scope_type VARCHAR(30)
+published_at TIMESTAMPTZ
+NODE EiVs042G670gDdtjzgz2-8 parent=1: content_package_items
+PK id UUID
+FK package_id UUID
+FK content_id UUID
+FK audio_id UUID NULL
+UNIQUE(package_id, content_id)
+NODE EiVs042G670gDdtjzgz2-9 parent=1: feedbacks
+PK id UUID
+FK location_id UUID NULL
+rating SMALLINT
+content TEXT
+status VARCHAR(20)
+created_at TIMESTAMPTZ
+NODE EiVs042G670gDdtjzgz2-10 parent=1: analytics_events
+PK id UUID
+FK location_id UUID NULL
+language_code VARCHAR(10) NULL
+event_type VARCHAR(40)
+is_offline BOOLEAN
+occurred_at TIMESTAMPTZ
+INDEX(occurred_at, event_type)
+EDGE EiVs042G670gDdtjzgz2-11: categories
+PK id UUID
+name VARCHAR(100) UNIQUE
+is_active BOOLEAN --[]--> locations
+PK id UUID
+FK category_id UUID
+name VARCHAR(255)
+coordinates GEOGRAPHY(Point,4326)
+geofence_radius_m INTEGER
+INDEX GIST(coordinates) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;
+EDGE EiVs042G670gDdtjzgz2-12: locations
+PK id UUID
+FK category_id UUID
+name VARCHAR(255)
+coordinates GEOGRAPHY(Point,4326)
+geofence_radius_m INTEGER
+INDEX GIST(coordinates) --[]--> guide_content_revisions
+PK id UUID
+FK location_id UUID
+FK language_code VARCHAR(10)
+script_type VARCHAR(10)
+script_text TEXT
+status VARCHAR(20), revision_no INT
+UNIQUE(location_id, language_code, script_type, revision_no) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;
+EDGE EiVs042G670gDdtjzgz2-13: languages
+PK code VARCHAR(10)
+display_name VARCHAR(80)
+is_active BOOLEAN --[]--> guide_content_revisions
+PK id UUID
+FK location_id UUID
+FK language_code VARCHAR(10)
+script_type VARCHAR(10)
+script_text TEXT
+status VARCHAR(20), revision_no INT
+UNIQUE(location_id, language_code, script_type, revision_no) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;
+EDGE EiVs042G670gDdtjzgz2-14: guide_content_revisions
+PK id UUID
+FK location_id UUID
+FK language_code VARCHAR(10)
+script_type VARCHAR(10)
+script_text TEXT
+status VARCHAR(20), revision_no INT
+UNIQUE(location_id, language_code, script_type, revision_no) --[]--> audio_assets
+PK id UUID
+FK content_id UUID UNIQUE
+storage_key TEXT
+format VARCHAR(20)
+duration_seconds INT STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERzeroToOne;startArrow=ERone;html=1;
+EDGE EiVs042G670gDdtjzgz2-15: content_packages
+PK id UUID
+version VARCHAR(40) UNIQUE
+status VARCHAR(20)
+scope_type VARCHAR(30)
+published_at TIMESTAMPTZ --[]--> content_package_items
+PK id UUID
+FK package_id UUID
+FK content_id UUID
+FK audio_id UUID NULL
+UNIQUE(package_id, content_id) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERone;html=1;
+EDGE EiVs042G670gDdtjzgz2-16: content_package_items
+PK id UUID
+FK package_id UUID
+FK content_id UUID
+FK audio_id UUID NULL
+UNIQUE(package_id, content_id) --[]--> guide_content_revisions
+PK id UUID
+FK location_id UUID
+FK language_code VARCHAR(10)
+script_type VARCHAR(10)
+script_text TEXT
+status VARCHAR(20), revision_no INT
+UNIQUE(location_id, language_code, script_type, revision_no) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERone;startArrow=ERmany;html=1;
+EDGE EiVs042G670gDdtjzgz2-17: content_package_items
+PK id UUID
+FK package_id UUID
+FK content_id UUID
+FK audio_id UUID NULL
+UNIQUE(package_id, content_id) --[]--> audio_assets
+PK id UUID
+FK content_id UUID UNIQUE
+storage_key TEXT
+format VARCHAR(20)
+duration_seconds INT STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERone;startArrow=ERmany;html=1;dashed=1;
+EDGE EiVs042G670gDdtjzgz2-18: locations
+PK id UUID
+FK category_id UUID
+name VARCHAR(255)
+coordinates GEOGRAPHY(Point,4326)
+geofence_radius_m INTEGER
+INDEX GIST(coordinates) --[]--> feedbacks
+PK id UUID
+FK location_id UUID NULL
+rating SMALLINT
+content TEXT
+status VARCHAR(20)
+created_at TIMESTAMPTZ STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERzeroToOne;html=1;
+EDGE EiVs042G670gDdtjzgz2-19: locations
+PK id UUID
+FK category_id UUID
+name VARCHAR(255)
+coordinates GEOGRAPHY(Point,4326)
+geofence_radius_m INTEGER
+INDEX GIST(coordinates) --[]--> analytics_events
+PK id UUID
+FK location_id UUID NULL
+language_code VARCHAR(10) NULL
+event_type VARCHAR(40)
+is_offline BOOLEAN
+occurred_at TIMESTAMPTZ
+INDEX(occurred_at, event_type) STYLE=edgeStyle=orthogonalEdgeStyle;endArrow=ERmany;startArrow=ERzeroToOne;html=1;
+
+PAGE 19: Component [-EiaLjALo1GvI_gYMM4K]
+NODE NgfgIbTTr13hrY4Ifimc-1 parent=1: Component Diagram demo — modular monolith MVP
+NODE NgfgIbTTr13hrY4Ifimc-2 parent=1: <<application>>
+Mobile App (Flutter)
+Location Discovery
+Guide Content / Audio Playback
+Offline Sync / Geofence Notification
+NODE NgfgIbTTr13hrY4Ifimc-3 parent=1: <<application>>
+Web Admin (React + Vite)
+Content Management
+Analytics & Feedback Dashboard
+NODE NgfgIbTTr13hrY4Ifimc-4 parent=1: <<component>> API Gateway / REST Controllers
+Authentication and request validation
+NODE NgfgIbTTr13hrY4Ifimc-5 parent=1: <<component>> Location Catalog
+Search, category, nearest locations
+NODE NgfgIbTTr13hrY4Ifimc-6 parent=1: <<component>> Guide Content
+APPROVED query, language fallback
+NODE NgfgIbTTr13hrY4Ifimc-7 parent=1: <<component>> Content Workflow
+DRAFT / PENDING_REVIEW management
+NODE NgfgIbTTr13hrY4Ifimc-8 parent=1: <<component>> Package Distribution
+Version manifest and package download
+NODE NgfgIbTTr13hrY4Ifimc-9 parent=1: <<component>> Feedback & Analytics
+Feedback status, event ingestion, reporting
+NODE NgfgIbTTr13hrY4Ifimc-10 parent=1: <<database>>
+PostgreSQL + PostGIS
+NODE NgfgIbTTr13hrY4Ifimc-11 parent=1: <<storage>>
+S3 / MinIO
+Audio + packages
+NODE NgfgIbTTr13hrY4Ifimc-12 parent=1: <<external>>
+OS GPS / Geofence
+Notifications / Audio / TTS
+NODE NgfgIbTTr13hrY4Ifimc-13 parent=1: <<external>>
+Content Reviewer / Publisher
+Approval and publication boundary
+EDGE NgfgIbTTr13hrY4Ifimc-14: <<application>>
+Mobile App (Flutter)
+Location Discovery
+Guide Content / Audio Playback
+Offline Sync / Geofence Notification --[HTTPS / REST]--> <<component>> API Gateway / REST Controllers
+Authentication and request validation STYLE=edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-15: <<application>>
+Web Admin (React + Vite)
+Content Management
+Analytics & Feedback Dashboard --[HTTPS / REST]--> <<component>> API Gateway / REST Controllers
+Authentication and request validation STYLE=edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-16: <<component>> API Gateway / REST Controllers
+Authentication and request validation --[]--> <<component>> Location Catalog
+Search, category, nearest locations STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-17: <<component>> API Gateway / REST Controllers
+Authentication and request validation --[]--> <<component>> Guide Content
+APPROVED query, language fallback STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-18: <<component>> API Gateway / REST Controllers
+Authentication and request validation --[]--> <<component>> Content Workflow
+DRAFT / PENDING_REVIEW management STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-19: <<component>> API Gateway / REST Controllers
+Authentication and request validation --[]--> <<component>> Package Distribution
+Version manifest and package download STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-20: <<component>> API Gateway / REST Controllers
+Authentication and request validation --[]--> <<component>> Feedback & Analytics
+Feedback status, event ingestion, reporting STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-21: <<component>> Location Catalog
+Search, category, nearest locations --[]--> <<database>>
+PostgreSQL + PostGIS STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-22: <<component>> Guide Content
+APPROVED query, language fallback --[]--> <<database>>
+PostgreSQL + PostGIS STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-23: <<component>> Content Workflow
+DRAFT / PENDING_REVIEW management --[]--> <<database>>
+PostgreSQL + PostGIS STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-24: <<component>> Package Distribution
+Version manifest and package download --[]--> <<storage>>
+S3 / MinIO
+Audio + packages STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-25: <<component>> Feedback & Analytics
+Feedback status, event ingestion, reporting --[]--> <<database>>
+PostgreSQL + PostGIS STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-26: <<application>>
+Mobile App (Flutter)
+Location Discovery
+Guide Content / Audio Playback
+Offline Sync / Geofence Notification --[device APIs]--> <<external>>
+OS GPS / Geofence
+Notifications / Audio / TTS STYLE=edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;
+EDGE NgfgIbTTr13hrY4Ifimc-27: <<external>>
+Content Reviewer / Publisher
+Approval and publication boundary --[publish APPROVED package]--> <<component>> Package Distribution
+Version manifest and package download STYLE=edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;endArrow=block;
+
+PAGE 20: Deployment [yyGglSUqJGuakVmdQdPf]
+NODE QpGeuMciNbdTkHpIz87U-1 parent=1: Deployment Diagram demo — easy-to-deploy MVP
+NODE QpGeuMciNbdTkHpIz87U-2 parent=1: <<device>> Tourist Mobile Device
+Flutter Mobile App
+SQLite + package files
+OS GPS, Geofence, Notification, TTS
+NODE QpGeuMciNbdTkHpIz87U-3 parent=1: <<device>> Admin Browser
+React + Vite SPA
+NODE QpGeuMciNbdTkHpIz87U-4 parent=1: <<node>> Cloud VM / Container Host
+NODE QpGeuMciNbdTkHpIz87U-5 parent=1: <<artifact>>
+Spring Boot API
+Modular monolith
+NODE QpGeuMciNbdTkHpIz87U-6 parent=1: <<artifact>>
+Spring Scheduler / Worker
+package and reporting jobs
+NODE QpGeuMciNbdTkHpIz87U-7 parent=1: <<node>> Database Service
+PostgreSQL + PostGIS
+Flyway migrations
+NODE QpGeuMciNbdTkHpIz87U-8 parent=1: <<node>> Object Storage
+S3 / MinIO
+audio assets + content packages
+NODE QpGeuMciNbdTkHpIz87U-15 parent=1: Không đưa Kafka/Redis vào deployment demo ban đầu. Chỉ thêm Redis khi có đo đạc cho thấy cần cache/rate limit; dùng worker/scheduler đơn giản trước khi cần queue.
+EDGE QpGeuMciNbdTkHpIz87U-9: <<device>> Tourist Mobile Device
+Flutter Mobile App
+SQLite + package files
+OS GPS, Geofence, Notification, TTS --[HTTPS]--> <<artifact>>
+Spring Boot API
+Modular monolith STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE QpGeuMciNbdTkHpIz87U-10: <<device>> Admin Browser
+React + Vite SPA --[HTTPS]--> <<artifact>>
+Spring Boot API
+Modular monolith STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE QpGeuMciNbdTkHpIz87U-11: <<artifact>>
+Spring Boot API
+Modular monolith --[JDBC / SQL]--> <<node>> Database Service
+PostgreSQL + PostGIS
+Flyway migrations STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE QpGeuMciNbdTkHpIz87U-12: <<artifact>>
+Spring Boot API
+Modular monolith --[S3 API]--> <<node>> Object Storage
+S3 / MinIO
+audio assets + content packages STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE QpGeuMciNbdTkHpIz87U-13: <<artifact>>
+Spring Scheduler / Worker
+package and reporting jobs --[JDBC / S3 API]--> <<node>> Database Service
+PostgreSQL + PostGIS
+Flyway migrations STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;
+EDGE QpGeuMciNbdTkHpIz87U-14: <<artifact>>
+Spring Scheduler / Worker
+package and reporting jobs --[]--> <<node>> Object Storage
+S3 / MinIO
+audio assets + content packages STYLE=edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;

@@ -1,0 +1,44 @@
+flowchart LR
+    subgraph Mobile[Mobile App]
+        UI[UI]
+        Content[Content Service]
+        Player[Audio Player]
+        Geo[Geofence Service]
+        Offline[Offline Manager]
+        Local[Local Content Store]
+        UI --> Content
+        UI --> Player
+        UI --> Offline
+        Content -->|offline content| Local
+        Player -->|matching local audio or script| Local
+        Geo -->|installed location data| Local
+        Offline -->|verified atomic installation after playback ends| Local
+    end
+    Web[Web Admin]
+    API[Backend API]
+    DB[Server Database]
+    Storage[Object Storage / Content Server / CDN]
+    Publication[External Content Publication Service]
+    Auth[External Admin Authentication]
+    Capture[External Analytics Event Capture]
+    Submit[External Feedback Submission]
+    Map[Map Service]
+    OSGeo[OS Location & Geofencing]
+    OSNotify[OS Notification]
+    OSAudio[OS Audio & Text-to-Speech]
+    Content -->|online APPROVED content| API
+    Player -->|online matching audio| Storage
+    Offline -->|package metadata| API
+    Offline -->|package download| Storage
+    Web -->|UC-06 and UC-07| API
+    API --> DB
+    API --> Storage
+    UI --> Map
+    Geo --> OSGeo
+    Geo --> OSNotify
+    Player --> OSAudio
+    Web --> Auth
+    API -.->|review submissions and deactivation requests| Publication
+    Publication -->|APPROVED packages and archive changes| Storage
+    Capture -.->|analytics supplied to UC-07| API
+    Submit -.->|feedback supplied to UC-07| API

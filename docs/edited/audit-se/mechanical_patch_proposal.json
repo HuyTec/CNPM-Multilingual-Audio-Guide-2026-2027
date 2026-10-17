@@ -1,0 +1,294 @@
+{
+  "status": "PROPOSAL_ONLY_NOT_APPLIED",
+  "source": "C:\\Users\\NHUT HUY\\Downloads\\se.drawio.xml",
+  "sourceSha256": "3c8a56e00bf81cf3d8bed98307bb85fdf7ec4bdc908ffc922610a6bd8bed57cf",
+  "patchSemantics": "Merge proposed keys; remove null style tokens; preserve all other attributes. Geometry and semantic route changes require the full CHANGE_PROPOSAL.md.",
+  "operations": [
+    {
+      "proposalId": "MP-01",
+      "page": "UC1",
+      "cellId": "AvO_44uf7ePXLSYSitZW-2",
+      "action": "change_label_and_shape",
+      "beforeAttributes": {
+        "id": "AvO_44uf7ePXLSYSitZW-2",
+        "parent": "1",
+        "style": "ellipse;whiteSpace=wrap;html=1;strokeColor=#000000;fontColor=#000000;labelBackgroundColor=none;labelBorderColor=none;fillColor=none;fontFamily=Helvetica;",
+        "value": "GPS Location",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "OS Location & Geofencing",
+        "styleProperties": {
+          "shape": "umlActor",
+          "ellipse": null
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": [
+        "Resize actor geometry before rendering"
+      ]
+    },
+    {
+      "proposalId": "MP-02",
+      "page": "UC1",
+      "cellId": "gAk2jW1bffTvXic_H5ub-1",
+      "action": "change_connector_semantics",
+      "beforeAttributes": {
+        "id": "gAk2jW1bffTvXic_H5ub-1",
+        "edge": "1",
+        "parent": "1",
+        "source": "AvO_44uf7ePXLSYSitZW-2",
+        "style": "endArrow=open;endSize=12;dashed=1;html=1;rounded=0;exitX=-0.008;exitY=0.631;exitDx=0;exitDy=0;exitPerimeter=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;",
+        "target": "8gZ0zZ8CvG5_-fD3btZH-1",
+        "value": "&lt;&lt;extend&gt;&gt;"
+      },
+      "proposedAttributeChanges": {
+        "value": "",
+        "styleProperties": {
+          "dashed": "0",
+          "startArrow": "none",
+          "endArrow": "none"
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": [
+        "MP-01"
+      ]
+    },
+    {
+      "proposalId": "MP-03",
+      "page": "UC6",
+      "cellId": "iA_47EVZrF2NrLpTxS1p-2",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "iA_47EVZrF2NrLpTxS1p-2",
+        "parent": "1",
+        "style": "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;",
+        "value": "<div>Admin/Manager</div><div><br></div>",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "Content Admin (Editor)"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-04",
+      "page": "UC7",
+      "cellId": "TjRQBHKusHSHiObb22YL-2",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "TjRQBHKusHSHiObb22YL-2",
+        "parent": "1",
+        "style": "shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;",
+        "value": "<div>Admin/Manager</div><div><br></div>",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "System Admin / Product Owner"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-05",
+      "page": "UC2_activity",
+      "cellId": "jr7hXPGmXHG0paXlPZda-9",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "jr7hXPGmXHG0paXlPZda-9",
+        "parent": "1",
+        "style": "rounded=1;whiteSpace=wrap;html=1;container=0;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+        "value": "Display &quot;Content is currently<br>being updated&quot;; disable Listen to<br>Guide; show Send Feedback option",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "Display \"Content for this location is currently being updated.\"; disable Listen to Guide"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-06",
+      "page": "UC2_activity",
+      "cellId": "diEoupAUMjpGpEfyS3mI-1",
+      "action": "remove_self_edge_in_revised_copy",
+      "beforeAttributes": {
+        "id": "diEoupAUMjpGpEfyS3mI-1",
+        "edge": "1",
+        "parent": "UC2_activity-actor-lane",
+        "source": "jr7hXPGmXHG0paXlPZda-13",
+        "style": "edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;innerLoopWaypoints=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;",
+        "target": "jr7hXPGmXHG0paXlPZda-13"
+      },
+      "proposedAttributeChanges": {},
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-07",
+      "page": "UC4_activity",
+      "cellId": "g45D0m5QW9cc8jciQBO7-38",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "g45D0m5QW9cc8jciQBO7-38",
+        "parent": "1",
+        "style": "rounded=1;whiteSpace=wrap;html=1;container=0;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+        "value": "Atomically install matching scripts and audio; update version",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "Atomically install matching location data, scripts, available audio and manifest changes; store package version"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": [
+        "Add playback-ended gate before installation"
+      ]
+    },
+    {
+      "proposalId": "MP-08",
+      "page": "UC5_activity",
+      "cellId": "9Oq7mpxagojBVmxwowkJ-38",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "9Oq7mpxagojBVmxwowkJ-38",
+        "parent": "1",
+        "style": "rounded=1;whiteSpace=wrap;html=1;container=0;fillColor=#d5e8d4;strokeColor=#82b366;",
+        "value": "Open Location Details Screen and trigger UC-02 with locationId",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "Open Location Details(locationId); UC-02 starts through its own trigger"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-09",
+      "page": "UC7_activity",
+      "cellId": "Q8Nx3ErHPsax8sTNVdMS-4",
+      "action": "change_label",
+      "beforeAttributes": {
+        "id": "Q8Nx3ErHPsax8sTNVdMS-4",
+        "parent": "1",
+        "style": "rounded=1;whiteSpace=wrap;html=1;container=0;fillColor=#dae8fc;strokeColor=#6c8ebf;",
+        "value": "Load analytics for the last 30 days",
+        "vertex": "1"
+      },
+      "proposedAttributeChanges": {
+        "value": "Load analytics for selectedPeriod"
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": [
+        "Add default-period initialization once before the first load"
+      ]
+    },
+    {
+      "proposalId": "MP-10-11",
+      "page": "Class",
+      "cellId": "HVPNqZoe89-B7RZm4jS7-11",
+      "action": "use_plain_association",
+      "beforeAttributes": {
+        "id": "HVPNqZoe89-B7RZm4jS7-11",
+        "edge": "1",
+        "parent": "1",
+        "source": "HVPNqZoe89-B7RZm4jS7-18",
+        "style": "edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;",
+        "target": "HVPNqZoe89-B7RZm4jS7-5",
+        "value": "1   *"
+      },
+      "proposedAttributeChanges": {
+        "styleProperties": {
+          "startArrow": "none",
+          "endArrow": "none",
+          "dashed": "0"
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-10-13",
+      "page": "Class",
+      "cellId": "HVPNqZoe89-B7RZm4jS7-13",
+      "action": "use_plain_association",
+      "beforeAttributes": {
+        "id": "HVPNqZoe89-B7RZm4jS7-13",
+        "edge": "1",
+        "parent": "1",
+        "source": "HVPNqZoe89-B7RZm4jS7-5",
+        "style": "edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;",
+        "target": "HVPNqZoe89-B7RZm4jS7-6",
+        "value": "0..1"
+      },
+      "proposedAttributeChanges": {
+        "styleProperties": {
+          "startArrow": "none",
+          "endArrow": "none",
+          "dashed": "0"
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-10-14",
+      "page": "Class",
+      "cellId": "HVPNqZoe89-B7RZm4jS7-14",
+      "action": "use_plain_association",
+      "beforeAttributes": {
+        "id": "HVPNqZoe89-B7RZm4jS7-14",
+        "edge": "1",
+        "parent": "1",
+        "source": "HVPNqZoe89-B7RZm4jS7-7",
+        "style": "edgeStyle=orthogonalEdgeStyle;endArrow=diamondThin;endFill=1;html=1;",
+        "target": "HVPNqZoe89-B7RZm4jS7-8",
+        "value": "1   *"
+      },
+      "proposedAttributeChanges": {
+        "styleProperties": {
+          "startArrow": "none",
+          "endArrow": "none",
+          "dashed": "0"
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    },
+    {
+      "proposalId": "MP-11",
+      "page": "Database",
+      "cellId": "EiVs042G670gDdtjzgz2-17",
+      "action": "align_nullable_audio_endpoint",
+      "beforeAttributes": {
+        "id": "EiVs042G670gDdtjzgz2-17",
+        "edge": "1",
+        "parent": "1",
+        "source": "EiVs042G670gDdtjzgz2-8",
+        "style": "edgeStyle=orthogonalEdgeStyle;endArrow=ERone;startArrow=ERmany;html=1;dashed=1;",
+        "target": "EiVs042G670gDdtjzgz2-6"
+      },
+      "proposedAttributeChanges": {
+        "styleProperties": {
+          "endArrow": "ERzeroToOne"
+        }
+      },
+      "applyOnlyToRevisedCopy": true,
+      "requiresVisualReview": true,
+      "dependencies": []
+    }
+  ]
+}

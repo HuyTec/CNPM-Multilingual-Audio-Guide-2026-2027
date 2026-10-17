@@ -1,0 +1,38 @@
+flowchart TD
+    Start(["Authorized System Admin / Product Owner"])
+    Init["Initialize selectedPeriod to last 30 days once"]
+    Load["Load analytics for selectedPeriod"]
+    Result{"Analytics result"}
+    Metrics["Display metrics"]
+    Empty["E1: show analytics Empty State"]
+    Error["E3: show analytics error and Retry; keep feedback accessible"]
+    Hub{"Choose dashboard action"}
+    Period["Set selectedPeriod"]
+    Feedback["Load feedback; newest first; proposed page size; apply filters"]
+    Found{"Feedback records available?"}
+    NoFeedback["E1: show feedback Empty State"]
+    Detail["View feedback details"]
+    Update{"Update status and next transition available?"}
+    Transition["Allow NEW → IN_REVIEW → RESOLVED; RESOLVED final; save updatedAt"]
+    Export["Export selectedPeriod analytics and feedback with active feedback filters"]
+    Exported{"Export succeeded?"}
+    Download["Download .xlsx"]
+    ExportError["E2: show error and offer Retry; preserve selection"]
+    Finish(["Finish"])
+    Start --> Init --> Load --> Result
+    Result -->|Data| Metrics --> Hub
+    Result -->|No data| Empty --> Hub
+    Result -->|Failure| Error --> Hub
+    Hub -->|Change period| Period --> Load
+    Hub -->|Retry analytics| Load
+    Hub -->|View / filter feedback| Feedback --> Found
+    Found -->|No| NoFeedback --> Hub
+    Found -->|Yes| Detail --> Update
+    Update -->|No| Hub
+    Update -->|Yes, next valid transition| Transition --> Hub
+    Hub -->|Export without requiring feedback update| Export --> Exported
+    Exported -->|Yes| Download --> Hub
+    Exported -->|No| ExportError
+    ExportError -->|Retry| Export
+    ExportError -->|Return| Hub
+    Hub -->|Finish| Finish
