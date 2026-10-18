@@ -21,7 +21,12 @@ cd .\backend\multi-audio-guide
 .\mvnw.cmd --version
 .\mvnw.cmd test
 .\mvnw.cmd package
-.\mvnw.cmd spring-boot:run
 ```
 
-`test` tải dependency và chạy test; `package` tạo JAR trong `target/`; `spring-boot:run` chạy ứng dụng. Không cần cài Maven toàn hệ thống: Maven Wrapper tự tải Maven 3.9.9 vào cache người dùng trong lần đầu. Lần chạy đầu cần kết nối Maven Central.
+`test` tải dependency và chạy các test hiện có; `package` tạo JAR trong `target/`. Không cần cài Maven toàn hệ thống: Maven Wrapper tự tải Maven 3.9.9 vào cache người dùng trong lần đầu. Lần chạy đầu cần kết nối Maven Central.
+
+## Chạy backend với PostgreSQL
+
+Dùng [Docker Compose](../docs/vi/DOCKER_SETUP.md) tại thư mục gốc: sao chép `.env.example` thành `.env`, đặt mật khẩu local, rồi chạy `docker compose up -d --build`. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Xem thêm [quy ước dùng chung](../GUILD.md).
+
+Nếu chạy `spring-boot:run` ngoài Docker, phải có database truy cập được từ máy host và tự đặt `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` phù hợp. Tên host `postgres` chỉ dùng trong mạng Compose.

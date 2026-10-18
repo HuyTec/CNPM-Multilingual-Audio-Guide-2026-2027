@@ -1,11 +1,12 @@
 # Thiết lập Docker trên Windows
 
-Docker Compose hiện đóng gói hai thành phần đã có trong repository: Spring Boot backend và React web-admin. Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Chưa có PostgreSQL trong Compose vì backend hiện chưa cấu hình kết nối cơ sở dữ liệu.
+Docker Compose đóng gói Spring Boot backend, React web-admin và PostgreSQL 17. Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Backend kết nối database `audio_guide` tại `postgres:5432` qua JDBC.
 
 ```text
 Trình duyệt ── localhost:3000 ──> Nginx (web-admin)
                                     └── /api/* ──> backend:8080
 PowerShell ── localhost:8080 ──> Spring Boot /actuator/health
+                                    └── postgres:5432 ──> volume postgres_data
 ```
 
 ## 1. Cài Docker Desktop và WSL 2
@@ -37,20 +38,22 @@ Nếu PowerShell chưa nhận lệnh `docker` sau khi cài, mở lại terminal.
 
 Mở PowerShell tại thư mục gốc repository:
 
+Sao chép `.env.example` thành `.env` nếu chưa có file, rồi thay mật khẩu mẫu bằng mật khẩu local của mình. File `.env` đã được Git bỏ qua. Nếu trước đó đã đặt `$env:POSTGRES_PASSWORD`, biến này được ưu tiên hơn `.env`; dùng cùng mật khẩu đã khởi tạo database. Đổi giá trị cấu hình không tự đổi mật khẩu trong database đã tồn tại.
+
 ```powershell
 docker compose -f compose.yaml config --quiet
 docker compose -f compose.yaml up -d --build
 docker compose -f compose.yaml ps
 ```
 
-Lần build đầu cần mạng để tải base image, npm packages và Maven dependencies. Compose đợi backend khỏe rồi mới chạy web-admin. Kiểm tra:
+Lần build đầu cần mạng để tải base image, npm packages và Maven dependencies. Compose đợi PostgreSQL khỏe trước khi chạy backend, rồi đợi backend khỏe trước khi chạy web-admin. Kiểm tra:
 
 ```powershell
 (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8080/actuator/health).Content
 (Invoke-WebRequest -UseBasicParsing http://127.0.0.1:3000/).StatusCode
 ```
 
-Backend trả JSON có `"status":"UP"`; web-admin trả mã `200` và mở tại [http://127.0.0.1:3000/](http://127.0.0.1:3000/). Hai cổng được giới hạn trên loopback của máy. Web-admin chuyển tiếp đường dẫn `/api/` tới backend, nhưng hiện chưa có API nghiệp vụ để kiểm tra luồng này.
+Backend trả JSON có `"status":"UP"` và `components.db.status` bằng `UP`; web-admin trả mã `200` và mở tại [http://127.0.0.1:3000/](http://127.0.0.1:3000/). Hai cổng được giới hạn trên loopback của máy; PostgreSQL chỉ mở trong mạng Compose. Web-admin chuyển tiếp đường dẫn `/api/` tới backend, nhưng hiện chưa có API nghiệp vụ để kiểm tra luồng này.
 
 ## 3. Xem log, cập nhật và dừng
 
@@ -61,8 +64,8 @@ docker compose -f compose.yaml up -d --build
 docker compose -f compose.yaml down
 ```
 
-Nhấn `Ctrl+C` để thoát chế độ theo dõi log; các container vẫn chạy. Sau khi sửa mã nguồn, dùng `up -d --build` để tạo lại image. `down` dừng và xóa các container cùng network của Compose.
+Nhấn `Ctrl+C` để thoát chế độ theo dõi log; các container vẫn chạy. Sau khi sửa mã nguồn, dùng `up -d --build` để tạo lại image. `down` dừng và xóa các container cùng network, nhưng giữ dữ liệu PostgreSQL trong volume `postgres_data`. `down -v` xóa cả volume và dữ liệu; chỉ dùng khi chủ động muốn xóa database local. Volume không thay thế backup; xem quy ước migration và backup tại [GUILD.md](../../GUILD.md).
 
 Nếu báo không kết nối được Docker daemon, mở Docker Desktop và kiểm tra `docker version`. Nếu tải dependency báo `Unknown host` hoặc `Connection reset`, kiểm tra DNS/mạng, proxy trong Docker Desktop rồi build lại. Nếu cổng 3000 hoặc 8080 đã bị chiếm, giải phóng cổng hoặc đổi số cổng bên trái dấu `:` trong `compose.yaml`.
 
-Docker Compose này phục vụ phát triển và demo trên một máy. Việc triển khai lên VM, TLS, secret, cơ sở dữ liệu và rollback được theo dõi riêng trong [hướng dẫn CI/CD](./CI_CD_SETUP.md).
+Docker Compose này phục vụ phát triển và demo trên một máy. Việc triển khai lên VM, TLS, secret, database production và rollback được theo dõi riêng trong [hướng dẫn CI/CD](./CI_CD_SETUP.md).
