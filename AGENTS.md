@@ -18,7 +18,18 @@ In this mode:
 
 Do not activate this mode automatically: the user must invoke `$i-have-adhd`.
 
-## Demo interface prototype: [miro.com/app/board/uXjVHj5Bz8A=](https://miro.com/app/board/uXjVHj5Bz8A=/)/
+## Documentation storage
+
+As requested on 18/10/2026, keep requirements, setup/run instructions, source diagrams and reference images in the repository. Store design notes, draft backlogs, reviews and unresolved PRD decisions directly in the existing Jira records:
+
+- PRD feature notes by Epic: [HVP-1](https://trannhuthuy897.atlassian.net/browse/HVP-1) discovery/notifications; [HVP-3](https://trannhuthuy897.atlassian.net/browse/HVP-3) guide/audio; [HVP-4](https://trannhuthuy897.atlassian.net/browse/HVP-4) offline; [HVP-5](https://trannhuthuy897.atlassian.net/browse/HVP-5) content management; [HVP-6](https://trannhuthuy897.atlassian.net/browse/HVP-6) analytics/feedback.
+- [HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21): Web Admin UC-06/UC-07 design and reviews.
+- [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22): Android UC-01–UC-05 design, architecture, development structure and reviews.
+- [HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7): setup and infrastructure notes.
+
+Keep Epic notes concise: features, work to do, and important constraints, with FR/UC references. Put business questions on the corresponding Epic; do not paste full PRD chapters or historical supplements into descriptions.
+
+Read the relevant Jira record before continuing design work. Update it instead of recreating local design/review/backlog documents. PRD sources are `docs/en/PRD_Report.md` and `docs/vi/PRD_Report_vi.md`; historical demo notes do not override them. Preserve old review dates and verification limits when maintaining the Jira records.
 
 # Part 0:
 
@@ -26,27 +37,27 @@ Do not activate this mode automatically: the user must invoke `$i-have-adhd`.
 
 - Stack: React + Vite + TypeScript + Tailwind; interface in Vietnamese, locale vi-VN
 - BEFORE writing any UI: read .agents/skills/web-design-guidelines/command.md and treat the rules as mandatory (ignore Hydration Safety and Content & Copy)
-- Source of requirements: docs/PRD.md (UC-06, UC-07). Do not invent features outside the PRD; if something is missing in the PRD, note it in docs/open-questions.md
+- Source of requirements: docs/en/PRD_Report.md (UC-06, UC-07). Do not invent features outside the PRD; if something is missing in the PRD, note it in Jira HVP-7.
 - After finishing each screen: run the web-design-guidelines skill on the newly created files, fix all errors before marking as complete
 - Every screen must have all states: loading, empty, error, long data
 
 # Part 1:
 
-Read docs/PRD_Report.md sections 4.6 (UC-06) and 4.7 (UC-07), and read command.md of the web-design-guidelines skill.
+Read docs/en/PRD_Report.md sections 4.6 (UC-06) and 4.7 (UC-07), and read command.md of the web-design-guidelines skill.
 
-Don't write any code yet. Create docs/ui-design.md including:
+Don't write any code yet. Update the design record in Jira HVP-21 including:
 
 1. Sitemap + routes (URL reflects state: filter, report period, page → query params)
 2. For each screen: purpose, components, states (loading/empty/error/long), main flow + corresponding A/E in PRD
 3. Table mapping "PRD requirements → applied Vercel rules" (e.g., E2 highlights missing fields → inline error + focus first error)
 4. List of shared components (Button, Field, StatusBadge, EmptyState, ConfirmDialog, AudioPlayer, DataTable)
-5. PRD points that are unclear → docs/open-questions.md (don’t decide on your own)
+5. PRD points that are unclear → Jira HVP-7 (don’t decide on your own)
 
-Expected screens: LocationList, LocationForm (UC-06), AnalyticsFeedback (UC-07). Log in only if PRD requires it; currently PRD just mentions "Admin has been authenticated," so note it in open-questions.
+Expected screens: LocationList, LocationForm (UC-06), AnalyticsFeedback (UC-07). Log in only if PRD requires it; currently PRD just mentions "Admin has been authenticated," so note it in Jira HVP-7.
 
 # Part 2:
 
-According to docs/ui-design.md, create the project framework and shared components in src/components/ui/.
+According to the design record in Jira HVP-21, create the project framework and shared components in src/components/ui/.
 You must follow Vercel rules:
 
 - Button is <button></button>; navigation uses <a></a>/; don’t use div with onClick
@@ -61,7 +72,7 @@ You must follow Vercel rules:
 
 # Part 3:
 
-Write src/pages/LocationForm.tsx (and child components) according to UC-06 and docs/ui-design.md.
+Write src/pages/LocationForm.tsx (and child components) according to UC-06 and the design record in Jira HVP-21.
 
 Features (as per PRD):
 
@@ -83,7 +94,7 @@ Vercel-specific rule:
 
 # Part 4:
 
-Implement `src/pages/AnalyticsFeedback.tsx` in accordance with UC-07 and `docs/ui-design.md`.
+Implement `src/pages/AnalyticsFeedback.tsx` in accordance with UC-07 and the design record in Jira HVP-21.
 
 Functionality (per PRD):
 
@@ -110,7 +121,7 @@ Specific Vercel rules to apply:
 
 Run the `web-design-guidelines` check (reading the local `command.md`) on the list of recently written files.
 
-Cross-reference with `docs/ui-design.md` and the PRD:
+Cross-reference with the design record in Jira HVP-21 and the PRD:
 
 1. Report errors in the format `file:line - issue`, grouped by priority (P0/P1/P2).
 2. Fix P0 issues first, then P1, while preserving existing logic, props, and styles.
