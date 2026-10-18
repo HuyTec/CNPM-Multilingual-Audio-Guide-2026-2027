@@ -1,7 +1,7 @@
 **TÀI LIỆU YÊU CẦU SẢN PHẨM**
 ***Ứng dụng thuyết minh âm thanh đa ngôn ngữ***
 
-> Bản dịch từ [PRD tiếng Anh](../en/PRD_Report.md). Các giá trị trong ngoặc vuông, đề xuất và chỗ trống được giữ theo bản nguồn; chưa phải quyết định đã được xác nhận hay kết quả đo thực tế. Các điểm chưa rõ của bản nguồn được ghi tại [docs/open-questions.md](../open-questions.md).
+> Bản dịch từ [PRD tiếng Anh](../en/PRD_Report.md). Các giá trị trong ngoặc vuông, đề xuất và chỗ trống được giữ theo bản nguồn; chưa phải quyết định đã được xác nhận hay kết quả đo thực tế. Các điểm chưa rõ của bản nguồn được ghi tại [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7).
 
 # **1. TỔNG QUAN SẢN PHẨM**
 

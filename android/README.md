@@ -1,6 +1,6 @@
 # TravelVoice — Android UI Demo (HVP-22)
 
-> Cấu trúc để phát triển các luồng Android thật: [docs/development-structure.md](docs/development-structure.md). Các thư mục `domain/`, `data/` và `platform/` hiện là khung trống; ứng dụng vẫn chạy bằng dữ liệu mẫu.
+> Cấu trúc để phát triển các luồng Android thật được lưu tại [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Các thư mục `domain/`, `data/` và `platform/` hiện là khung trống; ứng dụng vẫn chạy bằng dữ liệu mẫu.
 
 Jetpack Compose / Material 3 prototype cho du khách, đối chiếu UC-01–UC-05 của [PRD](../docs/en/PRD_Report.md). `MainActivity` → `DemoApp`. Không có backend hay dịch vụ thiết bị thật.
 
@@ -45,6 +45,6 @@ Restart app để bắt đầu lại fixture. `rememberSaveable` giữ UI state 
 
 Tham khảo ảnh người dùng tại `docs/ui_requirments/`: xanh biển chỉ dẫn, nền giấy sáng, chữ đậm; vector placeholder tạo tại chỗ. Không thêm tài khoản/hồ sơ ngoài PRD. Android dùng font sans hệ thống; Arial của web-admin giữ nguyên, không đóng gói tệp Arial có bản quyền từ Windows.
 
-Mỗi màn có Compose Preview; Offline thêm dark/font lớn. UI tests tương tác trên Compose; host tests dùng Robolectric, không xác nhận dịch vụ thật. Kết quả tại [biên bản review](../docs/ui-demo/ui-review.md).
+Mỗi màn có Compose Preview; Offline thêm dark/font lớn. UI tests tương tác trên Compose; host tests dùng Robolectric, không xác nhận dịch vụ thật. Thiết kế, yêu cầu demo, kiến trúc và biên bản review được lưu tại [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22).
 
-Xem [hướng dẫn tổng](../docs/ui-demo/README.md), [yêu cầu](../docs/ui-demo/ui-requirements.md), [kiến trúc](../docs/ui-demo/ui-architecture.md).
+Ảnh render tham khảo được giữ tại [docs/ui-demo/previews](../docs/ui-demo/previews/). Backlog UC-01 hiện hành ở [Jira HVP-1](https://trannhuthuy897.atlassian.net/browse/HVP-1), các câu hỏi PRD ở [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7).

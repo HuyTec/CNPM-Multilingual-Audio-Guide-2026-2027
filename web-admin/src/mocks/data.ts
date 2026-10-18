@@ -49,7 +49,7 @@ const names = [
   "Bảo tàng Lịch sử",
   "Phố đi bộ Nguyễn Huệ",
 ];
-// Reference points are sourced in docs/location-list-design.md; not geofence survey data.
+// Reference points: https://trannhuthuy897.atlassian.net/browse/HVP-21; not geofence survey data.
 const coordinates = [
   ["10.77998", "106.70002"],
   ["10.77702", "106.6954"],

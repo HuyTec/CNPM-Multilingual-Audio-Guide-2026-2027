@@ -87,8 +87,14 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 - gg doc: [docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing](https://docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing)
 - lược đồ: **[drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing](https://drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing)**
-- **PRD:** `./docs/PRD.docx`
-- **Sơ đồ:** các lược đồ use case, activity, ERD, class, component, deployment được lưu dưới dạng tệp draw.io (XML) trong `./docs`.
+- **PRD hiện hành:** [tiếng Anh](docs/en/PRD_Report.md), [tiếng Việt](docs/vi/PRD_Report_vi.md).
+- **Bản Word nguồn:** [PRODUCT REQUIRMENTS DOCUMENT.docx](<docs/en/PRODUCT REQUIRMENTS DOCUMENT.docx>); đối chiếu yêu cầu hiện hành bằng hai bản PRD Markdown ở trên.
+- **Sơ đồ gốc:** [SE.drawio (1).xml](<docs/en/SE.drawio (1).xml>).
+- **Ghi chú PRD theo Epic:** [Khám phá/thông báo](https://trannhuthuy897.atlassian.net/browse/HVP-1), [hướng dẫn/audio](https://trannhuthuy897.atlassian.net/browse/HVP-3), [ngoại tuyến](https://trannhuthuy897.atlassian.net/browse/HVP-4), [quản lý nội dung](https://trannhuthuy897.atlassian.net/browse/HVP-5), [thống kê/phản hồi](https://trannhuthuy897.atlassian.net/browse/HVP-6).
+- **Thiết kế/review Web Admin:** [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21); **Android:** [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22).
+- **Thiết lập và hạ tầng:** [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Câu hỏi nghiệp vụ được ghi tại Epic tương ứng.
+
+Thiết kế, backlog nháp và biên bản review được quản lý trực tiếp trên Jira. Repository giữ PRD, hướng dẫn cài đặt/chạy và các tệp nguồn/ảnh tham khảo; không duy trì thêm bản Markdown thiết kế trùng nội dung Jira.
 
 > Lưu ý: PRD và các sơ đồ đang trong giai đoạn kiểm chứng, nội dung có thể thay đổi.
 
