@@ -1,0 +1,26 @@
+name: Upload verified verr2 demo APK
+
+on:
+  push:
+    branches: [codex/verr2-release-upload]
+    paths:
+      - '.github/workflows/verr2-upload.yml'
+      - '.github/release/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: upload-verr2
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reconstruct and upload byte-identical tested APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/release/upload_verr2.py
