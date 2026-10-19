@@ -3,6 +3,7 @@ package vn.hvp.travelvoice.ui.mock
 data class DemoLocation(
     val id: String, val name: String, val street: String, val category: String,
     val distanceMeters: Int, val summary: String, val fullText: String,
+    val latitude: Double? = null, val longitude: Double? = null,
 )
 
 /** Editorial sample text and illustrative distances only; not a published tourism database. */
@@ -22,5 +23,15 @@ object DemoData {
         DemoLocation("tay-ho", "Hồ Tây", "Tây Hồ, Hà Nội", "Thiên nhiên", 3200,
             "Không gian ven hồ để khám phá theo nhịp riêng.", "Kịch bản minh họa cho Hồ Tây.\n\nCác khoảng cách là số liệu giả lập, không được tính từ vị trí thiết bị."),
     )
-    fun find(id: String) = locations.find { it.id == id }
+    // Illustrative coordinates, not a published tourism content package.
+    private val markerCoordinates = mapOf(
+        "ngoc-son" to (21.0308 to 105.8525), "hoan-kiem" to (21.0285 to 105.8520),
+        "pho-co" to (21.0353 to 105.8500), "lich-su" to (21.0241 to 105.8595),
+        "thang-long" to (21.0352 to 105.8402), "tay-ho" to (21.0580 to 105.8230),
+    )
+    val mapLocations = locations.map { location ->
+        val coordinate = markerCoordinates.getValue(location.id)
+        location.copy(latitude = coordinate.first, longitude = coordinate.second)
+    }
+    fun find(id: String) = mapLocations.find { it.id == id }
 }

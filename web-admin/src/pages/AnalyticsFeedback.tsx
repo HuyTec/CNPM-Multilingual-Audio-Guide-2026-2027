@@ -18,8 +18,18 @@ import { LoadingState, ErrorState, Pagination } from "../components/ui/States";
 import { date, dateTime, daysAgo, number, percent, today } from "../lib/format";
 import { pageNumber, useDemoLoad } from "../lib/demo";
 import { exportReport } from "../lib/export";
+import LiveAnalytics from "./LiveAnalytics";
 
 export default function AnalyticsFeedback() {
+  const [params] = useSearchParams();
+  return params.get("source") === "mock" ? (
+    <MockAnalyticsFeedback />
+  ) : (
+    <LiveAnalytics />
+  );
+}
+
+function MockAnalyticsFeedback() {
   const [params, setParams] = useSearchParams();
   const from = params.get("from") || daysAgo(29);
   const to = params.get("to") || today();

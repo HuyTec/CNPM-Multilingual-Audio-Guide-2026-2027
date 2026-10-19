@@ -1,5 +1,7 @@
 # Backend
 
+**Luồng nghe/thống kê thật:** profile `demo` có SHORT guide, WAV tiếng Việt, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. V3/V3.1 bổ sung liên kết revision/sự kiện và seed ba bài ngắn, không seed lượt nghe. Xem [LIVE_DEMO_SETUP](../docs/vi/LIVE_DEMO_SETUP.md).
+
 Spring Boot API cho nội dung hướng dẫn, quy trình duyệt và quản trị. Mã nguồn ở `multi-audio-guide/`, dùng Java 21, Spring Boot 4.1.1 và Maven Wrapper 3.3.4 (Maven 3.9.9).
 
 ## Cài đặt và chạy trên Windows
@@ -47,4 +49,55 @@ docker compose logs --tail 100 backend
 docker compose exec postgres psql -U audio_guide -d audio_guide -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
-Kết quả mong đợi: phiên bản `1`, mô tả `demo`, `success = t`. Không sửa migration sau khi đã áp dụng; tạo `V2__...sql` cho lần thay đổi tiếp theo. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.
+Kết quả mong đợi: có phiên bản `1` (`demo`) và `2` (`location discovery`), `success = t`; profile demo có thêm `2.1` (`seed discovery demo`); luồng lượt nghe bổ sung `3` (`playback content reference`) và demo `3.1` (`seed short guides`). Không sửa migration sau khi đã áp dụng; tạo phiên bản tiếp theo để thay đổi schema. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.
+
+## Chạy demo US-02 và US-03
+
+Luồng xử lý: `LocationController -> LocationDiscoveryService -> LocationRepository / CategoryRepository -> PostgreSQL`. Model giữ dữ liệu truy vấn, Mapper chuyển sang DTO trả về. Backend dùng JDBC hiện có, không cần thêm JPA.
+
+| API | Mục đích |
+| --- | --- |
+| `GET /api/categories` | Danh mục đang hoạt động, kèm số địa điểm APPROVED; có cả danh mục rỗng |
+| `GET /api/locations?keyword=...&categoryId=...&page=0&size=20` | Tìm tên và/hoặc lọc danh mục, không cần GPS |
+| `GET /api/locations/{locationId}` | Lấy đúng thông tin địa điểm đã chọn; chưa tải script/audio |
+
+`keyword` được bỏ khoảng trắng đầu/cuối, tối đa 255 ký tự; tìm literal không phân biệt hoa/thường, vẫn phân biệt dấu. Thứ tự: tên khớp hoàn toàn, tiền tố, chứa từ khóa; sau đó tên và UUID để phân trang ổn định. `page` bắt đầu từ 0; `size` từ 1 đến 50. Từ khóa trống trả danh sách công khai. Đây là quy ước demo; các điểm cần chốt cho sản phẩm được ghi tại Jira HVP-1.
+
+Response danh sách có `items`, `page`, `size`, `totalElements`, `totalPages`, `message`, `suggestedCategories`. Không khớp trả HTTP 200, `items=[]`, thông báo và các danh mục khác đang có dữ liệu; không tự suy đoán địa điểm phổ biến. Danh mục/địa điểm không tồn tại hoặc không công khai trả 404; tham số sai trả 400; lỗi truy cập DB trả 503 với thông báo thử lại. Các lỗi có dạng Problem Details (`status`, `title`, `detail`).
+
+V2 thêm `locations.status`, mặc định DRAFT cho dữ liệu cũ; chỉ APPROVED thuộc danh mục đang bật được công khai. Profile `demo` nạp thêm migration `V2_1__seed_discovery_demo.sql` chứa địa điểm **hư cấu**, gồm danh mục có/rỗng, DRAFT, PENDING_REVIEW và danh mục đã tắt. Dùng database riêng cho demo và giữ profile demo khi dùng lại database đó, vì lịch sử Flyway có các migration demo 2.1/3.1. Profile mặc định chạy V1/V2/V3 và không nạp fixtures.
+
+Chạy từ thư mục gốc, sau khi chuẩn bị mật khẩu local theo hướng dẫn Docker:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = 'demo'
+docker compose -p hvp-us02-demo up -d --build
+```
+
+Tên project `hvp-us02-demo` tạo volume riêng. Demo dùng các cổng 8080/3000 như Compose hiện có. Gọi thử trong PowerShell:
+
+```powershell
+Invoke-RestMethod 'http://localhost:8080/api/categories'
+$keyword = [uri]::EscapeDataString('Bảo tàng')
+Invoke-RestMethod "http://localhost:8080/api/locations?keyword=$keyword"
+Invoke-RestMethod 'http://localhost:8080/api/locations?categoryId=10000000-0000-0000-0000-000000000003'
+Invoke-RestMethod 'http://localhost:8080/api/locations/20000000-0000-0000-0000-000000000001'
+```
+
+Backend này phục vụ online; tìm/duyệt Base Content khi ngoại tuyến và điều hướng UI vẫn cần nối Android. Schema demo dùng tên đơn ngữ, chưa có bản dịch/tên đường hoặc snapshot địa điểm đã xuất bản để phục vụ luồng chỉnh sửa UC-06.
+
+### Kiểm thử
+
+`mvnw.cmd verify` chạy kiểm thử HTTP/service với repository giả lập. Integration test đi qua HTTP, service, JDBC và Flyway thật khi có `TEST_DATABASE_URL`; nếu thiếu biến này, nhóm integration được báo skipped. CI backend đã cấu hình PostGIS riêng để chạy cả hai nhóm; cần xem lần chạy GitHub Actions thực tế để xác nhận CI.
+
+Để chạy integration test local, trỏ các biến sau tới **database PostgreSQL/PostGIS kiểm thử riêng** (test sẽ áp dụng V1/V2/V3 và fixtures demo):
+
+```powershell
+$env:TEST_DATABASE_URL = 'jdbc:postgresql://localhost:5432/discovery_test'
+$env:TEST_DATABASE_USERNAME = 'audio_guide'
+$env:TEST_DATABASE_PASSWORD = 'mat_khau_database_kiem_thu'
+cd .\backend\multi-audio-guide
+.\mvnw.cmd -B -ntp verify
+```
+
+Các thay đổi dữ liệu trong từng test được rollback; schema và fixtures Flyway vẫn còn để chạy lại. Bộ integration kiểm tra tìm kiếm, danh mục rỗng, phân trang, tọa độ, ẩn dữ liệu chưa duyệt, ký tự LIKE/SQL và việc migration không chạy lặp.

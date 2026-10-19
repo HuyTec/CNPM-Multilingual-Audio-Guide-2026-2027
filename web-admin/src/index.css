@@ -283,6 +283,16 @@ main {
   min-width: 0;
   box-shadow: 0 2px 3px #16273b03;
 }
+.live-panel {
+  padding: 24px;
+  margin-block: 16px;
+  overflow-wrap: anywhere;
+}
+.live-panel form {
+  display: grid;
+  gap: 12px;
+  max-width: 560px;
+}
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

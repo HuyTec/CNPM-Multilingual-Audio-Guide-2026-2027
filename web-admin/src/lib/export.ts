@@ -5,12 +5,13 @@ export async function exportReport(
   to: string,
   metrics: [string, string | number][],
   feedback: Feedback[],
+  source = "Dữ liệu giả lập",
 ) {
   const { Workbook } = await import("exceljs");
   const workbook = new Workbook();
   const analytics = workbook.addWorksheet("Analytics");
   analytics.addRows([
-    ["Báo cáo demo HVP", "Dữ liệu giả lập"],
+    ["Báo cáo demo HVP", source],
     ["Từ ngày", from],
     ["Đến ngày", to],
     ["Chỉ số", "Giá trị"],

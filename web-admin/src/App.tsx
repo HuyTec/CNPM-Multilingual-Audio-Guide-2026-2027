@@ -56,15 +56,15 @@ function Layout() {
             Môi trường demo
           </div>
           <p>
-            Dữ liệu giả lập.
+            Thống kê lấy từ database.
             <br />
-            Chưa kết nối API thực.
+            Biên tập / phản hồi còn giả lập.
           </p>
           <div className="profile">
             <span className="avatar">AD</span>
             <div>
               <strong>Quản trị viên</strong>
-              <small>Phiên xác thực giả lập</small>
+              <small>Thống kê có xác thực riêng</small>
             </div>
           </div>
         </div>
@@ -84,35 +84,38 @@ function Layout() {
         <main id="main" tabIndex={-1}>
           <Outlet />
         </main>
-        <footer className="demo-controls">
-          <label htmlFor="scenario">
-            <FlaskConical size={15} aria-hidden="true" />
-            Tình huống kiểm thử
-          </label>
-          <select
-            id="scenario"
-            name="scenario"
-            value={params.get("scenario") || "normal"}
-            onChange={(e) => {
-              const next = new URLSearchParams(params);
-              next.set("scenario", e.target.value);
-              next.delete("page");
-              setParams(next);
-            }}
-          >
-            <option value="normal">Dữ liệu thường</option>
-            <option value="empty">Không có dữ liệu</option>
-            <option value="error">Lỗi tải dữ liệu</option>
-            <option value="long">Dữ liệu dài</option>
-            {location.pathname.includes("/edit") ||
-            location.pathname.endsWith("/new") ? (
-              <option value="upload-error">Lỗi upload audio</option>
-            ) : location.pathname.startsWith("/analytics") ? (
-              <option value="export-error">Lỗi xuất báo cáo</option>
-            ) : null}
-          </select>
-          <small>Chỉ dùng để kiểm tra giao diện demo</small>
-        </footer>
+        {(!location.pathname.startsWith("/analytics") ||
+          params.get("source") === "mock") && (
+          <footer className="demo-controls">
+            <label htmlFor="scenario">
+              <FlaskConical size={15} aria-hidden="true" />
+              Tình huống kiểm thử
+            </label>
+            <select
+              id="scenario"
+              name="scenario"
+              value={params.get("scenario") || "normal"}
+              onChange={(e) => {
+                const next = new URLSearchParams(params);
+                next.set("scenario", e.target.value);
+                next.delete("page");
+                setParams(next);
+              }}
+            >
+              <option value="normal">Dữ liệu thường</option>
+              <option value="empty">Không có dữ liệu</option>
+              <option value="error">Lỗi tải dữ liệu</option>
+              <option value="long">Dữ liệu dài</option>
+              {location.pathname.includes("/edit") ||
+              location.pathname.endsWith("/new") ? (
+                <option value="upload-error">Lỗi upload audio</option>
+              ) : location.pathname.startsWith("/analytics") ? (
+                <option value="export-error">Lỗi xuất báo cáo</option>
+              ) : null}
+            </select>
+            <small>Chỉ dùng để kiểm tra giao diện demo</small>
+          </footer>
+        )}
       </div>
     </div>
   );

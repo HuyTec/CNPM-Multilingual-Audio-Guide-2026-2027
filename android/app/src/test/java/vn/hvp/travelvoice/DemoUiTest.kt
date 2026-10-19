@@ -2,10 +2,20 @@ package vn.hvp.travelvoice
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import vn.hvp.travelvoice.ui.navigation.DemoApp
+import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.semantics.SemanticsActions
 import org.junit.Rule
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -19,6 +29,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DemoUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @Before fun openMockExplore() { compose.onNodeWithText("Khám phá").performClick() }
 
     @Test fun exploreDetailPlayerBack() {
         capture("explore")
@@ -63,9 +74,26 @@ class DemoUiTest {
 
     @Test @Config(qualifiers = "w320dp-h720dp-xhdpi")
     fun mapMarkerOpensMatchingDetailOnNarrowWindow() {
+        // Robolectric has no MapLibre native renderer: verify navigation with an injected UI renderer.
+        compose.runOnUiThread {
+            compose.activity.setContent {
+                TravelVoiceTheme {
+                    DemoApp(startDestination = "explore", mapContent = { locations, select, _ ->
+                        Column {
+                            Text("Bản đồ kiểm thử chọn địa điểm")
+                            locations.forEach { location ->
+                                Button(onClick = { select(location.id) }, modifier = Modifier.semantics {
+                                    contentDescription = "Xem ${location.name}"
+                                }) { Text(location.name) }
+                            }
+                        }
+                    })
+                }
+            }
+        }
         compose.onNodeWithText("Bản đồ").performClick()
-        scrollListTo("Bản đồ minh họa · dữ liệu ngoại tuyến")
-        capture("map-320")
+        scrollListTo("Bản đồ kiểm thử chọn địa điểm")
+        capture("map-selection-320")
         compose.onNodeWithContentDescription("Xem Đền Ngọc Sơn").performClick()
         compose.onNodeWithText("Chọn địa điểm này").performClick()
         compose.onNodeWithText("Đền Ngọc Sơn").assertExists()
