@@ -1,6 +1,6 @@
 # Thiết lập Docker trên Windows
 
-Docker Compose đóng gói Spring Boot backend, React web-admin và PostgreSQL 17. Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Backend kết nối database `audio_guide` tại `postgres:5432` qua JDBC.
+Docker Compose đóng gói Spring Boot backend, React web-admin và PostgreSQL 17 kèm PostGIS (`postgis/postgis:17-3.6-alpine`). Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Backend kết nối database `audio_guide` tại `postgres:5432` qua JDBC; Flyway tự chạy `V1__demo.sql` khi khởi động để tạo schema demo.
 
 ```text
 Trình duyệt ── localhost:3000 ──> Nginx (web-admin)

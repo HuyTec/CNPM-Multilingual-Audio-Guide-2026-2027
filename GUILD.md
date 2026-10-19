@@ -28,7 +28,8 @@ docker compose logs --tail 100 backend postgres
 
 ## Thay đổi database và backup
 
-- Khi tích hợp Flyway, lưu migration tại `backend/multi-audio-guide/src/main/resources/db/migration/`, ví dụ `V1__create_locations.sql`.
+- Flyway đã được tích hợp và tự chạy khi backend khởi động; migration tại `backend/multi-audio-guide/src/main/resources/db/migration/`, bắt đầu bằng `V1__demo.sql` theo trang Database của sơ đồ. Tên migration dùng hai dấu gạch dưới: `V<version>__<description>.sql`.
+- Schema demo dùng PostGIS; service `postgres` dùng image `postgis/postgis:17-3.6-alpine` (vẫn PostgreSQL 17).
 - Mỗi thay đổi cấu trúc DB tạo migration mới; thống nhất số phiên bản trước khi merge để tránh trùng.
 - Không sửa migration đã chạy trên DB dùng chung; tạo migration tiếp theo để điều chỉnh.
 - Thêm/sửa/xóa dữ liệu qua ứng dụng không cần migration cho từng thao tác.
