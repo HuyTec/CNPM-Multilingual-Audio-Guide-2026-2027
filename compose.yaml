@@ -34,7 +34,7 @@ services:
       retries: 3
 
   postgres:
-    image: postgres:17-alpine
+    image: postgis/postgis:17-3.6-alpine
     environment:
       POSTGRES_DB: audio_guide
       POSTGRES_USER: audio_guide
