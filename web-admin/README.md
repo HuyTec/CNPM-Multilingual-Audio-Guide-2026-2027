@@ -1,5 +1,7 @@
 # React + TypeScript + Vite
 
+Trang `/analytics` mặc định đọc thống kê PostgreSQL thật qua backend (Basic Auth demo, tự cập nhật 5 giây, kỳ báo cáo và XLSX). Xem [hướng dẫn local/cùng Wi-Fi](../docs/vi/LIVE_DEMO_SETUP.md). Biên tập/phản hồi và mô tả mock cũ bên dưới vẫn là prototype; thống kê giả lập ở `/analytics?source=mock`.
+
 ## Demo Web Admin UC-06 / UC-07
 
 Giao diện tiếng Việt, React Router, Tailwind, dữ liệu giả lập trong `src/mocks/`. Thiết kế và kết quả review được lưu tại [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21), câu hỏi chưa chốt tại [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Yêu cầu sản phẩm hiện hành nằm trong [PRD](../docs/en/PRD_Report.md).

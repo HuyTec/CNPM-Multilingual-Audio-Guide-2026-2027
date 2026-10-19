@@ -3,12 +3,14 @@ services:
     build:
       context: ./backend/multi-audio-guide
     ports:
-      - "127.0.0.1:8080:8080"
+      - "${BACKEND_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-8080}:8080"
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/audio_guide
       SPRING_DATASOURCE_USERNAME: audio_guide
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD}
+      DEMO_ADMIN_USERNAME: ${DEMO_ADMIN_USERNAME:-admin}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_COMPONENTS: always
     depends_on:
       postgres:
@@ -24,7 +26,7 @@ services:
     build:
       context: ./web-admin
     ports:
-      - "127.0.0.1:3000:80"
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:80"
     depends_on:
       backend:
         condition: service_healthy

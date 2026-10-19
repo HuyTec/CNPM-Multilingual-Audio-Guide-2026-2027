@@ -1,8 +1,10 @@
 # TravelVoice — Android UI Demo (HVP-22)
 
+**Demo database/audio thật:** tab mặc định **Nghe demo** tải địa điểm, SHORT guide và WAV tiếng Việt từ backend, dùng MediaPlayer thật và đồng bộ lượt bắt đầu phát vào PostgreSQL. Web Admin xem thống kê từ cùng DB. Xem [hướng dẫn local/cùng Wi-Fi](../docs/vi/LIVE_DEMO_SETUP.md). Mô tả prototype bên dưới áp dụng cho Khám phá/Ngoại tuyến.
+
 > Cấu trúc phát triển được lưu tại [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Bản đồ trực tuyến đã được tích hợp ở `platform/maps/`, dùng `domain/model/MapPoint`; địa điểm, GPS, nội dung, audio và gói ngoại tuyến vẫn là dữ liệu/tình huống demo.
 
-Jetpack Compose / Material 3 cho du khách, đối chiếu UC-01–UC-05 của [PRD](../docs/en/PRD_Report.md). `MainActivity` → `DemoApp`. Tab Bản đồ dùng MapLibre Native OpenGL 13.3.1 và raster OpenStreetMap qua HTTPS; không cần API key. Chưa gọi backend hoặc sử dụng GPS/âm thanh thật.
+Jetpack Compose / Material 3 cho du khách, đối chiếu UC-01–UC-05 của [PRD](../docs/en/PRD_Report.md). `MainActivity` → `DemoApp`. Tab Bản đồ dùng MapLibre Native OpenGL 13.3.1 và raster OpenStreetMap qua HTTPS; không cần API key. GPS và các màn nghe/offline cũ còn mô phỏng; tab Nghe demo gọi backend và phát audio thật.
 
 ## Chạy demo
 

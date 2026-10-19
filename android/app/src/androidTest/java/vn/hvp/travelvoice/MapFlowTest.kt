@@ -22,6 +22,7 @@ class MapFlowTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun mapLoadOrFailureKeepsLocationSelectionAvailable() {
+        compose.onNodeWithText("Khám phá").performClick()
         compose.onNodeWithText("Bản đồ").performClick()
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex))
             .performScrollToNode(hasText("Bản đồ trực tuyến · địa điểm mẫu"))

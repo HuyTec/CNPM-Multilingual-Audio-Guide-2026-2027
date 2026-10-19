@@ -1,4 +1,5 @@
 <resources>
+    <string name="live_demo">Nghe demo</string>
     <string name="app_name">TravelVoice</string>
     <string name="explore">Khám phá</string>
     <string name="offline">Ngoại tuyến</string>

@@ -27,7 +27,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(DataAccessException.class)
     public ProblemDetail handleDatabase(DataAccessException exception) {
-        LOGGER.error("Location discovery database request failed", exception);
+        LOGGER.error("Database request failed", exception);
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
                 "Không thể tải dữ liệu lúc này. Vui lòng thử lại sau.");
     }

@@ -1,5 +1,7 @@
 # Backend
 
+**Luồng nghe/thống kê thật:** profile `demo` có SHORT guide, WAV tiếng Việt, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. V3/V3.1 bổ sung liên kết revision/sự kiện và seed ba bài ngắn, không seed lượt nghe. Xem [LIVE_DEMO_SETUP](../docs/vi/LIVE_DEMO_SETUP.md).
+
 Spring Boot API cho nội dung hướng dẫn, quy trình duyệt và quản trị. Mã nguồn ở `multi-audio-guide/`, dùng Java 21, Spring Boot 4.1.1 và Maven Wrapper 3.3.4 (Maven 3.9.9).
 
 ## Cài đặt và chạy trên Windows
@@ -47,7 +49,7 @@ docker compose logs --tail 100 backend
 docker compose exec postgres psql -U audio_guide -d audio_guide -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
-Kết quả mong đợi: có phiên bản `1` (`demo`) và `2` (`location discovery`), `success = t`; profile demo có thêm `2.1` (`seed discovery demo`). Không sửa migration sau khi đã áp dụng; tạo phiên bản tiếp theo để thay đổi schema. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.
+Kết quả mong đợi: có phiên bản `1` (`demo`) và `2` (`location discovery`), `success = t`; profile demo có thêm `2.1` (`seed discovery demo`); luồng lượt nghe bổ sung `3` (`playback content reference`) và demo `3.1` (`seed short guides`). Không sửa migration sau khi đã áp dụng; tạo phiên bản tiếp theo để thay đổi schema. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.
 
 ## Chạy demo US-02 và US-03
 
@@ -63,7 +65,7 @@ Luồng xử lý: `LocationController -> LocationDiscoveryService -> LocationRep
 
 Response danh sách có `items`, `page`, `size`, `totalElements`, `totalPages`, `message`, `suggestedCategories`. Không khớp trả HTTP 200, `items=[]`, thông báo và các danh mục khác đang có dữ liệu; không tự suy đoán địa điểm phổ biến. Danh mục/địa điểm không tồn tại hoặc không công khai trả 404; tham số sai trả 400; lỗi truy cập DB trả 503 với thông báo thử lại. Các lỗi có dạng Problem Details (`status`, `title`, `detail`).
 
-V2 thêm `locations.status`, mặc định DRAFT cho dữ liệu cũ; chỉ APPROVED thuộc danh mục đang bật được công khai. Profile `demo` nạp thêm migration `V2_1__seed_discovery_demo.sql` chứa địa điểm **hư cấu**, gồm danh mục có/rỗng, DRAFT, PENDING_REVIEW và danh mục đã tắt. Dùng database riêng cho demo và giữ profile demo khi dùng lại database đó, vì lịch sử Flyway có phiên bản 2.1. Profile mặc định chỉ chạy V1/V2 và không nạp fixtures.
+V2 thêm `locations.status`, mặc định DRAFT cho dữ liệu cũ; chỉ APPROVED thuộc danh mục đang bật được công khai. Profile `demo` nạp thêm migration `V2_1__seed_discovery_demo.sql` chứa địa điểm **hư cấu**, gồm danh mục có/rỗng, DRAFT, PENDING_REVIEW và danh mục đã tắt. Dùng database riêng cho demo và giữ profile demo khi dùng lại database đó, vì lịch sử Flyway có các migration demo 2.1/3.1. Profile mặc định chạy V1/V2/V3 và không nạp fixtures.
 
 Chạy từ thư mục gốc, sau khi chuẩn bị mật khẩu local theo hướng dẫn Docker:
 
@@ -88,7 +90,7 @@ Backend này phục vụ online; tìm/duyệt Base Content khi ngoại tuyến v
 
 `mvnw.cmd verify` chạy kiểm thử HTTP/service với repository giả lập. Integration test đi qua HTTP, service, JDBC và Flyway thật khi có `TEST_DATABASE_URL`; nếu thiếu biến này, nhóm integration được báo skipped. CI backend đã cấu hình PostGIS riêng để chạy cả hai nhóm; cần xem lần chạy GitHub Actions thực tế để xác nhận CI.
 
-Để chạy integration test local, trỏ các biến sau tới **database PostgreSQL/PostGIS kiểm thử riêng** (test sẽ áp dụng V1/V2 và fixtures demo):
+Để chạy integration test local, trỏ các biến sau tới **database PostgreSQL/PostGIS kiểm thử riêng** (test sẽ áp dụng V1/V2/V3 và fixtures demo):
 
 ```powershell
 $env:TEST_DATABASE_URL = 'jdbc:postgresql://localhost:5432/discovery_test'

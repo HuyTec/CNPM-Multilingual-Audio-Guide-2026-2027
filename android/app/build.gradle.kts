@@ -16,9 +16,10 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1-ui-demo"
+        buildConfigField("String", "DEMO_API_BASE_URL", "\"http://10.0.2.2:8081/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
     testOptions { unitTests.isIncludeAndroidResources = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

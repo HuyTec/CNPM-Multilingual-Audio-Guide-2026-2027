@@ -103,14 +103,14 @@ test("UC-06 unsaved navigation asks confirmation and Escape keeps form", async (
     .click();
   await page.getByRole("button", { name: "Rời trang", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Thống kê & phản hồi", exact: true }),
+    page.getByRole("heading", { name: "Thống kê lượt nghe", exact: true }),
   ).toBeVisible();
 });
 
 test("UC-07 URL filters/detail; strict feedback transitions and timestamp persist", async ({
   page,
 }) => {
-  await page.goto("/analytics");
+  await page.goto("/analytics?source=mock");
   await expect(page).toHaveURL(/from=.*to=/);
   await page.getByLabel("Trạng thái", { exact: true }).selectOption("NEW");
   await expect(page).toHaveURL(/status=NEW/);
@@ -134,7 +134,7 @@ test("UC-07 URL filters/detail; strict feedback transitions and timestamp persis
 test("UC-07 A3 XLSX contains selected period and all period feedback; E2 retries", async ({
   page,
 }) => {
-  await page.goto("/analytics?scenario=export-error");
+  await page.goto("/analytics?source=mock&scenario=export-error");
   await expect(
     page.getByRole("heading", { name: "Phản hồi từ du khách" }),
   ).toBeVisible();
@@ -158,7 +158,7 @@ test("UC-07 A3 XLSX contains selected period and all period feedback; E2 retries
 test("UC-07 A1 change period reloads metrics; empty and error states retry", async ({
   page,
 }) => {
-  await page.goto("/analytics");
+  await page.goto("/analytics?source=mock");
   await expect(
     page.getByRole("heading", { name: "Phản hồi từ du khách" }),
   ).toBeVisible();
@@ -189,7 +189,7 @@ test("Long data pagination and narrow viewport do not overflow page", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBeTruthy();
-  await page.goto("/analytics?scenario=long");
+  await page.goto("/analytics?source=mock&scenario=long");
   await expect(
     page
       .getByRole("region", { name: "Phản hồi du khách", exact: true })
@@ -207,7 +207,7 @@ test("Long data pagination and narrow viewport do not overflow page", async ({
 });
 
 test("Accessibility audit of screens and feedback dialog", async ({ page }) => {
-  for (const url of ["/locations", "/locations/new", "/analytics"]) {
+  for (const url of ["/locations", "/locations/new", "/analytics?source=mock"]) {
     await page.goto(url);
     await expect(
       page.getByText("Đang tải dữ liệu…", { exact: true }),
@@ -229,7 +229,7 @@ test("Desktop screenshots and keyboard skip link", async ({ page }) => {
   for (const [url, name] of [
     ["/locations", "locations"],
     ["/locations/loc-1/edit", "form"],
-    ["/analytics", "analytics"],
+    ["/analytics?source=mock", "analytics"],
   ]) {
     await page.goto(url);
     await expect(

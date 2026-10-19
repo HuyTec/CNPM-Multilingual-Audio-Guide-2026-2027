@@ -15,6 +15,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.semantics.SemanticsActions
 import org.junit.Rule
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -28,6 +29,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DemoUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @Before fun openMockExplore() { compose.onNodeWithText("Khám phá").performClick() }
 
     @Test fun exploreDetailPlayerBack() {
         capture("explore")
@@ -76,7 +78,7 @@ class DemoUiTest {
         compose.runOnUiThread {
             compose.activity.setContent {
                 TravelVoiceTheme {
-                    DemoApp(mapContent = { locations, select, _ ->
+                    DemoApp(startDestination = "explore", mapContent = { locations, select, _ ->
                         Column {
                             Text("Bản đồ kiểm thử chọn địa điểm")
                             locations.forEach { location ->
