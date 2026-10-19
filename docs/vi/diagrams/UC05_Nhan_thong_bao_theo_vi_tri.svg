@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1650" height="1810" viewBox="0 0 1650 1810" role="img" aria-labelledby="title"><title id="title">UC-05 — Nhận thông báo theo vị trí</title><rect width="100%" height="100%" fill="white"/>
+<rect x="41.0" y="94.0" width="620.0" height="1677.0" rx="0" fill="white" stroke="#6C8EBF"/>
+<rect x="41.0" y="94.0" width="620.0" height="34" rx="0" fill="#F5F5F5" stroke="#6C8EBF"/>
+<text x="351.0" y="116.39" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#17212b" text-anchor="middle">TÁC NHÂN — Du khách</text>
+<rect x="691.0" y="94.0" width="919.0" height="1677.0" rx="0" fill="white" stroke="#82B366"/>
+<rect x="691.0" y="94.0" width="919.0" height="34" rx="0" fill="#FFFFFF" stroke="#82B366"/>
+<text x="1150.5" y="116.39" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#17212b" text-anchor="middle">HỆ THỐNG — Ứng dụng di động / Vùng địa lý và thông báo của hệ điều hành</text>
+<polyline points="1123.0,188.0 1123.0049999999999,319.9999877929688" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0049999999999,319.9999877929688 1119.6697581387668,312.72838812528363 1126.3396909728492,312.7281354762893" fill="#354252" stroke="#354252"/>
+<polyline points="1028.52,364.9999877929688 951.0,365.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="951.0,365.0 958.2717254722437,361.6650324354917 958.2717265225543,368.334965274359" fill="#354252" stroke="#354252"/>
+<rect x="972.51" y="344.8499877929688" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="989.76" y="355.8499877929688" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1123.0049999999999,409.9999877929688 1123.0,455.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0,455.0 1119.6658415704835,447.7279034957665 1126.3357743681786,447.72864459920964" fill="#354252" stroke="#354252"/>
+<rect x="1135.7549999999999" y="425.3499938964844" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1145.0049999999999" y="436.3499938964844" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1123.0,510.0 1123.018137254902,570.1682365817948" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.018137254902,570.1682365817948 1119.680978980882,562.8975162148614 1126.3509115167094,562.8955056146934" fill="#354252" stroke="#354252"/>
+<polyline points="1194.036274509804,597.0841182908974 1253.5181372549018,597.0841182908974 1253.5181372549018,595.0 1313.0,595.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1313.0,595.0 1305.728274002601,598.3349664194337 1305.728274002601,591.6650335805663" fill="#354252" stroke="#354252"/>
+<rect x="1214.527205882353" y="576.9341182908975" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1223.777205882353" y="587.9341182908975" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1123.018137254902,624.0 1122.4848484848485,699.6185716468237" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1122.4848484848485,699.6185716468237 1119.2012464904103,692.3235077031615 1125.8710134686887,692.3705452463328" fill="#354252" stroke="#354252"/>
+<rect x="1127.768137254902" y="654.6592858234119" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1145.018137254902" y="665.6592858234119" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1446.5,640.0 1446.5,729.3092858234119 1194.969696969697,729.3092858234119" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1194.969696969697,729.3092858234119 1202.241422967096,725.9743194039781 1202.241422967096,732.6442522428456" fill="#354252" stroke="#354252"/>
+<polyline points="1050.0,729.3092858234119 973.0,730.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="973.0,730.0 980.2415189573974,726.5999407079207 980.3013479421315,733.269605209797" fill="#354252" stroke="#354252"/>
+<rect x="994.25" y="709.1592858234119" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1011.5" y="720.1592858234119" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1122.4848484848485,759.0 1122.5292333872187,832.3398134884361" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1122.5292333872187,832.3398134884361 1119.1898667657274,825.070107127979 1125.8597983831262,825.0660705174455" fill="#354252" stroke="#354252"/>
+<rect x="1135.2348484848485" y="788.519906744218" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1144.4848484848485" y="799.519906744218" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1202.0584667744374,864.6699067442181 1330.0,863.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1330.0,863.0 1322.7724179556892,866.4295856590492 1322.6853686845393,859.7602208842453" fill="#354252" stroke="#354252"/>
+<rect x="1256.7792333872187" y="844.5199067442181" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1266.0292333872187" y="855.5199067442181" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1122.5292333872187,897.0 1122.53,970.31" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1122.53,970.31 1119.1949575393069,963.0383088772023 1125.8648903778096,963.0382391287947" fill="#354252" stroke="#354252"/>
+<rect x="1127.2792333872187" y="926.505" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1144.5292333872187" y="937.505" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1059.53,1000.0 973.0,1000.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="973.0,1000.0 980.2717259973991,996.6650335805663 980.2717259973991,1003.3349664194337" fill="#354252" stroke="#354252"/>
+<rect x="999.015" y="979.85" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1016.265" y="990.85" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1122.53,1029.69 1123.0,1090.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0,1090.0 1119.608467502669,1082.75448364024 1126.2781978118255,1082.702505970777" fill="#354252" stroke="#354252"/>
+<rect x="1135.28" y="1052.695" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1144.53" y="1063.695" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1123.0,1145.0 1122.2942310354165,1199.025996364904" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1122.2942310354165,1199.025996364904 1119.0545352808306,1191.7113281278805 1125.723899063147,1191.798453406224" fill="#354252" stroke="#354252"/>
+<polyline points="1450.0,903.0 1450.0,1230.2629981824518 1191.5884620708332,1230.2629981824518" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1191.5884620708332,1230.2629981824518 1198.8601880682322,1226.9280317630182 1198.8601880682322,1233.5979646018855" fill="#354252" stroke="#354252"/>
+<polyline points="1053.0,1230.2629981824518 973.0,1230.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="973.0,1230.0 980.2826502701946,1226.688957106585 980.2607231360118,1233.358853903072" fill="#354252" stroke="#354252"/>
+<rect x="995.75" y="1210.1129981824517" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1013.0" y="1221.1129981824517" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1122.2942310354165,1261.5 1123.0,1320.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0,1320.0 1119.5775534351192,1312.7690346764393 1126.2470009212964,1312.6885716158126" fill="#354252" stroke="#354252"/>
+<rect x="1135.0442310354165" y="1283.6" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1144.2942310354165" y="1294.6" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1123.0,1375.0 1123.1517442734873,1428.4660442710694" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.1517442734873,1428.4660442710694 1119.796153171313,1421.2038126336863 1126.4660591470047,1421.184882487454" fill="#354252" stroke="#354252"/>
+<polyline points="1035.0,1461.2330221355348 973.0,1460.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="973.0,1460.0 980.3365992792218,1456.8102804173216 980.2039775221239,1463.4788946320252" fill="#354252" stroke="#354252"/>
+<rect x="986.75" y="1441.0830221355347" width="34.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1004.0" y="1452.0830221355347" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Không</text>
+<polyline points="1123.1517442734873,1494.0 1123.0,1550.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0,1550.0 1119.6847500871145,1542.719263909802 1126.3546584388655,1542.737337488321" fill="#354252" stroke="#354252"/>
+<rect x="1135.9017442734873" y="1514.85" width="18.5" height="14.3" rx="0" fill="white" stroke="none"/>
+<text x="1145.1517442734873" y="1525.85" font-family="Arial,sans-serif" font-size="10" font-weight="400" fill="#17212b" text-anchor="middle">Có</text>
+<polyline points="1123.0,1605.0 1123.0,1659.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1123.0,1659.0 1119.6650335805664,1651.728274002601 1126.3349664194336,1651.728274002601" fill="#354252" stroke="#354252"/>
+<polyline points="721.0,365.0 683.0,365.0 683.0,1675.0 1079.0,1675.0 1107.0,1675.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1107.0,1675.0 1099.728274002601,1678.3349664194336 1099.728274002601,1671.6650335805664" fill="#354252" stroke="#354252"/>
+<polyline points="743.0,730.0 683.0,730.0 683.0,1675.0 1079.0,1675.0 1107.0,1675.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1107.0,1675.0 1099.728274002601,1678.3349664194336 1099.728274002601,1671.6650335805664" fill="#354252" stroke="#354252"/>
+<polyline points="743.0,1000.0 683.0,1000.0 683.0,1675.0 1079.0,1675.0 1107.0,1675.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1107.0,1675.0 1099.728274002601,1678.3349664194336 1099.728274002601,1671.6650335805664" fill="#354252" stroke="#354252"/>
+<polyline points="743.0,1230.0 683.0,1230.0 683.0,1675.0 1079.0,1675.0 1107.0,1675.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1107.0,1675.0 1099.728274002601,1678.3349664194336 1099.728274002601,1671.6650335805664" fill="#354252" stroke="#354252"/>
+<polyline points="743.0,1460.0 683.0,1460.0 683.0,1675.0 1079.0,1675.0 1107.0,1675.0" fill="none" stroke="#354252" stroke-width="1.15"/>
+<polygon points="1107.0,1675.0 1099.728274002601,1678.3349664194336 1099.728274002601,1671.6650335805664" fill="#354252" stroke="#354252"/>
+<ellipse cx="1123.0" cy="176.0" rx="12.0" ry="12.0" fill="#000000" stroke="#000000" stroke-width="1"/>
+<rect x="721.0" y="315.0" width="230.0" height="100.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="836.0" y="347.48" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">E1 — Không có quyền vị trí: không theo</text>
+<text x="836.0" y="362.24" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">dõi vùng địa lý, không gửi thông báo. Du</text>
+<text x="836.0" y="377.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">khách vẫn khám phá thủ công qua</text>
+<text x="836.0" y="391.76" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">UC-01.</text>
+<rect x="1003.0" y="455.0" width="240.0" height="55.0" rx="10" fill="#dae8fc" stroke="#6c8ebf"/>
+<text x="1123.0" y="479.74" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">Phát hiện đi vào vùng địa lý và xác định</text>
+<text x="1123.0" y="494.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">mã địa điểm</text>
+<rect x="1313.0" y="550.0" width="267.0" height="90.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="1446.5" y="584.86" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">A1 — Chọn địa điểm gần nhất và ưu tiên thông</text>
+<text x="1446.5" y="599.62" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">báo. Các địa điểm khác vẫn có thể xem qua</text>
+<text x="1446.5" y="614.38" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">UC-01.</text>
+<rect x="743.0" y="695.0" width="230.0" height="70.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="858.0" y="727.24" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">A4 — Chưa hết khoảng chờ: không hiển</text>
+<text x="858.0" y="742.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">thị thông báo (BR1)</text>
+<rect x="1330.0" y="823.0" width="240.0" height="80.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="1450.0" y="852.86" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">A2 — Hiển thị thông báo trong ứng dụng,</text>
+<text x="1450.0" y="867.62" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">chứa mã địa điểm, thay cho thông báo hệ</text>
+<text x="1450.0" y="882.38" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">điều hành</text>
+<polygon points="1122.53,970.31 1185.53,1000.0 1122.53,1029.69 1059.53,1000.0" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1122.53" y="997.4699999999999" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Đã cấp quyền</text>
+<text x="1122.53" y="1010.9999999999999" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">thông báo?</text>
+<rect x="743.0" y="960.0" width="230.0" height="80.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="858.0" y="997.24" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">E2 — Không có quyền thông báo: không</text>
+<text x="858.0" y="1012.0" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">thể hiển thị thông báo của hệ điều hành</text>
+<rect x="1003.0" y="1090.0" width="240.0" height="55.0" rx="10" fill="#dae8fc" stroke="#6c8ebf"/>
+<text x="1123.0" y="1114.74" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">Hiển thị thông báo hệ điều hành theo ngôn</text>
+<text x="1123.0" y="1129.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">ngữ ứng dụng, kèm mã địa điểm</text>
+<rect x="743.0" y="1190.0" width="230.0" height="80.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="858.0" y="1219.86" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">A3 — Không chọn thông báo: không điều</text>
+<text x="858.0" y="1234.62" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">hướng; du khách tiếp tục sử dụng ứng</text>
+<text x="858.0" y="1249.3799999999999" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">dụng</text>
+<rect x="1003.0" y="1320.0" width="240.0" height="55.0" rx="10" fill="#dae8fc" stroke="#6c8ebf"/>
+<text x="1123.0" y="1352.12" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">Đọc mã địa điểm đi kèm thông báo</text>
+<rect x="743.0" y="1415.0" width="230.0" height="90.0" rx="10" fill="#F8CECC" stroke="#B85450"/>
+<text x="858.0" y="1449.86" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">E3 — Mã địa điểm không hợp lệ: không</text>
+<text x="858.0" y="1464.62" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">mở màn hình; báo cho du khách rằng địa</text>
+<text x="858.0" y="1479.3799999999999" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">điểm không khả dụng</text>
+<rect x="1003.0" y="1550.0" width="240.0" height="55.0" rx="10" fill="#d5e8d4" stroke="#82b366"/>
+<text x="1123.0" y="1574.74" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">Mở màn hình Chi tiết địa điểm và kích hoạt</text>
+<text x="1123.0" y="1589.5" font-family="Arial,sans-serif" font-size="12" font-weight="400" fill="#17212b" text-anchor="middle">UC-02 bằng mã địa điểm</text>
+<ellipse cx="1123.0" cy="1675.0" rx="11.0" ry="11.0" fill="#000000" stroke="#000000" stroke-width="1"/>
+<ellipse cx="1123.0" cy="1675.0" rx="16.0" ry="16.0" fill="none" stroke="#000000" stroke-width="2"/>
+<polygon points="1122.4848484848485,699.6185716468237 1194.969696969697,729.3092858234119 1122.4848484848485,759.0 1050.0,729.3092858234119" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1122.4848484848485" y="726.7792858234119" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Đã hết khoảng</text>
+<text x="1122.4848484848485" y="740.3092858234119" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">chờ thông báo?</text>
+<polygon points="1123.018137254902,570.1682365817948 1194.036274509804,597.0841182908974 1123.018137254902,624.0 1052.0,597.0841182908974" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1123.018137254902" y="594.5541182908973" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Đi vào nhiều</text>
+<text x="1123.018137254902" y="608.0841182908973" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">vùng địa lý?</text>
+<polygon points="1123.0049999999999,319.9999877929688 1217.49,364.9999877929688 1123.0049999999999,409.9999877929688 1028.52,364.9999877929688" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1123.0049999999999" y="362.4699877929688" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Đã cấp quyền</text>
+<text x="1123.0049999999999" y="375.9999877929688" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">vị trí?</text>
+<polygon points="1122.5292333872187,832.3398134884361 1202.0584667744374,864.6699067442181 1122.5292333872187,897.0 1043.0,864.6699067442181" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1122.5292333872187" y="862.139906744218" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Ứng dụng đang</text>
+<text x="1122.5292333872187" y="875.669906744218" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">ở tiền cảnh?</text>
+<polygon points="1122.2942310354165,1199.025996364904 1191.5884620708332,1230.2629981824518 1122.2942310354165,1261.5 1053.0,1230.2629981824518" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1122.2942310354165" y="1227.7329981824519" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Du khách chọn</text>
+<text x="1122.2942310354165" y="1241.2629981824518" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">thông báo?</text>
+<polygon points="1123.1517442734873,1428.4660442710694 1211.3034885469747,1461.2330221355348 1123.1517442734873,1494.0 1035.0,1461.2330221355348" fill="#fff2cc" stroke="#d6b656"/>
+<text x="1123.1517442734873" y="1458.7030221355346" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">Mã địa điểm</text>
+<text x="1123.1517442734873" y="1472.2330221355346" font-family="Arial,sans-serif" font-size="11" font-weight="400" fill="#17212b" text-anchor="middle">hợp lệ?</text>
+<text x="825.5" y="49.24" font-family="Arial,sans-serif" font-size="24.0" font-weight="700" fill="#17212b" text-anchor="middle">UC-05 — Nhận thông báo theo vị trí</text>
+</svg>
