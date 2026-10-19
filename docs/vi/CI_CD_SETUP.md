@@ -3,7 +3,7 @@
 ## Trạng thái hiện tại
 
 - CI đã có tại `.github/workflows/ci.yml`. Workflow chạy khi push, mở/cập nhật pull request và khi kích hoạt thủ công.
-- Job backend dùng JDK 21 và Maven Wrapper để chạy `verify` (biên dịch, test, đóng gói). Job web-admin dùng Node.js 24, `npm ci`, lint và build.
+- Job backend dùng JDK 21 và Maven Wrapper để chạy `verify` (biên dịch, test, đóng gói); từ 19/10/2026 có thêm service PostgreSQL 17/PostGIS riêng và các biến `TEST_DATABASE_*` để chạy integration test US-02/US-03 cùng Flyway. Job web-admin dùng Node.js 24, `npm ci`, lint và build.
 - Ngày 07/10/2026, các lệnh tương ứng chạy thành công cục bộ: backend `verify` đạt 1 test; web-admin lint và build đạt. Chưa có bằng chứng workflow đã chạy trên GitHub vì các file hiện chưa được commit/push.
 - Dockerfile cho backend/web-admin và `compose.yaml` đã có; build image và chạy hai container cục bộ thành công ngày 07/10/2026. Xem [cách cài và chạy Docker](./DOCKER_SETUP.md).
 - CD lên máy chủ chưa được thiết lập: chưa chốt nơi triển khai, biến môi trường vận hành, registry hoặc workflow phát hành. CI xanh và Compose chạy cục bộ chưa chứng minh ứng dụng đã được triển khai.

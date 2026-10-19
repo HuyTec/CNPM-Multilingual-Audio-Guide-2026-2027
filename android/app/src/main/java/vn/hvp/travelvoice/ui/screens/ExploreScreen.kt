@@ -11,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
@@ -23,7 +24,11 @@ import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun ExploreScreen(onLocation: (String) -> Unit, modifier: Modifier = Modifier, language: String = "VI") {
+fun ExploreScreen(
+    onLocation: (String) -> Unit, modifier: Modifier = Modifier, language: String = "VI",
+    mapContent: LocationMapContent = { locations, onMarker, onShowList -> MapPreview(locations, onMarker, onShowList = onShowList) },
+) {
+    val focusManager = LocalFocusManager.current
     var keyword by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable { mutableStateOf("Tất cả") }
     var radius by rememberSaveable { mutableFloatStateOf(500f) }
@@ -36,13 +41,16 @@ fun ExploreScreen(onLocation: (String) -> Unit, modifier: Modifier = Modifier, l
     var invalidNotice by rememberSaveable { mutableStateOf(false) }
     val manual = keyword.isNotBlank() || category != "Tất cả" || mapVisible
     val matches = remember(keyword, category, radius, manual) {
-        DemoData.locations.filter { location ->
+        DemoData.mapLocations.filter { location ->
             (keyword.isBlank() || location.name.contains(keyword.trim(), ignoreCase = true) || location.street.contains(keyword.trim(), ignoreCase = true)) &&
                 (category == "Tất cả" || location.category == category) &&
                 (manual || location.distanceMeters <= radius.toInt())
         }.sortedBy { it.distanceMeters }.take(if (manual) 20 else 5)
     }
-    val selected = DemoData.locations.firstOrNull { it.id == selectedMarker }
+    val selected = matches.firstOrNull { it.id == selectedMarker }
+    LaunchedEffect(matches) {
+        if (matches.none { it.id == selectedMarker }) selectedMarker = null
+    }
     val nearest = DemoData.locations.minByOrNull { it.distanceMeters }
     LazyColumn(modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
@@ -60,7 +68,7 @@ fun ExploreScreen(onLocation: (String) -> Unit, modifier: Modifier = Modifier, l
             }
             TabRow(selectedTabIndex = if (mapVisible) 1 else 0) {
                 Tab(selected = !mapVisible, onClick = { mapVisible = false }, text = { Text("Danh sách") })
-                Tab(selected = mapVisible, onClick = { mapVisible = true }, text = { Text("Bản đồ") })
+                Tab(selected = mapVisible, onClick = { focusManager.clearFocus(); mapVisible = true }, text = { Text("Bản đồ") })
             }
         }
         item {
@@ -110,7 +118,7 @@ fun ExploreScreen(onLocation: (String) -> Unit, modifier: Modifier = Modifier, l
                 StateMessage("Không tìm thấy địa điểm", if (!manual) "Thử tăng bán kính hoặc tìm bằng từ khóa, danh mục." else "Thử từ khóa khác hoặc chọn danh mục Tất cả.")
                 TextButton(onClick = { keyword = ""; category = "Tất cả"; radius = 500f; scenario = "Bình thường" }) { Text("Xem gợi ý") }
             }
-            mapVisible -> item { MapPreview(matches, { selectedMarker = it }) }
+            mapVisible -> item(key = "location-map") { mapContent(matches, { selectedMarker = it }, { mapVisible = false }) }
             else -> {
                 item { SectionTitle(if (manual) "Kết quả tìm kiếm" else "Địa điểm gần bạn", "${matches.size} địa điểm · sắp xếp theo khoảng cách") }
                 items(matches, key = { it.id }) { location -> LocationCard(location, { onLocation(location.id) }) }

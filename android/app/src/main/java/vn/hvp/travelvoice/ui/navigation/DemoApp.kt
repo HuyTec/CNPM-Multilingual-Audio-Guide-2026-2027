@@ -19,12 +19,14 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import vn.hvp.travelvoice.R
+import vn.hvp.travelvoice.ui.components.LocationMapContent
+import vn.hvp.travelvoice.ui.components.MapPreview
 import vn.hvp.travelvoice.ui.screens.*
 import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DemoApp() {
+fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -> MapPreview(locations, onMarker, onShowList = onShowList) }) {
     val nav = rememberNavController()
     var appLanguage by rememberSaveable { mutableStateOf("VI") }
     val entry by nav.currentBackStackEntryAsState()
@@ -52,7 +54,7 @@ fun DemoApp() {
         Column(Modifier.fillMaxSize().padding(padding)) {
             Text(stringResource(R.string.demo_note), Modifier.padding(horizontal = 16.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             NavHost(nav, startDestination = "explore", modifier = Modifier.weight(1f)) {
-                composable("explore") { ExploreScreen(onLocation = { nav.navigate("detail/$it") { launchSingleTop = true } }, language = appLanguage) }
+                composable("explore") { ExploreScreen(onLocation = { nav.navigate("detail/$it") { launchSingleTop = true } }, language = appLanguage, mapContent = mapContent) }
                 composable("offline") { OfflineScreen() }
                 composable("detail/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { backStack ->
                     DetailScreen(locationId = backStack.arguments?.getString("id").orEmpty(),

@@ -16,6 +16,22 @@ jobs:
   backend:
     name: Backend / Maven verify
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.6-alpine
+        env:
+          POSTGRES_DB: discovery_test
+          POSTGRES_USER: audio_guide
+          POSTGRES_PASSWORD: ci-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U audio_guide -d discovery_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      TEST_DATABASE_URL: jdbc:postgresql://localhost:5432/discovery_test
+      TEST_DATABASE_USERNAME: audio_guide
+      TEST_DATABASE_PASSWORD: ci-test-only
     defaults:
       run:
         working-directory: backend/multi-audio-guide
