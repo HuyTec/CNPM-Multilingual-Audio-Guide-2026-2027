@@ -29,7 +29,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DemoUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
-    @Before fun openMockExplore() { compose.onNodeWithText("Khám phá").performClick() }
+    @Before fun openMockExplore() { compose.activity.setContent { TravelVoiceTheme { DemoApp(startDestination = "explore") } } }
 
     @Test fun exploreDetailPlayerBack() {
         capture("explore")

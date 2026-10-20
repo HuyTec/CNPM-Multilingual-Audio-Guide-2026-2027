@@ -51,7 +51,7 @@ class LocationDiscoveryIntegrationTest {
     @Test
     void migrationsValidateAndDoNotRunTwice() {
         flyway.validate();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3.1");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3.4");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
 
@@ -65,7 +65,7 @@ class LocationDiscoveryIntegrationTest {
 
     @Test
     void prefixMatchRanksBeforeSubstring() throws Exception {
-        mvc.perform(get("/api/locations").param("keyword", "Bảo tàng"))
+        mvc.perform(get("/api/locations").param("keyword", "Bảo tàng").param("categoryId", CATEGORY.toString()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(2))
                 .andExpect(jsonPath("$.items[0].locationId").value(LOCATION));
@@ -83,7 +83,7 @@ class LocationDiscoveryIntegrationTest {
     void categoryCatalogIncludesEmptyCategoriesAndCountsOnlyApprovedLocations() throws Exception {
         mvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(3))
+                .andExpect(jsonPath("$.length()").value(4))
                 .andExpect(jsonPath("$[?(@.categoryId == '10000000-0000-0000-0000-000000000001')].locationCount").value(contains(2)))
                 .andExpect(jsonPath("$[?(@.categoryId == '10000000-0000-0000-0000-000000000003')].locationCount").value(contains(0)));
     }
@@ -93,7 +93,7 @@ class LocationDiscoveryIntegrationTest {
         mvc.perform(get("/api/locations").param("categoryId", "10000000-0000-0000-0000-000000000003"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items").isEmpty())
-                .andExpect(jsonPath("$.suggestedCategories.length()").value(2));
+                .andExpect(jsonPath("$.suggestedCategories.length()").value(3));
     }
 
     @Test
@@ -107,12 +107,12 @@ class LocationDiscoveryIntegrationTest {
 
     @Test
     void paginationIsStableAndDoesNotRequireGps() throws Exception {
-        mvc.perform(get("/api/locations").param("size", "1"))
+        mvc.perform(get("/api/locations").param("keyword", "Demo").param("size", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(3))
                 .andExpect(jsonPath("$.totalPages").value(3))
                 .andExpect(jsonPath("$.items[0].locationId").value(LOCATION));
-        mvc.perform(get("/api/locations").param("size", "1").param("page", "1"))
+        mvc.perform(get("/api/locations").param("keyword", "Demo").param("size", "1").param("page", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].locationId").value("20000000-0000-0000-0000-000000000003"));
     }

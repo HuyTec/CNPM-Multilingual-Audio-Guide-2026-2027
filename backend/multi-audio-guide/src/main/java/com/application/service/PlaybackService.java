@@ -36,7 +36,7 @@ public class PlaybackService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngôn ngữ hoặc loại kịch bản không hợp lệ.");
         }
         return guides.find(locationId, lang, type).orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Chưa có thuyết minh đã duyệt cho lựa chọn này."));
+                HttpStatus.NOT_FOUND, "Nội dung cho địa điểm này hiện đang được cập nhật."));
     }
 
     /** Same event UUID is safe to resend; reuse for a different content revision is rejected. */

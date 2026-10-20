@@ -1,10 +1,18 @@
-# TravelVoice — Android UI Demo (HVP-22)
+# TravelVoice — Android
 
-**Demo database/audio thật:** tab mặc định **Nghe demo** tải địa điểm, SHORT guide và WAV tiếng Việt từ backend, dùng MediaPlayer thật và đồng bộ lượt bắt đầu phát vào PostgreSQL. Web Admin xem thống kê từ cùng DB. Xem [hướng dẫn local/cùng Wi-Fi](../docs/vi/LIVE_DEMO_SETUP.md). Mô tả prototype bên dưới áp dụng cho Khám phá/Ngoại tuyến.
+**APK 0.2-shared-content (versionCode 2):** màn chính đọc danh sách và bài từ cùng backend/PostgreSQL với Web du khách và Web Admin. Bảy điểm demo, VI/EN/FR/JA/ZH/RU × FULL/SHORT; mặc định VI/FULL. `Làm mới nội dung` gọi lại máy chủ. Khi mạng lỗi, nguồn gói đã xác minh được ghi rõ; không dùng dữ liệu giả để báo kết nối thành công.
 
-> Cấu trúc phát triển được lưu tại [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Bản đồ trực tuyến đã được tích hợp ở `platform/maps/`, dùng `domain/model/MapPoint`; địa điểm, GPS, nội dung, audio và gói ngoại tuyến vẫn là dữ liệu/tình huống demo.
+Audio ưu tiên tệp đúng bài, thiếu/lỗi mới dùng TTS đúng ngôn ngữ hiệu lực; không autoplay. BASE/OPTIONAL dùng cùng hợp đồng [gói nội dung](../backend/CONTENT_PACKAGE_API.md), xác nhận tải, checksum/chữ ký, cài nguyên tử và bảo vệ BASE. Lượt nghe gửi khi thực sự bắt đầu, có outbox. Voice TTS phụ thuộc thiết bị; chưa xác nhận đủ sáu voice thật. GPS/geofence tự động chưa triển khai.
 
-Jetpack Compose / Material 3 cho du khách, đối chiếu UC-01–UC-05 của [PRD](../docs/en/PRD_Report.md). `MainActivity` → `DemoApp`. Tab Bản đồ dùng MapLibre Native OpenGL 13.3.1 và raster OpenStreetMap qua HTTPS; không cần API key. GPS và các màn nghe/offline cũ còn mô phỏng; tab Nghe demo gọi backend và phát audio thật.
+Jetpack Compose / Material 3, `MainActivity` → `DemoApp` → `SharedTourScreen`. Bản biên tập chưa APPROVED trong Web Admin không thay thế nội dung công khai. Luồng prototype cũ chỉ còn cho kiểm thử legacy, không phải màn chính của APK mới.
+
+## Kết nối và Google Maps
+
+Emulator dùng `http://10.0.2.2:8080/`; điện thoại thật nhập IP LAN của máy backend trong **Kết nối máy chủ**. Giá trị emulator cũ cổng 8081 được chuyển sang 8080; địa chỉ tùy chỉnh được giữ. Cần cài APK mới thay bản demo cũ.
+
+Sao chép `secrets.properties.example` thành `secrets.properties`, đặt `MAPS_API_KEY` của Android (hoặc biến môi trường `ANDROID_MAPS_API_KEY`); không commit tệp. SDK Google Maps 20.1.0, bật Maps SDK for Android/billing. Restriction Android apps: package **vn.hvp.travelvoice.demo**, SHA-1 debug hiện tại **09:34:78:C0:96:63:FF:90:DD:B1:C0:E8:EB:C2:7C:39:17:C1:A4:42**. Máy/keystore khác hoặc bản release phải lấy fingerprint tương ứng. Key Web và key Android cấu hình riêng.
+
+Map dùng cùng ID và khung Quận 1 như Web, zoom 14–19; ghim 101/102/103/107, các điểm lân cận vẫn có trong danh sách. Vùng camera là hình chữ nhật demo, chưa phải đường biên hành chính. Không tải Google tiles vào gói offline. Thiếu quyền/xác thực Google không làm mất danh sách/text.
 
 ## Chạy demo
 
@@ -17,7 +25,7 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11'
 $env:ANDROID_HOME = 'E:\Project\CongNghePhanMem_2026-2027\android\.sdk'
 $env:GRADLE_USER_HOME = "$PWD\.gradle-user-home"
 # Workaround Windows nếu JDK báo Unable to establish loopback connection:
-$env:JAVA_TOOL_OPTIONS = '-Djdk.net.unixdomain.tmpdir=E:/Project/CongNghePhanMem_2026-2027 -Djava.net.preferIPv4Stack=true'
+$env:JAVA_TOOL_OPTIONS = '-Djdk.net.unixdomain.tmpdir=E:/Project/CongNghePhanMem_2026-2027/android/.java-tmp'
 .\gradlew.bat :app:assembleDebug :app:lintDebug :app:testDebugUnitTest --no-daemon --no-configuration-cache
 # Cần thiết bị/emulator kết nối cho instrumentation:
 .\gradlew.bat :app:connectedDebugAndroidTest
@@ -33,7 +41,7 @@ Output của lượt này nằm trong `.verification-build/app/`, gồm `outputs
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`. Không commit APK/SDK/cache. Wrapper ghim Gradle 8.13 với SHA-256; AGP 8.13.2, Kotlin/Compose compiler 2.2.21, Compose BOM 2025.10.01, Activity 1.11.0, Navigation Compose 2.9.5. Đây là phiên bản ghim cho demo, không phải tuyên bố dùng mọi thư viện mới nhất. [AGP compatibility](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [Compose BOM](https://developer.android.com/develop/ui/compose/bom).
 
-## Trình diễn
+## Prototype lịch sử (không phải luồng chính của APK 0.2)
 
 - Khám phá: tên/đường, danh mục, bán kính mô phỏng, bản đồ trực tuyến có pan/zoom, marker và bottom sheet. Bán kính UI cũ còn 50–500 m; PRD hiện hành là 100–500 m và GPS vẫn chưa tích hợp.
 - Chọn địa điểm → VI/EN/JA và Đầy đủ/Tóm tắt → Nghe thuyết minh → player giả lập → Back giữ lựa chọn.
@@ -51,14 +59,6 @@ Mỗi màn có Compose Preview; Offline thêm dark/font lớn. UI tests tương 
 
 Ảnh render tham khảo được giữ tại [docs/ui-demo/previews](../docs/ui-demo/previews/). Backlog UC-01 hiện hành ở [Jira HVP-1](https://trannhuthuy897.atlassian.net/browse/HVP-1), các câu hỏi PRD ở [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7).
 
-## Bản đồ OpenStreetMap / MapLibre
+## Kiểm thử dữ liệu chung và bản đồ
 
-Chạy app, chọn tab **Bản đồ** trong Khám phá. Có thể kéo/chụm để pan/zoom hoặc dùng **Thu nhỏ**, **Phóng to**, **Xem tất cả**. Chọn marker mở sheet; **Chọn địa điểm này** mở Chi tiết theo cùng ID, không tự phát thuyết minh. Các nút tên địa điểm dưới bản đồ là phương án lựa chọn cho bàn phím/TalkBack.
-
-`ui/mock/DemoData.mapLocations` bổ sung tọa độ minh họa cho sáu fixture hiện có; chưa phải tọa độ/nội dung đã duyệt và chưa lấy từ API `/api/locations`. Khi chưa có mạng hoặc tải lỗi, chọn **Về danh sách** để tiếp tục; có **Thử lại** khi lỗi tải. Không xin quyền vị trí cho pan/zoom hay chọn thủ công.
-
-Style ở `app/src/main/assets/maps/osm.json`. MapView được quản lý theo lifecycle và hủy khi rời composition; camera lưu bằng state nhỏ của Compose. Chỉ thêm quyền `INTERNET` và `ACCESS_NETWORK_STATE`. MapLibre mặc định OpenGL cho tương thích thiết bị; không đổi AGP/Kotlin/Compose đã ghim.
-
-Theo [OSM Tile Usage Policy](https://operations.osmfoundation.org/policies/tiles/), cấu hình giữ attribution hiển thị, gửi User-Agent nhận diện TravelVoiceDemo, giữ cache HTTP của SDK và tắt prefetch zoom. Không có chức năng tải bản đồ offline/bulk. Có thể thay nguồn raster trong file style khi chọn provider khác.
-
-Host test chọn marker dùng renderer Compose được inject, chỉ chứng minh luồng ID/navigation. `MapFlowTest` trong `androidTest` kiểm tra pan/zoom/marker native khi tile tải được; nếu OSM trả lỗi mạng, test kiểm tra thông báo lỗi → về danh sách → mở đúng chi tiết, đồng thời ghi rõ nhánh online chưa được kiểm chứng trong logcat. Cần thiết bị/emulator có Internet và truy cập được máy chủ tile để xác nhận nhánh online. Instrumentation ghim Espresso 3.7.0 vì [bản ổn định này sửa lỗi truy cập InputManager](https://developer.android.com/jetpack/androidx/releases/test#espresso_3_7_0) trên Android mới. Build/host test không thay thế kết quả chạy native hoặc việc kiểm tra TalkBack. Các ảnh map schematic cũ trong `docs/ui-demo/previews` là tham khảo lịch sử.
+`SharedTourFlowTest` yêu cầu backend thật: xác nhận nguồn máy chủ, sáu lựa chọn ngôn ngữ, FR/SHORT và BASE được bảo vệ. `MapFlowTest` yêu cầu Google SDK tải bản đồ thật, kiểm tra giới hạn camera và mở bài cùng ID. Lỗi Google không được tính là bản đồ đạt. Build/unit test không thay thế runtime hoặc TalkBack. Các ảnh schematic cũ trong `docs/ui-demo/previews` chỉ là tham khảo lịch sử.

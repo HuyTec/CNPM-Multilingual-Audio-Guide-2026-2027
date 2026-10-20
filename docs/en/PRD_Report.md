@@ -9,7 +9,7 @@
 
 ## **1.2. Product Purpose**
 
-* The Multilingual Audio Guide application is designed to help visitors explore attractions and access verified multilingual guide content via a mobile app.  
+* The Multilingual Audio Guide application helps visitors explore attractions and access verified multilingual guide content through a Tourist Web application or an Android application. Both clients serve the same Tourist actor and implement the same core use cases and business rules.
 * The system enables visitors to discover nearby locations, search for attractions, view map locations, access guide content in multiple languages, listen to audio commentary, and use essential guide materials even while offline.  
 * The system also includes a Web Admin Dashboard for managing location information, multilingual guide content, audio files, system analytics, and visitor feedback.
 
@@ -17,7 +17,7 @@
 
 The system is designed for the following key user groups:
 
-* **Tourists:** Use the mobile app to explore locations, access multilingual guide content, listen to audio commentary, receive location-based notifications, and manage offline content.  
+* **Tourists:** Use the Tourist Web or Android application to explore locations, access multilingual guide content, listen to audio commentary, receive location-based notifications, and manage offline content under the platform conditions in Section 2.4. Tourist access does not require an account.
 * **Administrators/Content Editors**: Use the web-based administration dashboard to create and maintain location information, tour scripts, and audio files.  
 * **System Administrators/Product Owners:** Use the web-based administration dashboard to monitor system usage statistics and manage feedback from tourists.
 
@@ -46,12 +46,15 @@ The main goals of the system are:
 ## **2.1. In Scope**
 
 **The system includes the following functional scope:**  
+The term **Tourist Application** denotes both Tourist Web and Android. Presentation, navigation, permissions, and platform adapters may differ; content identifiers, approval/publication rules, language fallback, playback requirements, package safety, and feedback status rules remain shared. Web Admin is a separate authorized interface. See Section 2.4 for platform conditions and delivery acceptance.
+
 **Location Discovery and Selection**
 
 *   Discover nearby tourist locations.  
 *   Search for locations by keyword.  
 *   Browse locations by category.  
 *   Select locations from an interactive map.  
+*   Open a location through a location-specific URL, including a URL encoded in a QR code, without requiring an Android installation. This is an entry path of UC-01, not a separate use case or QR-management feature.
 *   Related Use Case: UC-01 – Explore & Select Location.
 
 **Multilingual Guide Content**
@@ -65,7 +68,7 @@ The main goals of the system are:
 
 *   Play pre-rendered audio guide content.  
 *   Support Pause, Resume, Seek, and playback speed control.  
-*  Use operating-system Text-to-Speech as a fallback when audio is unavailable.  
+*  Use platform-provided Text-to-Speech as a fallback when audio is unavailable.
 *   Related Use Case: UC-03 – Play Audio Guide.
 
 **Offline Content Management**
@@ -73,7 +76,7 @@ The main goals of the system are:
 *   Check for approved content updates.  
 *   Download and install verified offline packages.  
 *   Manage optional downloaded content.  
-*   Preserve bundled base offline content.  
+*   Preserve verified Base Content under the platform baseline rules in Section 2.4.
 *   Related Use Case: UC-04 – Manage & Update Offline Content.
 
 **Location-Based Notifications**
@@ -102,7 +105,7 @@ The main goals of the system are:
 ## **2.2. Out of Scope & Requirements**
 
 * Content approval and publication workflow (UC-06 only saves DRAFT / PENDING\_REVIEW).  
-* Mobile App analytics event capture and tourist feedback submission (UC-07 only consumes this data).  
+* Tourist Application analytics event capture and tourist feedback submission (UC-07 only consumes this data).
 * Admin authentication and account management.  
 * Auto-loading guide content or auto-playing audio as part of the notification action. Selecting a notification only opens the Location Details Screen; UC-02 then loads the content through its own trigger.   
 * Turn-by-turn navigation to a location.  
@@ -114,18 +117,36 @@ The system has three primary actors. Platform and service dependencies support t
 
 | Actor | Type  | Description | Related UC |
 | :---- | :---- | :---- | :---- |
-| **Tourist** | Primary | Uses the Mobile App to discover and select locations, access multilingual guide content, play audio, manage offline content, and receive location-based notifications | UC-01, UC-02, UC-03, UC-04, UC-05. |
+| **Tourist** | Primary | Uses the Tourist Application to discover and select locations, access multilingual guide content, play audio, manage offline content, and receive location-based notifications | UC-01, UC-02, UC-03, UC-04, UC-05. |
 | **Content Admin (Editor)** | Primary | Creates and edits location information, multilingual scripts, and audio assets; saves drafts, submits content for review. | UC-06 |
 | **System Admin / Product Owner.** | Primary | Views system analytics, manages feedback status, and exports reports through the Web Admin Dashboard | UC-07 |
 | **Map Service** | Secondary service | Displays the interactive map and markers; offline Map View uses a simplified background without map tiles (online only; offline, locations are browsed through the list) | UC-01 |
-| **OS Location & Geofencing.** | Platform dependency | Provides device coordinates and accuracy and supports geofence registration and entry events | UC-01, UC-05 |
-| **OS Notification** | Platform dependency | Platform dependency. Description: Displays system notifications and opens the Mobile App using locationId | UC-05 |
-| **OS Audio & Text-to-Speech** | Platform dependency | Provides audio playback, audio-focus handling, and device TTS fallback. | UC-03 |
+| **Platform Location & Geofencing.** | Platform dependency | Provides device coordinates and accuracy and supports geofence registration and entry events | UC-01, UC-05 |
+| **Platform Notification** | Platform dependency | Platform dependency. Description: Displays system notifications and opens the Tourist Application using locationId | UC-05 |
+| **Platform Audio & Text-to-Speech** | Platform dependency | Provides audio playback, audio-focus handling, and device TTS fallback. | UC-03 |
 | **Content Server / CDN** | Infrastructure dependency | Supplies APPROVED guide content, audio assets, and content packages. | UC-02, UC-03, UC-04 |
 | **Content Publication Service** | External dependency | Performs review and publication, assigns package versions, and executes ARCHIVED transitions. Content Approver is the external review role within this dependency, not an additional in-scope primary actor or use case | UC-04, UC-06. |
 | **Admin Authentication** | External dependency | Authenticates and authorizes Web Admin users; account management is out of scope. | UC-06, UC-07. |
 
 # **Naming aliases:** Content Admin/Editor, Content Administrator, and Administrators/Content Editors refer to Content Admin (Editor). System Administrators/Product Owners refers to System Admin / Product Owner. “Admin” in UC-06 means Content Admin (Editor); “Admin” or “Administrator” in UC-07 means System Admin / Product Owner.
+
+## **2.4. Shared Use Cases and Platform Conditions**
+
+**Product decision confirmed on 19/10/2026:** Tourist Web and Android are two clients of the same product. UC-01–UC-05 describe shared Tourist goals; UC-06–UC-07 remain Web Admin goals. Do not duplicate use cases by platform. Both Tourist clients consume the same approved content through one Backend API and authoritative database/content storage. A shared locationId, languageCode, scriptType, and published content reference identify the same material on both clients; UI source code and device adapters do not have to be shared.
+
+| Use case | Shared requirement | Android conditions | Tourist Web conditions |
+| --- | --- | --- | --- |
+| UC-01 | Discover/select a location; permission denial preserves manual entry paths. | Native location/map integration; a valid link may open the corresponding location. | A public HTTPS location URL opens the location without installation or login; browser permission handling supports nearby search. |
+| UC-02 | APPROVED content, FULL/SHORT, Selected → EN → VI fallback without changing scriptType. | Server or verified local content store. | Same API/content identifiers; verified browser-local content when offline-ready. |
+| UC-03 | User-initiated audio, controls, matching TTS fallback, failure handling; no automatic playback from navigation. | Platform audio/TTS and audio-focus lifecycle. | Browser/platform audio/TTS adapters; voice and control behavior must be tested, not assumed identical to Android. |
+| UC-04 | Verified packages, explicit download consent, atomic installation, version tracking and Base Content protection. | Base Content is bundled at installation. | Base Content must be provisioned and verified during an online first visit before claiming offline readiness. First-ever access without network is not promised. |
+| UC-05 | Detect geofence entry when supported; cooldown, current-language notification/banner, locationId routing, no autoplay. | Native location/geofence/notification permissions and lifecycle. | Position monitoring and foreground banners require an active permitted session. Background/closed-tab monitoring or system notifications must not be promised without verification on the supported browser matrix. |
+
+Unsupported or denied platform capabilities must be explained and handled through the relevant exception/manual path. They must not be silently presented as completed functionality or used to change business rules. Browser/OS versions, supported voices, storage persistence, and foreground/background coverage require a documented acceptance matrix; exact versions and test environments remain \[?\].
+
+**Delivery acceptance:** Deliver one real end-to-end flow first: open/select a location → retrieve APPROVED content → select language and FULL/SHORT → play matching audio or TTS → consume recorded playback data in Web Admin. Demonstrate this flow on both clients against the same backend/content; label any synthetic content or remaining mock behavior. Verify persisted events, consistent reporting, and safe retry rather than relying on static numbers. Analytics capture remains an external integration consumed by UC-07. Complete the other flows progressively under the same PRD; this sequence does not remove offline, notifications, or administration requirements. A demo milestone is not evidence that every use case is finished.
+
+For actual visitor access, Tourist Web must have a reachable HTTPS URL; local-only demo URLs are development/test environments. Existing mock screens may remain as explicit reference/scenario tools while production flows are integrated; they are not acceptance evidence for real persistence, audio, permissions, or package installation.
 
 # **3\. EPIC & PRODUCT REQUIREMENTS**
 
@@ -155,7 +176,7 @@ Provide verified multilingual guide text and audio for the selected location wit
 ### **3.2.2 Features**
 
 * **FR-04**: APPROVED content retrieval by locationId, languageCode, and scriptType, with language and fallback (UC-02).   
-* **FR-05**: Audio playback controls, and operating-system TTS fallback when usable audio is unavailable (UC-03). 
+* **FR-05**: Audio playback controls, and platform-provided TTS fallback when usable audio is unavailable (UC-03).
 
 ### **3.2.3 Related Use Cases**
 
@@ -169,7 +190,7 @@ Keep essential location data and guide content available offline and allow safe 
 
 ### **3.3.2 Features**
 
-* **FR-06:** Bundled Base Content, update checks, and optional-package selection and download of newer approved packages (UC-04).  
+* **FR-06:** Base Content provisioned under Section 2.4, update checks, and optional-package selection and download of newer approved packages (UC-04).
 * **FR-07:** Verified atomic installation of matching location data, scripts, and available audio (UC-04).  
 * **FR-08**: Optional-content deletion, cancellation, and physical protection of Base Content (UC-04).
 
@@ -217,15 +238,15 @@ Support service and content improvement through basic usage analytics and manage
 | :---- | :---- | :---- |
 | **UC ID** | UC-01 |  |
 | **UC Name** | **Explore & Select location** |  |
-| **Type** | Mobile App – Tourist-facing |  |
+| **Type** | Tourist Application – Web / Android |  |
 | **Goal** | The Tourist selects a target attraction in order to view its details and access the multilingual guide content. |  |
 | **Primary Actor** | Tourist |  |
-| **Secondary Actor** | Map Service, OS Location & Geofencing |  |
-| **Precondition** | The tourist opens the mobile application; GPS is enabled on the device, or manual search is available |  |
+| **Secondary Actor** | Map Service, Platform Location & Geofencing |  |
+| **Precondition** | The Tourist opens Tourist Web or Android, including through a location-specific URL. Location access may be available for nearby search; manual search and valid location links remain usable without it. |  |
 | **PostCondition** | The system determines the locationId, and the application navigates to the **Location Details Screen**. |  |
 | **Basic Course of Event** | **Actor Action** | **System Response** |
-|  | **1\.** The Tourist opens the application and selects **“Find Nearby Locations.” A2, A3, A4** | **2\.** The system initiates the nearby-location detection process. |
-|  |   | **3\.** If location permission has not yet been determined, the system explains why nearby search needs location access and displays the operating-system permission prompt. If permission is granted, continue to step 4; if it is denied, follow **E1**. |
+|  | **1\.** The Tourist opens the application and selects **“Find Nearby Locations”**, or uses an entry path in A1–A4. | **2\.** The system initiates the nearby-location detection process when nearby search is selected. |
+|  |   | **3\.** If location permission has not yet been determined, the system explains why nearby search needs location access and requests permission through the current platform. If permission is granted, continue to step 4; if it is denied or unsupported, follow **E1**. |
 |  |  | **4\.** The system retrieves the current latitude, longitude, and accuracy. |
 |  |   | **5\.** The system searches for locations within the configured radius 100 to 500 meters and sorts the results by distance in ascending order.**E2** |
 |  |  | **6\.** The system displays the locations found within the radius sorted by distance ascending; the \[3–5\] nearest are shown first with their distances. |
@@ -239,13 +260,14 @@ Support service and content improvement through basic usage analytics and manage
 |  | **A3** |  |
 |  | **1**.selects “**Browse by Category”** | 2\. The system displays locations belonging to the selected category.**E4** |
 |  | **3\.** Go to step 7 of the main flow. |  |
-| **Exception Paths** | **E1:** If the Tourist has not allowed location access  or the system cannot obtain the current GPS coordinates, the application displays the message **“Location access is required to automatically find tourist attractions near you”**, along with an **“Open Settings”** option. Even if declined ,The Tourist can still continue by using ***A1***,  ***A2**, **A3***. |  |
+|  | **A4: Open a Location Link / QR URL.** The Tourist opens a URL containing a location reference, for example by scanning a QR code. The system validates the locationId and opens Location Details, which triggers UC-02. Tourist Web must not require installation or login; navigation does not start playback. If the location is unavailable, the system explains the problem and offers manual discovery without opening an unrelated location. |  |
+| **Exception Paths** | **E1:** If the Tourist has not allowed location access or the system cannot obtain the current coordinates, the application displays **“Location access is required to automatically find tourist attractions near you”**, with platform-appropriate settings/help where available. The Tourist can continue through keyword search, categories, map selection, or a valid location link. |  |
 |  | **E2**: If the GPS coordinates are valid but no locations are found within the current search radius, the system displays the message **“No tourist attractions were found nearby.”** The Tourist can expand the search radius or use **A1**, **A2,A3**. |  |
 |  | **E3**: If the keyword entered by the Tourist does not match any location in the database, the system displays an **Empty State** and suggests alternative keywords or popular locations for the Tourist to continue exploring. |  |
 |  | **E4**: If no locations are available in the selected category, the system displays an **Empty State** and suggests other categories or popular locations for the Tourist to explore. |  |
 | **Extension Points** | N/A |  |
-| **Triggers** | **User-Initiated:** The Tourist opens the mobile application or navigates to the **Explore / Map** screen. The Tourist selects **“Find Nearby Locations”**, uses the **Search** bar, selects a **Category**, or selects a **Marker** on the interactive map. |  |
-| **Assumptions** | **Data Assumption:** The server database or bundled local SQLite database contains verified location data, including GPS coordinates, descriptions, categories, and thumbnail images. **Device Assumption:** The mobile device supports location services. If location services are unavailable, the Tourist can still search for and select locations manually. **Offline Baseline:** The application includes the base location database and base guide content when first installed; UC-04 is only required for optional or newer approved packages. |  |
+| **Triggers** | **User-Initiated:** The Tourist opens the Tourist Application or navigates to the **Explore / Map** screen. The Tourist selects **“Find Nearby Locations”**, uses the **Search** bar, selects a **Category**, selects a **Marker** on the interactive map, or opens a location-specific URL/QR link (A4). |  |
+| **Assumptions** | **Data Assumption:** The server database or verified local content store contains location data, including coordinates, descriptions, categories, and thumbnail images. **Platform Assumption:** Location services may require permission or be unavailable; manual selection remains possible. **Offline Baseline:** Android bundles base location/guide content at installation; Tourist Web provisions and verifies it during initial online use as specified in Section 2.4. UC-04 manages optional/newer packages after that baseline is ready. |  |
 | **Reference: Bussiness Rule** | **BR1 – GPS Search Radius:** The location search radius can be configured within a range of **100–500 meters**. The system uses a fixed default value defined in the application configuration (not editable through the Web Admin Dashboard). **BR2 – Result Ranking:** GPS-based search results are sorted by **distance in ascending order**. Keyword- or category-based results may be sorted by **relevance or distance**. **BR3 – Location Permission:** If the Tourist denies location access, the system must not prevent the Tourist from continuing to use the application. GPS-dependent features are disabled, and the system must provide alternative location-selection methods, such as **Search by Keyword**, **Browse by Category**, or **Map View**. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
@@ -257,7 +279,7 @@ Support service and content improvement through basic usage analytics and manage
 | :---- | :---- | :---- |
 | **UC ID** | UC-02 |  |
 | **UC Name** | **Access Multilingual Guide Content** |  |
-| **Type** | Mobile App – Tourist-facing |  |
+| **Type** | Tourist Application – Web / Android |  |
 | **Goal** | Retrieve and display approved guide content according to the Tourist's selected language and duration mode. |  |
 | **Primary Actor** | Tourist |  |
 | **Secondary Actor** | Content Server / CDN |  |
@@ -275,7 +297,7 @@ Support service and content improvement through basic usage analytics and manage
 |  | **E2**: If no approved guide content is available for the selected location, the system displays **“Content for this location is currently being updated.”** The **Listen to Guide** function is unavailable. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **System-Initiated:** After a valid navigation to the Location Details Screen, including UC-01 selection or UC-05 notification/banner selection, the system triggers UC-02 using the current language and default FULL mode. **User-Initiated:** When the Tourist changes the **Language** or **Duration Mode** (FULL / SHORT), the system re-triggers UC-02 to load the corresponding content. |  |
-| **Assumptions** | **Content Data:** Each location may have one or more guide scripts for different languages and content types (FULL, SHORT). **Supported Languages:** The system has a predefined list of supported languages, and each language uses a valid languageCode.  **Data Source Availability:** When online, the system can retrieve approved content from the API/Server; when offline, the required approved content is included in the bundled base content or an approved package installed through UC-04. |  |
+| **Assumptions** | **Content Data:** Each location may have one or more guide scripts for different languages and content types (FULL, SHORT). **Supported Languages:** The system has a predefined list of supported languages, and each language uses a valid languageCode.  **Data Source Availability:** When online, the system can retrieve approved content from the API/Server; when offline, the required approved content is available in verified Base Content or an approved package installed through UC-04, under Section 2.4. |  |
 | **Reference: Bussiness Rule** | **BR1 – Content Approval:** Only guide content with status \= APPROVED may be provided to the Tourist. **BR2 – Language Fallback:** The language fallback priority is: Selected Language → English (EN) → Vietnamese (VI) |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
@@ -287,27 +309,29 @@ Support service and content improvement through basic usage analytics and manage
 | :---- | :---- | :---- |
 | **UC ID** | UC-03 |  |
 | **UC Name** | **Play Audio Guide** |  |
-| **Type** | Mobile App – Tourist-facing |  |
-| **Goal** | Allow the Tourist to listen to guide content corresponding to the selected location, language, and content mode. |  |
+| **Type** | Tourist Application – Web / Android |  |
+| **Goal** | Allow the Tourist to listen to approved guide content for the selected location, effective language, and content mode, using pre-rendered audio or platform-provided Text-to-Speech (TTS) when that audio is unavailable or cannot be played. |  |
 | **Primary Actor** | Tourist |  |
-| **Secondary Actor** | OS Audio & Text-to-Speech, Content Server / CDN |  |
-| **Precondition** | UC-02 has successfully loaded the corresponding guide content; valid locationId, languageCode, scriptType, and scriptText are available. |  |
-| **Postcondition** | The guide content is successfully played, or the system switches to an appropriate fallback playback mechanism. The current playback state and position are maintained. |  |
+| **Secondary Actor** | Platform Audio & Text-to-Speech, Content Server / CDN |  |
+| **Precondition** | UC-02 has successfully loaded APPROVED guide content; valid locationId, effective languageCode after any UC-02 language fallback, scriptType, and non-empty scriptText are available. The availability of a compatible TTS engine and voice is checked when the TTS fallback is needed; it is not a prerequisite for reading the text or playing available audio. |  |
+| **Postcondition** | **Success:** the approved guide content is played using matching pre-rendered audio or TTS, and the application identifies the active playback source. The current playback state and position are maintained within the active playback session. **Otherwise:** if neither audio nor TTS can be used (E3), no playback is reported as successful; the loaded text and current location, language, and content mode remain available for reading or retry. |  |
 | **Basic Course of Event** | **Actor Action** | **System Response** |
 |  | **1\.**  The Tourist selects **Play Audio**. | The system receives a request to play the guide content for the current location. |
-|  |   | **2\.**  The system identifies the corresponding audio content using locationId, languageCode, and scriptType |
-|  |   | **3\.** The system checks whether the corresponding audio file is available from the current data source. |
-|  |   | **4\.** The system loads the audio file and prepares the playback session. |
+|  |   | **2\.** The system identifies the corresponding audio using locationId, effective languageCode, and scriptType provided by UC-02. |
+|  |   | **3\.** The system checks whether the corresponding audio file is available from the current data source. If it is unavailable, follow E1. |
+|  |   | **4\.** The system loads the audio file and prepares the playback session. If loading or preparation fails, follow E1. |
 |  |   | **5\.** The system starts audio playback. |
-|  |   | **6\.** The application updates the state to **Playing** and displays playback controls. |
+|  |   | **6\.** Once playback starts, the application updates the state to **Playing**, identifies the source as pre-rendered audio, and displays playback controls. |
 |  | **7\.** The Tourist continues listening to the guide. | The system maintains the current playback state and position until playback completes or another action/event occurs. |
-| **Alternative Paths** | **A1:** While audio is playing, the Tourist may perform actions such as Pause, Resume, seek forward/backward, or change the playback speed. The system immediately updates the playback state and continues from the corresponding position according to the selected action. |  |
-| **Exception Paths** | **E1:** If the corresponding audio file cannot be found or cannot be played, the system falls back to the operating system's Text-to-Speech capability to read the scriptText provided by UC-02. The system updates the playback state accordingly and allows the Tourist to continue listening to the guide content. |  |
-|  | **E2**: If a higher-priority event, such as an incoming phone call or another application, takes control of the audio output, the system pauses the guide content and stores the current playback position. When audio focus is restored, playback may continue from the stored position. |  |
+| **Alternative Paths** | **A1: Playback Controls.** While pre-rendered audio or TTS is playing, the Tourist may Pause, Resume, seek forward/backward, or change the playback speed. The system updates the active playback session and continues from the corresponding position according to the selected action. |  |
+|  | **A2: Play Guide Using Text-to-Speech.** When E1 occurs: **1.** The system informs the Tourist that pre-rendered audio is unavailable and TTS will be used. **2.** The system initializes the platform-provided TTS service and checks for a usable voice matching the effective languageCode returned by UC-02. When offline, that voice must operate without a network connection. If the service or suitable voice is unavailable, follow E3. **3.** The system prepares speech from the exact approved scriptText for the current locationId and scriptType; it does not translate, summarize, or generate new guide content. **4.** The system starts TTS playback. Once speech starts, it displays **Playing — Text-to-Speech** and the playback controls from A1. **5.** The system maintains the TTS playback state and position until completion or another action/event; audio-focus interruptions follow E2. |  |
+| **Exception Paths** | **E1: Audio Unavailable or Playback Failed.** If the matching audio file cannot be found, loaded, prepared, or played, including a failure during playback, the system stops/releases the failed audio session and follows A2 using the guide content already loaded by UC-02. It must not play the failed audio and TTS simultaneously. |  |
+|  | **E2: Audio Focus Interrupted.** If a higher-priority event, such as an incoming phone call or another application, takes control of the audio output, the system pauses the active audio or TTS session and stores its current playback position. When audio focus is restored, playback may continue from the stored position. |  |
+|  | **E3: TTS Unavailable or Failed.** If the TTS engine cannot initialize, no usable voice matches the effective languageCode, the required voice needs an unavailable network connection, or speech synthesis/playback fails, the system ends the preparation/playback attempt and displays an error explaining that the guide cannot currently be read aloud. It preserves scriptText and the current location, language, and content mode, and allows the Tourist to retry after the cause is resolved. It does not remain indefinitely in Loading, report successful playback, silently use a voice for another language, or change the approved content. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **User-Initiated:** The Tourist selects **Play Audio** on the Location Details Screen after UC-02 has loaded approved guide content. |  |
-| **Assumptions** | Each guide script may have a corresponding audio file for each languageCode and scriptType. The mobile device supports audio playback and provides an audio-focus management mechanism. The device provides an operating-system Text-to-Speech service for at least one language compatible with the current content. When operating offline, the required audio file is included in the bundled base content or an approved package installed through UC-04, or scriptText remains available for TTS fallback. |  |
-| **Reference: Bussiness Rule** | **BR1 –** Playback Content Consistency: The played audio content must correspond to the current locationId, languageCode, and scriptType pr ovided by UC-02. **BR2 –** Pre-rendered Audio Priority: If a valid pre-rendered audio file is available, the system shall prioritize it. Operating-system Text-to-Speech shall only be used as a fallback when the audio file is unavailable. |  |
+| **Assumptions** | Each guide script may have an optional corresponding audio file for each languageCode and scriptType. The active platform supplies audio/TTS capabilities and interruption/lifecycle handling through its adapter. Engines, voices, controls, and network requirements vary by device/browser and must be verified. Offline playback requires matching local audio from verified Base Content or a package installed through UC-04, or locally available scriptText with a usable offline voice for its effective languageCode. Text alone does not guarantee offline speech. Section 2.4 defines baseline provisioning; supported language/voice coverage and test environments require team confirmation. |  |
+| **Reference: Bussiness Rule** | **BR1 – Playback Content Consistency:** Audio and TTS must correspond to the current locationId, effective languageCode, and scriptType provided by UC-02. **BR2 – Pre-rendered Audio Priority:** Use matching valid pre-rendered audio when it can be played; use platform-provided TTS only as a fallback when that audio is unavailable or fails. **BR3 – Approved Text and Voice Consistency:** TTS reads the exact APPROVED scriptText loaded by UC-02 with a voice matching its effective languageCode. UC-02 owns language fallback; UC-03 must not independently translate, summarize, or substitute another language or script type. **BR4 – Offline TTS Availability:** TTS may be offered offline only when the required text and a compatible voice that works without a network connection are available; otherwise follow E3. **BR5 – Playback Source and Trigger:** Identify whether audio or TTS is active, allow only one source to play at a time, and start playback only in response to the Tourist's Play request or its fallback path. Opening Location Details or selecting a notification must not itself start audio or TTS. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
 | **Activities Diagram** | See UC03\_activity.drawio |  |
@@ -318,11 +342,11 @@ Support service and content improvement through basic usage analytics and manage
 | :---- | :---- | :---- |
 | **UC ID** | UC-04 |  |
 | **UC Name** | **Manage & Update Offline Content** |  |
-| **Type** | Mobile App – Tourist-facing |  |
-| **Goal** | Allow the Tourist to update, add, or remove offline content when newer content is available, while the base offline content is already bundled with the application, so that guide text and audio remain usable without an Internet connection. |  |
+| **Type** | Tourist Application – Web / Android |  |
+| **Goal** | Allow the Tourist to update, add, or remove offline content while preserving verified Base Content, so guide text and audio remain usable without a network connection after the baseline is ready. Android bundles the baseline; Tourist Web provisions it during initial online use (Section 2.4). |  |
 | **Primary Actor** | **Tourist** |  |
 | **Secondary Actor** | N/A |  |
-| **Precondition** | The application already contains the base offline content bundled with it. An Internet connection is required only when checking for or downloading updates; deleting optional content does not require one. |  |
+| **Precondition** | Verified Base Content is ready in the platform's local content store under Section 2.4. A network connection is needed for initial Web provisioning and for checking/downloading updates; deleting optional content does not require one. If the baseline is not ready, explain that initial online preparation is required instead of reporting Offline Ready. |  |
 | **Postcondition** | **Success:** the offline content is updated and shown as Up to Date / Offline Ready, or the selected optional content is removed and the content status is updated. **Otherwise (no update, cancellation, or failure):** the currently installed offline content remains unchanged. |  |
 | **Basic Course of Event** | **Actor Action** | **System Response** |
 |  | **1\.** The Tourist opens Offline Content Management. | The system displays the currently installed content and its version status. |
@@ -333,15 +357,15 @@ Support service and content improvement through basic usage analytics and manage
 |  |   | **6\.** If the approved package is valid, the system atomically replaces the affected local scripts and audio assets with the verified package and stores its new version. |
 |  |   | **7**. The system displays the status Up to Date / Offline Ready. |
 | **Alternative Paths** | **A1: No Update Available.** At step 3, if no newer version is available, the system informs the Tourist that the current content is already up to date. The use case ends and nothing is changed. |  |
-|  | **A2: Delete Optional Offline Content.** The Tourist selects Delete Content. The system displays the additionally downloaded content and asks the Tourist to select the items to delete and to confirm. After the Tourist confirms, the system removes the selected content from local storage and updates the content status. The base content bundled with the application is never removed (**BR-01**). If the Tourist cancels, nothing is changed. |  |
+|  | **A2: Delete Optional Offline Content.** The Tourist selects Delete Content. The system displays the additionally downloaded content and asks the Tourist to select the items to delete and to confirm. After the Tourist confirms, the system removes the selected content from local storage and updates the content status. The protected Base Content is never removed by this operation (**BR-01**). If the Tourist cancels, nothing is changed. |  |
 |  | **A3: Tourist Cancels the Update.** At step 4, if the Tourist does not confirm the update, the system keeps the current content unchanged and the use case ends. |  |
 | **Exception Paths** | **E1: Insufficient Storage.** If the device does not have enough available storage for the update, the system stops the operation, makes no changes, and informs the Tourist of the required storage. The system may offer to open Offline Content Management so the Tourist can delete optional content. |  |
 |  | **E2: Network Lost.** If the Internet connection is lost during the download, the system stops the download and discards the incomplete data. The Tourist may retry later, when a connection is available, by selecting Update again. The currently installed content remains unchanged. |  |
 |  | **E3: Invalid Update Package.** If the downloaded content fails integrity verification or cannot be installed, the system discards the invalid data, preserves the current offline version, and informs the Tourist to try again. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **User-Initiated:** The Tourist opens the Offline Content / Updates section and selects Check for Updates, Update, or Delete Content. **System-Initiated:** The system detects a newer content version and displays Update Available. The download starts only after the Tourist confirms. |  |
-| **Assumptions** | The base offline content is bundled with the application, so UC-02 and UC-03 can operate without an Internet connection and without any prior download. The Server provides versioned, published, and approved update packages for supported locations. The device allows the application to store additional guide text and audio content locally. The system stores the local content version and can compare it with the Server version. |  |
-| **Reference: Business Rule** | **BR-01 – Base Content Protection:** Base offline content bundled with the application must not be removed by offline content management. **BR-02 – Safe Update:** Only a successfully verified **APPROVED** package may replace existing content. If an update fails, the currently installed content must not be overwritten or removed. **BR-03 – Version Management:** The system must store the local content version for comparison with the Server version. **BR-04 – Atomic Package Installation:** A package version must install its matching guide scripts and audio assets together; the Mobile App must not use a partial or DRAFT/PENDING\_REVIEW package. |  |
+| **Assumptions** | Android's bundled baseline supports offline access without a prior content download. Tourist Web needs an online first visit to provision and verify the same baseline before offline access. The Server supplies versioned, published, approved packages. The platform's local content store holds content and installed versions. Browser storage availability/persistence must be tested; if storage is absent or externally cleared, report the actual readiness state and require online preparation again rather than claiming content still exists. Application-controlled deletion must preserve Base Content. |  |
+| **Reference: Business Rule** | **BR-01 – Base Content Protection:** Verified Base Content must not be removed by application-controlled offline content management, under Section 2.4. **BR-02 – Safe Update:** Only a successfully verified **APPROVED** package may replace existing content. If an update fails, the currently installed content must not be overwritten or removed. **BR-03 – Version Management:** The system must store the local content version for comparison with the Server version. **BR-04 – Atomic Package Installation:** A package version must install its matching guide scripts and audio assets together; the Tourist Application must not use a partial or DRAFT/PENDING\_REVIEW package. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
 | **Activities Diagram** | See UC04\_activity.drawio |  |
@@ -352,11 +376,11 @@ Support service and content improvement through basic usage analytics and manage
 | :---- | :---- | :---- |
 | **UC ID** | UC-05 |  |
 | **UC Name** | **Receive Location-Based Notifications** |  |
-| **Type** | Mobile App – Tourist-facing |  |
+| **Type** | Tourist Application – Web / Android |  |
 | **Goal** | Notify the Tourist when entering the area of a tourist location and allow quick access to the corresponding location information. |  |
 | **Primary Actor** | Tourist |  |
-| **Secondary Actor** | OS Location & Geofencing, OS Notification |  |
-| **Precondition** | **1**. The mobile application is installed and the device supports location services and geofencing.  **2**. The Local Database contains the required location data, including coordinates, geofence radius, locationId, and localized location names.  **Note**: the location and notification permissions may not have been granted; these cases are handled in E1 and E2. |  |
+| **Secondary Actor** | Platform Location & Geofencing, Platform Notification |  |
+| **Precondition** | **1.** Tourist Web or Android is running in a platform/session capable of location monitoring under Section 2.4. **2.** The verified local content store contains coordinates, geofence radius, locationId, and localized names. Location/notification permissions may still be unavailable; handle these through E1/E2. Unsupported or suspended background monitoring must not be represented as an active service. |  |
 | **Postcondition** | **Success:** a location-based notification (or In-App Banner) is displayed to the Tourist. If the Tourist selects it, the application opens the corresponding Location Details Screen using the associated locationId; UC-02 is then triggered by its own trigger to load the guide content.   **Otherwise:** no location-based notification is displayed (E1, E2, A3) or no navigation is performed (A2). |  |
 | **Basic Course of Event** | **Actor Action** | **System Response** |
 |   | **1\.** The Tourist moves into the configured geofence of a tourist location. | The system detects the geofence entry event. |
@@ -369,7 +393,7 @@ Support service and content improvement through basic usage analytics and manage
 |  | **A2: Notification Not Selected.** If the Tourist does not select the displayed notification or banner, the system performs no navigation. The Tourist may continue using the application normally. |  |
 |  | **A3: Notification Cooldown Active.** At step 3, if the cooldown period for the location has not expired, the system does not display a notification (BR1). The Tourist may continue using the application normally. |  |
 | **Exception Paths** | **E1: Location Permission Unavailable.** If the location permission is disabled, revoked, or unavailable, the system cannot monitor geofence events and does not generate location-based notifications. The Tourist can still manually explore and select locations using the functions of UC-01. |  |
-|  | **E2: Notification Permission Unavailable.** If the notification permission is disabled or unavailable, the system cannot display an operating-system notification. If the application is in the foreground, the system may still display an In-App Banner (A2). |  |
+|  | **E2: Notification Permission Unavailable.** If notification permission or platform support is unavailable, the system cannot display a system notification. If the application is active and permitted location monitoring is available, it may display an In-App Banner (A1). |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **System-Initiated:** The device enters the configured geofence of a tourist location. **User-Initiated:** After receiving the notification, the Tourist selects it to open the corresponding location. |  |
 | **Assumptions** | The Local Database contains verified location information: locationId, latitude, longitude, radius, and localized location name. Geofence monitoring can operate using location data already available on the device. Each monitored location has a valid configured geofence radius. The application can open a Location Details Screen using a valid locationId.  MVP scope: selecting a notification only opens the Location Details Screen; the notification itself does not load content or play audio. After the Location Details Screen opens, UC-02 is triggered by its own System-Initiated trigger, and audio playback remains a Tourist-initiated action in UC-03.  |  |
@@ -389,7 +413,7 @@ Support service and content improvement through basic usage analytics and manage
 | **Primary Actor** | Content Admin / Editor |  |
 | **Secondary Actor** | None |  |
 | **Precondition** | The Admin is authenticated and authorized to manage content. |  |
-| **Postcondition** | **Success:** the location data, guide content, and audio assets are saved with DRAFT or PENDING\_REVIEW status. When an approved version is edited, the current published version remains available to the Mobile App while the replacement waits for review. **Otherwise:** nothing is submitted. The Admin remains on the form with the entered data preserved (E1, E2). |  |
+| **Postcondition** | **Success:** the location data, guide content, and audio assets are saved with DRAFT or PENDING\_REVIEW status. When an approved version is edited, the current published version remains available to the Tourist Application while the replacement waits for review. **Otherwise:** nothing is submitted. The Admin remains on the form with the entered data preserved (E1, E2). |  |
 | **Basic Course of Event** | **Actor Action** | **System Response** |
 |  | **1**. The Admin selects an existing location or chooses Add New Location. | **2**. The system opens the corresponding form. |
 |  | **3**. The Admin enters or edits localized location names for each supported language, category, GPS coordinates, and geofence radius. | **4**. The system records the entered information. |
@@ -398,14 +422,14 @@ Support service and content improvement through basic usage analytics and manage
 |  | **9**. The Admin previews the audio and reviews the entered content.  | **10**. The system provides an audio preview and displays the entered data. |
 |  | **11\.** The Admin selects Submit for Review. | **12\.** The system validates all required fields. |
 |  |   | **13\.** If the data is valid, the system saves the content and changes its status to PENDING\_REVIEW. If an approved version exists, the system preserves that published version until the external approval and publication dependency completes. |
-| **Alternative Paths** | **A1: Save as Draft.** If the content is incomplete, the Admin selects Save Draft instead of Submit for Review. The system saves the data with DRAFT status without requiring all mandatory fields. The content is not available to the Mobile App. |  |
+| **Alternative Paths** | **A1: Save as Draft.** If the content is incomplete, the Admin selects Save Draft instead of Submit for Review. The system saves the data with DRAFT status without requiring all mandatory fields. The content is not available to the Tourist Application. |  |
 |  | **A2: Edit Existing Location.** At step 1, the Admin selects an existing location. The system loads the existing data into the form, and the Admin edits one or more items such as the name, coordinates, guide content, or audio. The Admin may also replace the audio of a single language only; the system then updates that audio asset and preserves all other data. Changes are saved as DRAFT or submitted as PENDING\_REVIEW (steps 11–13, A1), and the published version remains protected (BR4). Content returned with REJECTED status is edited in the same way and then saved as a draft or resubmitted for review. |  |
 | **Exception Paths** | **E1: Invalid Audio File or Upload Failed.** At step 8, if the audio file uses an unsupported format, cannot be processed, or the upload fails, the system rejects the file, displays an error, and preserves the current form data. The Admin selects another file or retries the upload. |  |
 |  | **E2: Missing Required Location Data.** At step 12, if required information such as the location name, category, latitude, longitude, or geofence radius is missing, the system prevents submission and highlights the fields to be completed. The Admin returns to the form. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **User-Initiated:** The Admin opens Location Management and chooses to create or edit a location. |  |
-| **Assumptions** | The Web Admin has an Internet connection. The system supports storing guide text and audio assets. The Admin prepares the guide content and audio before or during editing. Supported languages and location categories have already been configured in the system. Approval, publication, and Mobile App synchronization are handled by the external content publication dependency described above; this use case does not publish content. |  |
-| **Reference: Business Rule** | **BR1 – Required Location Information:** To be submitted for review, each location must contain at least a valid name, category, GPS coordinates, and geofence radius. A DRAFT may be saved with incomplete data. **BR2 – Content Status:** This use case may save content only with DRAFT or PENDING\_REVIEW status. Content becomes available to the Mobile App only after external approval and publication. **BR3 – Content Mapping:** Each script and audio asset must be associated with at least a locationId, languageCode, scriptType so that UC-02 and UC-03 can identify matching content and audio; the package version is assigned later by the external publication dependency. **BR4 – Approved Content Protection:** Editing previously approved content must not remove the version currently available to the Mobile App until the replacement has been approved and published. |  |
+| **Assumptions** | The Web Admin has an Internet connection. The system supports storing guide text and audio assets. The Admin prepares the guide content and audio before or during editing. Supported languages and location categories have already been configured in the system. Approval, publication, and Tourist Application synchronization are handled by the external content publication dependency described above; this use case does not publish content. |  |
+| **Reference: Business Rule** | **BR1 – Required Location Information:** To be submitted for review, each location must contain at least a valid name, category, GPS coordinates, and geofence radius. A DRAFT may be saved with incomplete data. **BR2 – Content Status:** This use case may save content only with DRAFT or PENDING\_REVIEW status. Content becomes available to the Tourist Application only after external approval and publication. **BR3 – Content Mapping:** Each script and audio asset must be associated with at least a locationId, languageCode, scriptType so that UC-02 and UC-03 can identify matching content and audio; the package version is assigned later by the external publication dependency. **BR4 – Approved Content Protection:** Editing previously approved content must not remove the version currently available to the Tourist Application until the replacement has been approved and published. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
 | **Activities Diagram** | See UC06\_activity.drawio |  |
@@ -435,7 +459,7 @@ Support service and content improvement through basic usage analytics and manage
 |   | **E2: Export Failed.** At A3, if the report cannot be generated, the system displays an error message and allows the Admin to retry. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **User-Initiated:** The Admin selects Analytics & Feedback on the Web Admin Dashboard. |  |
-| **Assumptions** | The Mobile App records the usage events required for analytics through an external analytics-event capture dependency. Tourist feedback is submitted and stored through an external feedback-submission dependency. The system contains sufficient data to calculate the required basic metrics. The Admin is allowed to download reports when using the Export function. Filtering, exporting, and updating status are behaviors inside this use case and are not separate use cases. |  |
+| **Assumptions** | The Tourist Application records the usage events required for analytics through an external analytics-event capture dependency. Tourist feedback is submitted and stored through an external feedback-submission dependency. The system contains sufficient data to calculate the required basic metrics. The Admin is allowed to download reports when using the Export function. Filtering, exporting, and updating status are behaviors inside this use case and are not separate use cases. |  |
 | **Reference: Business Rule** | **BR1 – Access Control:** Only authorized Admin users may access analytics data and manage feedback. **BR2 – Feedback Status:** Each feedback record must have one valid status: NEW, IN\_REVIEW, or RESOLVED. A record progresses in this order: NEW, then IN\_REVIEW, then RESOLVED. **BR3 – Default Reporting Period:** The Dashboard displays the data of the last 30 days by default. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
@@ -480,29 +504,29 @@ Audit information is limited to updatedBy and updatedAt on saved content; no con
 
 ## **6.2 Component Diagram**
 
-**Proposed Component Diagram:** Mobile App contains UI, Content Service, Audio Player, Geofence Service, Offline Manager, and Local Content Store. Content Service retrieves APPROVED content online from Backend API or offline from Local Content Store; Audio Player uses matching audio or OS TTS; Geofence Service uses OS Location & Geofencing and OS Notification. Offline Manager obtains packages through Backend API / Content Server / CDN, verifies them, and installs them atomically. Web Admin communicates with Backend API for UC-06 and UC-07. Backend API uses Server Database and Object Storage / CDN. External Content Publication Service performs review, version assignment, publication, and ARCHIVED transitions. Admin Authentication, Analytics Event Capture, and Feedback Submission remain external dependencies.
+**Proposed Component Diagram:** Tourist Web and Android each contain a presentation layer and platform-specific adapters for Content Service, Audio Player/TTS, location/notifications, Offline Manager, and Local Content Store. Both follow the shared UC-01–UC-05 rules and use the same Backend API and published content identifiers. Online content comes from the backend/content storage; offline content comes from the verified local store under Section 2.4. Offline Manager verifies and atomically installs approved packages. Web Admin is a separate authorized client for UC-06/UC-07. Backend API uses the authoritative Server Database and Object Storage / CDN. External Content Publication Service performs review, version assignment, publication, and ARCHIVED transitions. Admin Authentication, Analytics Event Capture, and Feedback Submission retain their external boundaries; sharing a backend does not grant Tourist clients access to Admin operations.
 
 ## **6.3 Deployment Diagram**
 
-**Proposed Deployment Diagram:** The mobile device hosts Mobile App, Local Content Store, and the platform location, geofencing, notification, audio, and TTS services. The Web Admin client accesses Backend API, which connects to Server Database and Object Storage / CDN. Content Publication Service and Admin Authentication are external service boundaries. Analytics Event Capture operates on the mobile side as an external dependency and uploads queued events when connectivity is available; Feedback Submission supplies feedback records through its external integration. Client–server communication uses HTTPS as required by NFR-06. Hosting providers, environments, capacities, and physical deployment allocation are \[?\].
+**Proposed Deployment Diagram:** Android runs on a supported device with native services and local storage; Tourist Web runs in a supported browser with browser/platform adapters and local storage. Both clients and the separate Web Admin access one Backend API over HTTPS. The API connects to the authoritative Server Database and content/audio/package storage. Tourist Web is served from a visitor-accessible HTTPS URL; a development-only LAN address does not establish public availability. External publication/authentication boundaries remain as defined in Section 6.4. Analytics capture on either Tourist client uploads events through the same agreed event contract; feedback submission remains an external integration. Hosting providers, supported browser versions, capacities, and deployment allocation remain \[?\].
 
 ## **6.4 External Services & Dependencies**
 
-The system relies on the following services that are outside the scope of the use cases in this document. Fixed MVP configuration, storage, and content distribution support UC-01 through UC-07 as infrastructure only; no additional epic, feature, or use case is defined for them.
+Platform services below denote native OS capabilities on Android and browser/platform capabilities on Tourist Web, subject to Section 2.4. The system relies on the following services that are outside the scope of the use cases in this document. Fixed MVP configuration, storage, and content distribution support UC-01 through UC-07 as infrastructure only; no additional epic, feature, or use case is defined for them.
 
 | Service | Type | Role | Related UC |
 | :---- | :---- | :---- | :---- |
 | **Map Service** | External | Displays the interactive map and location markers. | UC-01 |
-| **OS Location & Geofencing** | Platform | Provides the device position and accuracy, and geofence entry events. | UC-01, UC-05 |
-| **OS Notification** | Platform | Displays notifications and opens the app with a locationId. | UC-05 |
-| **OS Audio & Text-to-Speech** | Platform | Plays audio, manages audio focus, and reads scriptText when audio is unavailable. | UC-03 |
+| **Platform Location & Geofencing** | Platform | Provides the device position and accuracy, and geofence entry events. | UC-01, UC-05 |
+| **Platform Notification** | Platform | Displays notifications and opens the app with a locationId. | UC-05 |
+| **Platform Audio & Text-to-Speech** | Platform | Plays audio, manages audio focus, and reads scriptText when audio is unavailable. | UC-03 |
 | **Content Server / CDN** | Infrastructure dependency | Stores and delivers approved guide content, audio files and offline packages. | UC-02, UC-03, UC-04 |
 | **Content Publication Service** | External | Receives content submitted for review, supports review (APPROVED / REJECTED), assigns a package version, and publishes packages to the Content Server/CDN. | UC-04, UC-06 |
 | **Admin Authentication** | External | Authenticates and authorizes Web Admin users (account management is out of scope). | UC-06, UC-07 |
 
 #### **6.4.1 Content Lifecycle** 
 
-| Status | Meaning | Set by | Visible to Mobile App |
+| Status | Meaning | Set by | Visible to Tourist Application |
 | :---- | :---- | :---- | :---- |
 | **DRAFT** | Content is being prepared. | Content Admin (UC-06) | No |
 | **PENDING\_REVIEW** | Submitted and waiting for review. | Content Admin (UC-06) | No (the previously published version remains available) |
@@ -521,13 +545,13 @@ UC-06 only creates DRAFT and PENDING\_REVIEW. Every other change of status is pe
 * **NFR-01 — Performance**: Location Details Screen loads within \[2\] s on 4G and within \[1\] s from the Local Content Store.  
 * **NFR-02 — Performance**: Nearby-location search returns results within \[3\] s after a valid GPS fix.  
 * **NFR-03 — Performance:** Pre-rendered audio starts within \[2\] s of selecting Play; TTS fallback starts within \[3\] s when a device voice for the effective languageCode is available.  
-* **NFR-04 — Offline**: Base Content bundle is at most \[150\] MB. UC-01 search and category browsing, UC-02, and UC-03 work without network access using Base Content. Map View requires a network connection; offline, locations are browsed through the list. Audio playback uses available bundled audio or device TTS, subject to UC-03 E1.  
-* **NFR-05 — Platform:** Proposed supported platforms are Android \[8.0+\] and iOS \[15+\].  
+* **NFR-04 — Offline**: Base Content is at most \[150\] MB. Once the baseline is verified and available locally, UC-01 search/category browsing, UC-02, and UC-03 work without network access. Android bundles the baseline; Tourist Web requires initial online provisioning and a verified supported storage environment. The application must show its actual offline readiness. Map View requires network; offline, use the list. Playback needs local audio or compatible offline TTS, subject to UC-03 E1/E3 and Section 2.4.
+* **NFR-05 — Platform:** The agreed Tourist clients are Android and Web browsers. Android minimum version is proposed as \[8.0+\]; supported browser/device versions and capability coverage are \[?\]. Native iOS is not required for this delivery. Shared use cases require per-platform acceptance evidence, particularly audio/TTS, offline storage, permissions, and foreground/background behavior.
 * **NFR-06 — Security:** All client–server traffic uses HTTPS (TLS). Web Admin requires authenticated, role-based access. Content packages are verified by checksum and signature under UC-04 BR-02.  
 * **NFR-07 — Privacy:** Location is used only for nearby search and geofencing; analytics events use anonymous identifiers. Proposed compliance requirement: data handling complies with Decree 13/2023/ND-CP on personal data protection, subject to confirmation by a qualified reviewer. This is a requirement for review, not evidence of established compliance.  
 * **NFR-08 — Battery:** Geofence monitoring consumes at most \[3\]% battery per hour of normal walking use. Measurement device and conditions are \[nhóm điền\].  
 * **NFR-09 — Reliability:** A failed or interrupted update never corrupts or removes installed content, as required by UC-04 BR-02.  
-* **NFR-10 — Accessibility:** Mobile UI supports system font scaling, screen-reader labels, and WCAG 2.1 AA contrast.  
+* **NFR-10 — Accessibility:** Android supports system font scaling and screen-reader labels; Tourist Web supports browser zoom, keyboard access, and screen-reader labels. Both target WCAG 2.1 AA contrast.
 * **NFR-11 — Localization:** UI and guide content use Unicode; the supported languages and support flags are listed in the Appendix.  
 * **NFR-12 — Availability:** Server API availability is at least \[99.5\]% per month.  
 * **NFR-13 — Scalability:** The system supports at least \[500\] locations and \[1,000\] concurrent users.  

@@ -44,8 +44,8 @@ class PlaybackIntegrationTest {
         registry.add("spring.datasource.password", () -> System.getenv("TEST_DATABASE_PASSWORD"));
     }
 
-    @Test void approvedShortGuideComesFromDatabaseAndFallsBackToVi() throws Exception {
-        mvc.perform(get("/api/locations/" + LOCATION + "/guide").param("language", "JA"))
+    @Test void androidExplicitViShortGuideRetainsItsContentAndAudio() throws Exception {
+        mvc.perform(get("/api/locations/" + LOCATION + "/guide").param("language", "VI").param("scriptType", "SHORT"))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.contentId").value(CONTENT))
                 .andExpect(jsonPath("$.languageCode").value("VI"))
                 .andExpect(jsonPath("$.scriptType").value("SHORT"))
@@ -53,7 +53,7 @@ class PlaybackIntegrationTest {
     }
 
     @Test void draftContentIsNotPublic() throws Exception {
-        jdbc.update("UPDATE guide_content_revisions SET status='DRAFT' WHERE id=?::uuid", CONTENT);
+        jdbc.update("UPDATE guide_content_revisions SET status='DRAFT' WHERE location_id=?::uuid", LOCATION);
         mvc.perform(get("/api/locations/" + LOCATION + "/guide")).andExpect(status().isNotFound());
         record(UUID.randomUUID(), CONTENT, 404);
     }

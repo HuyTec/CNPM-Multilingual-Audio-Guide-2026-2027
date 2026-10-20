@@ -10,9 +10,11 @@ import org.json.JSONObject
 import java.net.URI
 import java.util.concurrent.TimeUnit
 
-data class ServerLocation(val id: String, val name: String)
+data class ServerLocation(val id: String, val name: String, val latitude: Double? = null,
+                          val longitude: Double? = null, val category: String = "", val categoryId: String = "")
 data class ServerGuide(val contentId: String, val locationName: String, val languageCode: String,
-                       val scriptType: String, val scriptText: String, val audioUrl: String?)
+                       val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "")
+class GuideApiException(val status: Int, message: String) : IllegalStateException(message)
 
 object DemoApi {
     private val client = OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
@@ -28,11 +30,16 @@ object DemoApi {
 
     suspend fun locations(base: String): List<ServerLocation> = withContext(Dispatchers.IO) {
         val array = json(Request.Builder().url(base + "api/locations?size=50").build()).getJSONArray("items")
-        List(array.length()) { i -> array.getJSONObject(i).let { ServerLocation(it.getString("locationId"), it.getString("name")) } }
+        List(array.length()) { i -> array.getJSONObject(i).let { ServerLocation(it.getString("locationId"), it.getString("name"),
+            it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
+            it.optString("categoryName"), it.optString("categoryId")) } }
     }
 
-    suspend fun guide(base: String, location: String): ServerGuide = withContext(Dispatchers.IO) {
-        val data = json(Request.Builder().url(base + "api/locations/$location/guide?language=VI&scriptType=SHORT").build())
+    suspend fun guide(base: String, location: String, language: String = "VI", type: String = "SHORT"): ServerGuide = withContext(Dispatchers.IO) {
+        require(language.matches(Regex("[A-Z]{2,3}(-[A-Z]{2})?")) && type in listOf("FULL", "SHORT"))
+        val data = json(Request.Builder().url(base + "api/locations/$location/guide?language=$language&scriptType=$type").build())
+        require(data.getString("locationId") == location && data.getString("scriptType") == type
+            && data.getString("languageCode") in listOf(language, "EN", "VI") && data.getString("scriptText").isNotBlank()) { "Bài trả về không khớp lựa chọn." }
         val path = data.optString("audioUrl").takeIf { it.isNotBlank() && it != "null" }
         val audio = path?.let {
             val resolved = URI(base).resolve(it)
@@ -40,7 +47,7 @@ object DemoApi {
             resolved.toString()
         }
         ServerGuide(data.getString("contentId"), data.getString("locationName"), data.getString("languageCode"),
-            data.getString("scriptType"), data.getString("scriptText"), audio)
+            data.getString("scriptType"), data.getString("scriptText"), audio, data.getString("locationId"))
     }
 
     suspend fun playback(base: String, eventId: String, contentId: String) = withContext(Dispatchers.IO) {
@@ -53,7 +60,7 @@ object DemoApi {
         val data = response.body?.string().orEmpty()
         if (!response.isSuccessful) {
             val detail = runCatching { JSONObject(data).optString("detail") }.getOrDefault("")
-            error(detail.ifBlank { "Server trả lỗi ${response.code}. Kiểm tra server rồi thử lại." })
+            throw GuideApiException(response.code, detail.ifBlank { "Server trả lỗi ${response.code}. Kiểm tra server rồi thử lại." })
         }
         JSONObject(data)
     }

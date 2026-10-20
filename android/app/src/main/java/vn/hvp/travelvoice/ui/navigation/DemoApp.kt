@@ -26,12 +26,13 @@ import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -> MapPreview(locations, onMarker, onShowList = onShowList) }, startDestination: String = "live") {
+fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -> MapPreview(locations, onMarker, onShowList = onShowList) }, startDestination: String = "tour") {
+    val shared = startDestination == "tour"
     val nav = rememberNavController()
     var appLanguage by rememberSaveable { mutableStateOf("VI") }
     val entry by nav.currentBackStackEntryAsState()
     val route = entry?.destination?.route ?: "explore"
-    val root = route == "explore" || route == "offline" || route == "live"
+    val root = route == "explore" || route == "offline" || route == "live" || route == "tour"
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.app_name)) }, navigationIcon = {
@@ -42,7 +43,7 @@ fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -
         },
         bottomBar = {
             if (root) NavigationBar {
-                listOf("live" to R.string.live_demo, "explore" to R.string.explore, "offline" to R.string.offline).forEach { (destination, label) ->
+                (if (shared) listOf("tour" to R.string.explore, "offline" to R.string.offline) else listOf("live" to R.string.live_demo, "explore" to R.string.explore, "offline" to R.string.offline)).forEach { (destination, label) ->
                     NavigationBarItem(selected = route == destination,
                         onClick = { nav.navigate(destination) { popUpTo(nav.graph.startDestinationId) { saveState = true }; launchSingleTop = true; restoreState = true } },
                         icon = { Icon(if (destination == "explore") Icons.Default.Explore else Icons.Default.Download, null) },
@@ -52,11 +53,12 @@ fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            Text(if (route == "live") "Demo PostgreSQL + audio + thống kê" else "Giao diện mẫu · dữ liệu và audio mô phỏng", Modifier.padding(horizontal = 16.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (shared) "Quận 1 · nội dung chung với Web · 6 ngôn ngữ" else if (route == "live") "Demo PostgreSQL + audio + thống kê" else "Giao diện mẫu · dữ liệu và audio mô phỏng", Modifier.padding(horizontal = 16.dp, vertical = 4.dp), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             NavHost(nav, startDestination = startDestination, modifier = Modifier.weight(1f)) {
                 composable("live") { LiveDemoScreen(Modifier.fillMaxSize()) }
+                composable("tour") { SharedTourScreen(Modifier.fillMaxSize()) }
                 composable("explore") { ExploreScreen(onLocation = { nav.navigate("detail/$it") { launchSingleTop = true } }, language = appLanguage, mapContent = mapContent) }
-                composable("offline") { OfflineScreen() }
+                composable("offline") { if (shared) SharedTourScreen(Modifier.fillMaxSize(), offlinePage = true) else OfflineScreen() }
                 composable("detail/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) { backStack ->
                     DetailScreen(locationId = backStack.arguments?.getString("id").orEmpty(),
                         onPlay = { id, language, mode -> nav.navigate("player/$id/$language/$mode") { launchSingleTop = true } },

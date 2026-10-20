@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -34,10 +33,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
@@ -59,12 +56,13 @@ import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 
 typealias LocationMapContent = @Composable (List<DemoLocation>, (String) -> Unit, () -> Unit) -> Unit
 
-/** Online OSM basemap; fixture markers remain separate from approved backend content. */
+/** Online Google Maps; marker IDs and guides come from the same backend as Web. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MapPreview(
     locations: List<DemoLocation>, onMarker: (String) -> Unit, modifier: Modifier = Modifier,
     onShowList: () -> Unit = {},
+    districtOneOnly: Boolean = false,
 ) {
     val points = remember(locations) {
         locations.mapNotNull { location ->
@@ -77,11 +75,10 @@ fun MapPreview(
     val online = if (inspection) false else rememberMapOnline()
     var attempt by remember { mutableIntStateOf(0) }
     var loadState by remember(online, attempt) { mutableStateOf(MapLoadState.Loading) }
-    var latitude by rememberSaveable { mutableDoubleStateOf(21.03) }
-    var longitude by rememberSaveable { mutableDoubleStateOf(105.85) }
-    var zoom by rememberSaveable { mutableDoubleStateOf(13.0) }
+    var latitude by rememberSaveable { mutableDoubleStateOf(if (districtOneOnly) 10.777 else 21.03) }
+    var longitude by rememberSaveable { mutableDoubleStateOf(if (districtOneOnly) 106.701 else 105.85) }
+    var zoom by rememberSaveable { mutableDoubleStateOf(if (districtOneOnly) 15.0 else 13.0) }
     var savedCamera by rememberSaveable { mutableStateOf(false) }
-    val uriHandler = LocalUriHandler.current
     LaunchedEffect(online, attempt, loadState) {
         if (online && loadState == MapLoadState.Loading) {
             delay(20_000)
@@ -89,13 +86,13 @@ fun MapPreview(
         }
     }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("Bản đồ trực tuyến · địa điểm mẫu", style = MaterialTheme.typography.labelLarge)
+        Text("Google Maps · bản đồ trực tuyến", style = MaterialTheme.typography.labelLarge)
         when {
             points.isEmpty() -> {
                 StateMessage("Chưa có tọa độ địa điểm", "Bạn vẫn có thể khám phá qua danh sách.")
                 TextButton(onClick = onShowList) { Text("Về danh sách") }
             }
-            inspection -> Text("Bản đồ MapLibre hiển thị khi chạy trên thiết bị hoặc emulator.")
+            inspection -> Text("Google Maps hiển thị khi chạy trên thiết bị hoặc emulator có Google Play services.")
             !online -> {
                 StateMessage("Bản đồ cần kết nối mạng", "Dữ liệu danh sách vẫn có thể dùng để chọn địa điểm.")
                 TextButton(onClick = onShowList) { Text("Về danh sách") }
@@ -105,7 +102,7 @@ fun MapPreview(
                 TextButton(onClick = onShowList) { Text("Về danh sách") }
             }
             else -> key(attempt) {
-                NativeMapSurface(points, MapCamera(latitude, longitude, zoom), savedCamera,
+                NativeMapSurface(points, MapCamera(latitude, longitude, zoom), savedCamera, districtOneOnly,
                     onMarker = onMarker, onState = { if (loadState != MapLoadState.Error) loadState = it }, onCamera = {
                         latitude = it.latitude; longitude = it.longitude; zoom = it.zoom; savedCamera = true
                     })
@@ -114,9 +111,6 @@ fun MapPreview(
                     Text("Đang tải bản đồ…", modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
                 } else Text("Bản đồ đã sẵn sàng", modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
             }
-        }
-        TextButton(onClick = { uriHandler.openUri("https://www.openstreetmap.org/copyright") }) {
-            Text("© OpenStreetMap contributors")
         }
         Text("Chọn địa điểm trên bản đồ hoặc bằng các nút bên dưới.", style = MaterialTheme.typography.bodySmall)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -131,27 +125,22 @@ fun MapPreview(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun NativeMapSurface(
-    points: List<MapPoint>, camera: MapCamera, restoreCamera: Boolean,
+    points: List<MapPoint>, camera: MapCamera, restoreCamera: Boolean, districtOneOnly: Boolean,
     onMarker: (String) -> Unit, onState: (MapLoadState) -> Unit, onCamera: (MapCamera) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val uriHandler = LocalUriHandler.current
     val markerCallback by rememberUpdatedState(onMarker)
     val stateCallback by rememberUpdatedState(onState)
     val cameraCallback by rememberUpdatedState(onCamera)
     val session = remember(context, lifecycle) {
         MapSession(context, lifecycle, camera, restoreCamera,
-            { markerCallback(it) }, { cameraCallback(it) }, { stateCallback(it) })
+            { markerCallback(it) }, { cameraCallback(it) }, { stateCallback(it) }, districtOneOnly)
     }
     DisposableEffect(session) { onDispose { session.close() } }
     LaunchedEffect(session, points) { session.setPoints(points) }
     Box(Modifier.fillMaxWidth().height(320.dp).testTag("location-map")) {
         AndroidView(factory = { session.view }, modifier = Modifier.fillMaxSize())
-        TextButton(
-            onClick = { uriHandler.openUri("https://www.openstreetmap.org/copyright") },
-            modifier = Modifier.align(Alignment.BottomEnd).background(MaterialTheme.colorScheme.surface),
-        ) { Text("© OpenStreetMap contributors", style = MaterialTheme.typography.labelSmall) }
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = { session.zoomBy(-1.0) }) { Text("Thu nhỏ") }

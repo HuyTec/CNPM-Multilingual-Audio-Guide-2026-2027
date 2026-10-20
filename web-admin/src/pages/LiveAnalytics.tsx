@@ -1,15 +1,13 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { AdminAccess } from "../components/AdminAccess";
+import { useAdminSession } from "../lib/admin-content";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Field } from "../components/ui/Field";
 import { DataTable } from "../components/ui/DataTable";
 import { EmptyState } from "../components/ui/EmptyState";
 import { LoadingState } from "../components/ui/States";
-import {
-  basicCredentials,
-  useLiveAnalytics,
-  type CountItem,
-} from "../lib/live-analytics";
+import { useLiveAnalytics, type CountItem } from "../lib/live-analytics";
 import { daysAgo, today, number, percent, dateTime } from "../lib/format";
 import { exportReport } from "../lib/export";
 
@@ -17,7 +15,7 @@ export default function LiveAnalytics() {
   const [params, setParams] = useSearchParams();
   const from = params.get("from") || daysAgo(29);
   const to = params.get("to") || today();
-  const [authorization, setAuthorization] = useState("");
+  const { authorization, setAuthorization } = useAdminSession();
   const [revision, setRevision] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
@@ -60,7 +58,7 @@ export default function LiveAnalytics() {
           ]),
         ],
         [],
-        "PostgreSQL — lượt bắt đầu phát từ Android; chưa tích hợp phản hồi",
+        "PostgreSQL — lượt bắt đầu phát từ Web và Android; chưa tích hợp phản hồi",
       );
     } catch {
       setExportError(
@@ -74,7 +72,7 @@ export default function LiveAnalytics() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">DỮ LIỆU TỪ ANDROID</p>
+          <p className="eyebrow">DỮ LIỆU CHUNG WEB VÀ ANDROID</p>
           <h1>Thống kê lượt nghe</h1>
           <p className="muted">
             Số liệu PostgreSQL thật · cập nhật mỗi 5 giây khi trang đang mở.
@@ -177,8 +175,9 @@ export default function LiveAnalytics() {
                 <section className="card">
                   <EmptyState title="Chưa có lượt nghe trong kỳ">
                     <p>
-                      Mở tab Nghe demo trên Android, chọn địa điểm rồi nhấn Phát
-                      thuyết minh. Không có lượt nghe được tạo sẵn.
+                      Chọn địa điểm trên Web du khách hoặc Android rồi nhấn Nghe
+                      thuyết minh. Trang chỉ hiển thị lượt nghe đã ghi vào
+                      database.
                     </p>
                   </EmptyState>
                 </section>
@@ -219,8 +218,8 @@ export default function LiveAnalytics() {
       <section className="card live-panel">
         <h2>Phạm vi bản demo</h2>
         <p>
-          Luồng lượt nghe đã nối database. Quản lý địa điểm và phản hồi vẫn là
-          giao diện mẫu, chưa đồng bộ với database này.
+          Địa điểm, bản nháp, gửi duyệt và lượt nghe dùng database chung. Phản
+          hồi vẫn là giao diện mẫu, chưa nối database.
         </p>
         <Link to="/analytics?source=mock">
           Mở giao diện thống kê và phản hồi giả lập
@@ -267,63 +266,6 @@ function Distribution({
           </tr>
         ))}
       </DataTable>
-    </section>
-  );
-}
-
-function AdminAccess({
-  error,
-  onAuthenticate,
-}: {
-  error?: string;
-  onAuthenticate: (value: string) => void;
-}) {
-  const passwordInput = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    if (error) passwordInput.current?.focus();
-  }, [error]);
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    onAuthenticate(
-      basicCredentials(
-        String(form.get("username") || ""),
-        String(form.get("password") || ""),
-      ),
-    );
-  }
-  return (
-    <section className="card live-panel">
-      <h2>Đăng nhập thống kê demo</h2>
-      <p>
-        Dùng tài khoản quản trị được cấu hình trên server. Phiên chỉ giữ trong
-        bộ nhớ của tab trình duyệt.
-      </p>
-      <form onSubmit={submit}>
-        <Field id="admin-user" label="Tên đăng nhập">
-          <input
-            id="admin-user"
-            name="username"
-            autoComplete="username"
-            defaultValue="admin"
-            required
-            spellCheck={false}
-          />
-        </Field>
-        <Field id="admin-password" label="Mật khẩu" error={error}>
-          <input
-            ref={passwordInput}
-            id="admin-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            aria-invalid={!!error}
-            aria-describedby={error ? "admin-password-error" : undefined}
-          />
-        </Field>
-        <Button type="submit">Xem số liệu database</Button>
-      </form>
     </section>
   );
 }

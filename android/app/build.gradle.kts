@@ -1,8 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+val mapSecrets = Properties().apply {
+    rootProject.file("secrets.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
+}
+val mapsApiKey = providers.environmentVariable("ANDROID_MAPS_API_KEY")
+    .orElse(mapSecrets.getProperty("MAPS_API_KEY", "")).get()
 // Optional isolated output for verification when Android Studio also builds this checkout.
 providers.gradleProperty("demoBuildDir").orNull?.let {
     layout.buildDirectory.set(rootProject.layout.projectDirectory.dir(it.ifBlank { ".verification-build" }).dir("app"))
@@ -14,10 +21,11 @@ android {
         applicationId = "vn.hvp.travelvoice.demo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1-ui-demo"
-        buildConfigField("String", "DEMO_API_BASE_URL", "\"http://10.0.2.2:8081/\"")
+        versionCode = 2
+        versionName = "0.2-shared-content"
+        buildConfigField("String", "DEMO_API_BASE_URL", "\"http://10.0.2.2:8080/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
     buildFeatures { compose = true; buildConfig = true }
     testOptions { unitTests.isIncludeAndroidResources = true }
@@ -42,7 +50,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.navigation:navigation-compose:2.9.5")
-    implementation("org.maplibre.gl:android-sdk-opengl:13.3.1")
+    implementation("com.google.android.gms:play-services-maps:20.1.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
