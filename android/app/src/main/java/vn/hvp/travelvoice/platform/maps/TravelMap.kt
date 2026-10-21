@@ -19,6 +19,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -37,7 +38,7 @@ import vn.hvp.travelvoice.domain.model.isValidMapCoordinate
 /** A full-canvas native map; the surrounding screen supplies search and the place sheet. */
 @Composable
 fun TravelMap(locations: List<ServerLocation>, onSelect: (String) -> Unit, onList: () -> Unit, modifier: Modifier = Modifier,
-              position: Location? = null, focusRequest: Int = 0) {
+              position: Location? = null, focusRequest: Int = 0, obscuredBottom: Int = 0, obscuredRight: Int = 0) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val select by rememberUpdatedState(onSelect)
@@ -49,6 +50,9 @@ fun TravelMap(locations: List<ServerLocation>, onSelect: (String) -> Unit, onLis
     val session = remember(context, lifecycle, attempt) { runCatching { MapSession(context, lifecycle, camera, restore,
         { select(it) }, { camera = it; restore = true }, { state = it }) }.getOrNull() }
     DisposableEffect(session) { onDispose { session?.close() } }
+    val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    LaunchedEffect(session, dark) { session?.setDarkTheme(dark) }
+    LaunchedEffect(session, obscuredBottom, obscuredRight) { session?.setOverlayPadding(obscuredRight, obscuredBottom) }
     LaunchedEffect(session, locations) {
         session?.setPoints(locations.mapNotNull { location ->
             val lat = location.latitude ?: return@mapNotNull null

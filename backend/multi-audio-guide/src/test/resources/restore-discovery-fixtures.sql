@@ -1,0 +1,3 @@
+-- Transactional test fixtures only; runtime catalog stays retired.
+UPDATE locations SET status='APPROVED' WHERE id IN ('20000000-0000-0000-0000-000000000001','20000000-0000-0000-0000-000000000002','20000000-0000-0000-0000-000000000003','20000000-0000-0000-0000-000000000005');
+UPDATE guide_content_revisions SET status='APPROVED' WHERE id::text LIKE '30000000-%';

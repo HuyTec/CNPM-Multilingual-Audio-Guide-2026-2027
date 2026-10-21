@@ -47,6 +47,16 @@ public class ContentPackageService {
     }
 
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+    public List<Manifest> available() {
+        var manifests = new java.util.ArrayList<Manifest>();
+        for (String scope : List.of("BASE", "OPTIONAL")) {
+            try { manifests.add(build(scope).manifest()); }
+            catch (ResponseStatusException missing) { if (missing.getStatusCode().value() != 404) throw missing; }
+        }
+        return List.copyOf(manifests);
+    }
+
+    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Bundle build(String scope) {
         if (!List.of("BASE", "OPTIONAL").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại gói không hợp lệ.");
         boolean base = scope.equals("BASE");
@@ -80,6 +90,8 @@ public class ContentPackageService {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("schemaVersion", 1); payload.put("status", "APPROVED"); payload.put("scope", scope); payload.put("isBase", base);
         payload.put("locations", locations); payload.put("guides", guides);
+        // Signed tombstones also retire locations inside packages downloaded by older app versions.
+        payload.put("retiredLocationIds", jdbc.queryForList("SELECT id::text FROM locations WHERE status='ARCHIVED' ORDER BY id", String.class));
         payload.put("languages", guides.stream().map(GuideContent::languageCode).distinct().sorted().toList()); payload.put("assets", assets);
         byte[] bytes = mapper.writeValueAsBytes(payload);
         String checksum = sha(bytes); String version = scope.toLowerCase() + "-" + checksum;

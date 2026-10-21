@@ -72,7 +72,7 @@ fun TravelLanguages(language: String, onLanguage: (String) -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TravelPlaceDetails(place: ServerLocation, guide: ServerGuide?, failed: Boolean, language: String, onLanguage: (String) -> Unit,
-                       mode: String, onMode: (String) -> Unit, onRetry: () -> Unit, onPlay: () -> Unit) {
+                       mode: String, onMode: (String) -> Unit, onRetry: () -> Unit, onPlay: () -> Unit, onRate: (Float) -> Unit = {}) {
     LazyColumn(Modifier.fillMaxHeight(0.9f), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text(place.name, style = MaterialTheme.typography.headlineSmall); Text(place.category, color = MaterialTheme.colorScheme.primary) }
         item { Surface(Modifier.fillMaxWidth().height(120.dp), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
@@ -84,6 +84,9 @@ fun TravelPlaceDetails(place: ServerLocation, guide: ServerGuide?, failed: Boole
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { listOf("FULL" to R.string.q1_full, "SHORT" to R.string.q1_short).forEach { (type, label) ->
                 FilterChip(selected = mode == type, onClick = { onMode(type) }, label = { Text(stringResource(label)) })
             } }
+        }
+        if (guide != null && vn.hvp.travelvoice.platform.audio.TravelPlayback.guide?.contentId == guide.contentId) {
+            item { TravelPlayerPanel(onRate, inline = true) }
         }
         item {
             Text(stringResource(R.string.q1_description), style = MaterialTheme.typography.titleMedium)
@@ -97,6 +100,6 @@ fun TravelPlaceDetails(place: ServerLocation, guide: ServerGuide?, failed: Boole
             }
         }
         item { Button(onClick = onPlay, enabled = guide != null, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.PlayArrow, null); Text(stringResource(R.string.q1_play)) } }
-        item { Text(stringResource(R.string.q1_preview_data), style = MaterialTheme.typography.bodySmall) }
+
     }
 }

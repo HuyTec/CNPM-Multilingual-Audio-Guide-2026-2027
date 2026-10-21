@@ -58,6 +58,7 @@ class TravelPlaybackService : Service() {
     private lateinit var media: MediaSession
     private var promoted = false
     private var lastState = ""
+    private var lastPosition = -1
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) { TravelPlayback.narrator?.pause(); visibilityChanged() }
     }
@@ -66,6 +67,8 @@ class TravelPlaybackService : Service() {
             TravelPlayback.narrator?.tick()
             val state = TravelPlayback.narrator?.state.orEmpty()
             if (state != lastState) { lastState = state; visibilityChanged() }
+            else if (TravelPlayback.narrator?.position != lastPosition) updateMediaState()
+            lastPosition = TravelPlayback.narrator?.position ?: -1
             handler.postDelayed(this, 300)
         }
     }
@@ -73,13 +76,13 @@ class TravelPlaybackService : Service() {
         super.onCreate()
         TravelPlayback.service = this
         getSystemService(NotificationManager::class.java).createNotificationChannel(
-            NotificationChannel(CHANNEL, getString(R.string.q1_notification_channel), NotificationManager.IMPORTANCE_LOW))
+            NotificationChannel(CHANNEL, uiString(R.string.q1_notification_channel), NotificationManager.IMPORTANCE_LOW))
         media = MediaSession(this, "TravelQ1").apply {
             setCallback(object : MediaSession.Callback() {
                 override fun onPlay() { TravelPlayback.narrator?.play(); visibilityChanged() }
                 override fun onPause() { TravelPlayback.narrator?.pause(); visibilityChanged() }
                 override fun onStop() { stopSelf() }
-                override fun onSeekTo(pos: Long) { TravelPlayback.narrator?.takeUnless { it.ttsSource }?.seek((pos / 1000).toInt()) }
+                override fun onSeekTo(pos: Long) { TravelPlayback.narrator?.seek((pos / 1000).toInt()) }
             })
             isActive = true
         }
@@ -114,31 +117,41 @@ class TravelPlaybackService : Service() {
     fun visibilityChanged() {
         val narrator = TravelPlayback.narrator
         val active = narrator?.state in listOf("Đang phát", "Đang chuẩn bị…", "Tạm dừng")
-        val playing = narrator?.state == "Đang phát"
-        val actions = PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_STOP
-        media.setPlaybackState(PlaybackState.Builder().setActions(actions or if (narrator?.ttsSource == false) PlaybackState.ACTION_SEEK_TO else 0L)
-            .setState(if (playing) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED,
-                if (narrator?.ttsSource == false) narrator.position * 1000L else PlaybackState.PLAYBACK_POSITION_UNKNOWN, narrator?.rate ?: 1f).build())
-        media.setMetadata(MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE, TravelPlayback.guide?.locationName ?: getString(R.string.app_name))
-            .putString(MediaMetadata.METADATA_KEY_ARTIST, getString(R.string.app_name)).build())
+        updateMediaState()
+        media.setMetadata(MediaMetadata.Builder().putString(MediaMetadata.METADATA_KEY_TITLE, TravelPlayback.guide?.locationName ?: uiString(R.string.app_name))
+            .putString(MediaMetadata.METADATA_KEY_ARTIST, uiString(R.string.app_name)).putLong(MediaMetadata.METADATA_KEY_DURATION, (narrator?.total ?: 0) * 1000L).build())
         if (TravelPlayback.appVisible || !active) {
             if (promoted) { stopForeground(STOP_FOREGROUND_REMOVE); promoted = false }
         } else {
             startForeground(NOTIFICATION, notification()); promoted = true
         }
     }
+    private fun uiString(id: Int): String {
+        val language = getSharedPreferences("travelq1-settings",Context.MODE_PRIVATE).getString("app-language","vi")!!
+        val configuration = android.content.res.Configuration(resources.configuration).apply { setLocale(java.util.Locale.forLanguageTag(language)) }
+        return createConfigurationContext(configuration).getString(id)
+    }
+    private fun updateMediaState() {
+        val narrator = TravelPlayback.narrator
+        val playing = narrator?.state == "Đang phát"
+        val actions = PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_STOP
+        media.setPlaybackState(PlaybackState.Builder().setActions(actions or if ((narrator?.total ?: 0) > 0) PlaybackState.ACTION_SEEK_TO else 0L)
+            .setState(if (playing) PlaybackState.STATE_PLAYING else PlaybackState.STATE_PAUSED,
+                if ((narrator?.total ?: 0) > 0) narrator!!.position * 1000L else PlaybackState.PLAYBACK_POSITION_UNKNOWN, narrator?.rate ?: 1f).build())
+
+    }
     private fun notification(): Notification {
         val playing = TravelPlayback.narrator?.state in listOf("Đang phát", "Đang chuẩn bị…")
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         fun action(name: String, code: Int) = PendingIntent.getService(this, code, Intent(this, TravelPlaybackService::class.java).setAction(name), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_stat_audio)
-            .setContentTitle(TravelPlayback.guide?.locationName ?: getString(R.string.app_name))
-            .setContentText(getString(if (playing) R.string.q1_listen else R.string.q1_pause))
+            .setContentTitle(TravelPlayback.guide?.locationName ?: uiString(R.string.app_name))
+            .setContentText(uiString(if (playing) R.string.q1_listen else R.string.q1_pause))
             .setContentIntent(open).setOnlyAlertOnce(true).setVisibility(Notification.VISIBILITY_PUBLIC)
             .setCategory(Notification.CATEGORY_TRANSPORT).setOngoing(playing)
             .addAction(Notification.Action.Builder(if (playing) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
-                getString(if (playing) R.string.q1_pause else R.string.q1_resume), action("TOGGLE", 1)).build())
-            .addAction(Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, getString(R.string.q1_stop), action("STOP", 2)).build())
+                uiString(if (playing) R.string.q1_pause else R.string.q1_resume), action("TOGGLE", 1)).build())
+            .addAction(Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, uiString(R.string.q1_stop), action("STOP", 2)).build())
             .setStyle(Notification.MediaStyle().setMediaSession(media.sessionToken).setShowActionsInCompactView(0, 1)).build()
     }
     override fun onDestroy() {

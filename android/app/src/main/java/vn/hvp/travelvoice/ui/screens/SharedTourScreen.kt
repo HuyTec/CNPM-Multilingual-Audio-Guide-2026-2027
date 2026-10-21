@@ -172,14 +172,14 @@ private fun SharedNarration(guide: ServerGuide, base: String) {
                 onClick = { narrator.speed(rate) }, label = { Text("${NumberFormat.getNumberInstance(Locale.forLanguageTag("vi-VN")).format(rate)}×") }) }
         }
         if (narrator.total > 0) {
-            val max = if (narrator.ttsSource) (narrator.total - 1).coerceAtLeast(1) else narrator.total.coerceAtLeast(1)
-            Text(if (narrator.ttsSource) "Đoạn ${narrator.position + 1}/${narrator.total} · ${narrator.voiceName}" else "${narrator.position}/${narrator.total} giây")
+            val max = narrator.total.coerceAtLeast(1)
+            Text("${narrator.position}/${narrator.total} giây")
             Slider(value = narrator.position.toFloat().coerceIn(0f, max.toFloat()), valueRange = 0f..max.toFloat(), onValueChange = { narrator.seek(it.toInt()) })
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { narrator.seek(narrator.position - if (narrator.ttsSource) 1 else 10) }) { Text("Lùi") }
-                OutlinedButton(onClick = { narrator.seek(narrator.position + if (narrator.ttsSource) 1 else 10) }) { Text("Tiến") }
+                OutlinedButton(onClick = { narrator.seek(narrator.position - 10) }) { Text("Lùi") }
+                OutlinedButton(onClick = { narrator.seek(narrator.position + 10) }) { Text("Tiến") }
             }
-            if (narrator.ttsSource) Text("Vị trí theo câu; pause/resume có thể lặp lại từ gần từ cuối máy báo.", style = MaterialTheme.typography.bodySmall)
+            if (narrator.ttsSource) Text("Giọng đọc thiết bị, thanh tua dùng thời gian âm thanh thực tế.", style = MaterialTheme.typography.bodySmall)
         }
         if (receipt.isNotBlank()) Text(receipt)
     }
@@ -187,49 +187,50 @@ private fun SharedNarration(guide: ServerGuide, base: String) {
 
 @Composable
 internal fun SharedOfflineContent(repository: SharedTourRepository) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     var installed by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }
     var available by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }
-    var message by remember { mutableStateOf("Đang xác minh gói đã cài…") }
+    var message by remember { mutableStateOf(context.getString(vn.hvp.travelvoice.R.string.q1_package_checking)) }
     var busy by remember { mutableStateOf(false) }
     var confirm by remember { mutableStateOf<JSONObject?>(null) }
     var deleting by remember { mutableStateOf(false) }
     var job by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-    LaunchedEffect(repository) { runCatching { repository.installed() }.onSuccess { installed = it; message = if (it.isEmpty()) "Chưa có gói đã xác minh." else "Gói cơ bản đã xác minh, có thể đọc offline." }.onFailure { message = "Chưa xác minh được gói. Hãy tải lại khi có mạng." } }
+    LaunchedEffect(repository) { runCatching { repository.installed() }.onSuccess { installed = it; message = if (it.isEmpty()) context.getString(vn.hvp.travelvoice.R.string.q1_package_none) else context.getString(vn.hvp.travelvoice.R.string.q1_package_ready) }.onFailure { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_error) } }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         OutlinedButton(enabled = !busy, onClick = { scope.launch {
             busy = true
-            try { available = repository.available(); message = "Đã kiểm tra phiên bản; chỉ tải khi bạn xác nhận." }
+            try { available = repository.available(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_checked) }
             catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { message = "Chưa kiểm tra được. Nội dung đã cài vẫn được giữ." }
+            catch (_: Exception) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_check_error) }
             finally { busy = false }
-        } }) { Text("Kiểm tra cập nhật") }
+        } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_check_updates)) }
         available.forEach { manifest ->
             val current = installed.firstOrNull { it.getJSONObject("manifest").getString("scope") == manifest.getString("scope") }
             val same = current?.getJSONObject("manifest")?.getString("version") == manifest.getString("version")
-            Text(if (manifest.getBoolean("isBase")) "Gói cơ bản · 7 điểm / 6 ngôn ngữ" else "Gói bổ sung · bộ cũ có audio")
+            Text(if (manifest.getBoolean("isBase")) context.getString(vn.hvp.travelvoice.R.string.q1_package_base) else context.getString(vn.hvp.travelvoice.R.string.q1_package_optional))
             Text(manifest.getString("version"), style = MaterialTheme.typography.bodySmall)
-            Text(if (same) "Đã mới nhất" else "Có nội dung chưa cài hoặc bản cập nhật")
-            if (!same) Button(enabled = !busy, onClick = { confirm = manifest }) { Text("Tải gói") }
+            Text(if (same) context.getString(vn.hvp.travelvoice.R.string.q1_package_latest) else context.getString(vn.hvp.travelvoice.R.string.q1_package_available))
+            if (!same) Button(enabled = !busy, onClick = { confirm = manifest }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_download)) }
         }
         installed.forEach { record ->
             val manifest = record.getJSONObject("manifest")
-            Text(if (manifest.getBoolean("isBase")) "Gói cơ bản · được bảo vệ" else "Gói bổ sung đã cài")
-            if (!manifest.getBoolean("isBase")) OutlinedButton(enabled = !busy, onClick = { deleting = true }) { Text("Xóa nội dung bổ sung") }
+            Text(if (manifest.getBoolean("isBase")) context.getString(vn.hvp.travelvoice.R.string.q1_package_protected) else context.getString(vn.hvp.travelvoice.R.string.q1_package_installed))
+            if (!manifest.getBoolean("isBase")) OutlinedButton(enabled = !busy, onClick = { deleting = true }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_remove)) }
         }
-        Text("Bản đồ nền cần mạng. Nghe offline cần audio đã tải hoặc giọng offline cùng ngôn ngữ.")
-        if (busy && job != null) OutlinedButton(onClick = { job?.cancel() }) { Text("Hủy tải") }
+        Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_offline_hint))
+        if (busy && job != null) OutlinedButton(onClick = { job?.cancel() }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_cancel)) }
     }
-    confirm?.let { manifest -> AlertDialog(onDismissRequest = { confirm = null }, title = { Text("Tải gói nội dung?") },
-        text = { Text("Kích thước text: ${manifest.getLong("sizeBytes")} byte; audio tải kèm theo manifest. Phiên bản cũ chỉ thay thế sau xác minh.") },
+    confirm?.let { manifest -> AlertDialog(onDismissRequest = { confirm = null }, title = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm)) },
+        text = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_size, manifest.getLong("sizeBytes"))) },
         confirmButton = { TextButton(onClick = { confirm = null; busy = true; job = scope.launch {
-            try { repository.download(manifest) { message = it }; installed = repository.installed(); message = "Đã tải và xác minh gói." }
-            catch (cancelled: CancellationException) { message = "Đã hủy; phiên bản cũ giữ nguyên."; throw cancelled }
-            catch (error: Exception) { message = error.message ?: "Không tải được gói" }
+            try { repository.download(manifest) { message = it }; installed = repository.installed(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_downloaded) }
+            catch (cancelled: CancellationException) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_cancelled); throw cancelled }
+            catch (error: Exception) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_download_error) }
             finally { busy = false; job = null }
-        } }) { Text("Xác nhận tải") } }, dismissButton = { TextButton(onClick = { confirm = null }) { Text("Hủy") } }) }
-    if (deleting) AlertDialog(onDismissRequest = { deleting = false }, title = { Text("Xóa gói bổ sung?") }, text = { Text("Gói cơ bản không bị xóa.") },
-        confirmButton = { TextButton(onClick = { deleting = false; scope.launch { repository.deleteOptional(); installed = repository.installed() } }) { Text("Xóa") } },
-        dismissButton = { TextButton(onClick = { deleting = false }) { Text("Hủy") } })
+        } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm_download)) } }, dismissButton = { TextButton(onClick = { confirm = null }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_cancel)) } }) }
+    if (deleting) AlertDialog(onDismissRequest = { deleting = false }, title = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm_remove)) }, text = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_remove_hint)) },
+        confirmButton = { TextButton(onClick = { deleting = false; scope.launch { repository.deleteOptional(); installed = repository.installed() } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_delete)) } },
+        dismissButton = { TextButton(onClick = { deleting = false }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_cancel)) } })
 }

@@ -73,10 +73,11 @@ class TourPackageIntegrationTest {
         assertThat(packages.build("BASE").manifest().version()).isNotEqualTo(old);
         assertThat(new String(packages.build("BASE").bytes(), java.nio.charset.StandardCharsets.UTF_8)).doesNotContain("\"contentId\":\"31000000-0000-0000-0000-000000000001\"");
     }
-    @Test void optionalPackageContainsMatchingChecksummedAudioAndWrongVersionIs404() throws Exception {
-        var optional = packages.build("OPTIONAL").manifest();
-        assertThat(optional.isBase()).isFalse(); assertThat(optional.assets()).hasSize(3);
-        assertThat(optional.assets()).allSatisfy(asset -> { assertThat(asset.sizeBytes()).isGreaterThan(100_000); assertThat(asset.sha256()).hasSize(64); });
+    @Test void retiredFixturesAreAbsentFromCatalogGuidesAndOptionalPackage() throws Exception {
+        mvc.perform(get("/api/locations").param("size","50")).andExpect(jsonPath("$.totalElements").value(7));
+        mvc.perform(get("/api/locations/20000000-0000-0000-0000-000000000001/guide")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/content-packages/OPTIONAL/old-version")).andExpect(status().isNotFound());
+        mvc.perform(get("/api/content-packages")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].scope").value("BASE"));
         mvc.perform(get("/api/content-packages/BASE/wrong-version")).andExpect(status().isNotFound());
         mvc.perform(get("/api/content-packages/WRONG/wrong-version")).andExpect(status().isBadRequest());
     }

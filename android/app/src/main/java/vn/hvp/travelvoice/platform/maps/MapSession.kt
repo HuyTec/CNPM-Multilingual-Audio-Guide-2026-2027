@@ -33,6 +33,9 @@ class MapSession(
 ) {
     val view: MapView
     private var map: GoogleMap? = null
+    private var dark = false
+    private var obscuredRight = 0
+    private var obscuredBottom = 0
     private var points = emptyList<MapPoint>()
     private var closed = false
     private var fitNext = !restoreCamera
@@ -69,6 +72,8 @@ class MapSession(
         view.getMapAsync { readyMap ->
             if (closed) return@getMapAsync
             map = readyMap
+            readyMap.setPadding(0, 0, obscuredRight, obscuredBottom)
+            readyMap.setMapColorScheme(if (dark) com.google.android.gms.maps.model.MapColorScheme.DARK else com.google.android.gms.maps.model.MapColorScheme.LIGHT)
             readyMap.setMaxZoomPreference(19f)
             readyMap.uiSettings.isMapToolbarEnabled = false
             readyMap.uiSettings.isZoomControlsEnabled = false
@@ -90,6 +95,17 @@ class MapSession(
         if (points.isNotEmpty()) fitNext = true
         points = updated
         renderPoints()
+    }
+
+    fun setDarkTheme(value: Boolean) {
+        dark = value
+        map?.setMapColorScheme(if (value) com.google.android.gms.maps.model.MapColorScheme.DARK else com.google.android.gms.maps.model.MapColorScheme.LIGHT)
+    }
+
+    /** Keep Google attribution and camera centering within the map area visible above our place card. */
+    fun setOverlayPadding(right: Int, bottom: Int) {
+        obscuredRight = right.coerceAtLeast(0); obscuredBottom = bottom.coerceAtLeast(0)
+        map?.setPadding(0, 0, obscuredRight, obscuredBottom)
     }
 
     private fun renderPoints() {

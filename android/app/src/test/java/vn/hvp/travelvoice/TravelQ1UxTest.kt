@@ -59,4 +59,16 @@ class TravelQ1UxTest {
         compose.onNodeWithText("Kiểm tra cập nhật").performScrollTo().assertExists()
         compose.onNodeWithText("Kết nối máy chủ").assertDoesNotExist()
     }
+    @Test fun profileIsOptionalAndSettingsSeparateAppAndNarrationLanguages() {
+        compose.onNodeWithContentDescription("Hồ sơ").performClick()
+        compose.onNodeWithText("Bạn đang dùng với tư cách khách").assertExists()
+        compose.onNodeWithText("Email").assertExists()
+        compose.runOnUiThread { compose.activity.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithText("Cài đặt").performClick()
+        compose.onNodeWithText("Ngôn ngữ giao diện").assertExists()
+        compose.onNodeWithText("Ngôn ngữ thuyết minh").assertExists()
+        compose.onNodeWithText("Theo hệ thống").assertExists()
+        compose.onNodeWithText("Sáng").assertExists()
+        compose.onNodeWithText("Tối").assertExists()
+    }
 }

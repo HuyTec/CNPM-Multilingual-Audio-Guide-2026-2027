@@ -59,7 +59,7 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
     var showSearch by rememberSaveable { mutableStateOf(false) }
     var showList by rememberSaveable { mutableStateOf(false) }
     var details by rememberSaveable { mutableStateOf(false) }
-    var playerOpen by rememberSaveable { mutableStateOf(false) }
+    var profileOpen by rememberSaveable { mutableStateOf(false) }
     var language by rememberSaveable { mutableStateOf(prefs.getString("language", "VI")!!) }
     var mode by rememberSaveable { mutableStateOf("FULL") }
     var rate by rememberSaveable { mutableFloatStateOf(prefs.getFloat("rate", 1f)) }
@@ -102,10 +102,11 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { allowed ->
         if (!allowed) locationNotice = R.string.q1_notification_denied
     }
-    fun home() { selected = null; details = false; playerOpen = false; showList = false; showSearch = false; query = ""; nearby = false; tab = "map" }
+    fun home() { selected = null; details = false; profileOpen = false; showList = false; showSearch = false; query = ""; nearby = false; tab = "map" }
     fun select(id: String) { selected = id; mode = "FULL"; details = false; showList = false; showSearch = false }
     fun setLanguage(code: String) { language = code; prefs.edit().putString("language", code).apply() }
     fun setRate(value: Float) { rate = value; prefs.edit().putFloat("rate", value).apply(); TravelPlayback.narrator?.speed(value) }
+    fun retry() { repository.invalidateCache(); revision++ }
     fun play(content: ServerGuide) {
         if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
             && !prefs.getBoolean("notification-asked", false)) {
@@ -113,15 +114,21 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         }
         playbackError = runCatching { TravelPlayback.play(context, content, base, rate) }.isFailure
     }
+    LaunchedEffect(base) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching { TouristApi.post(base,"guest",org.json.JSONObject(),TouristIdentity(context).snapshot()) }
+            runCatching { PlaybackOutbox.flush(context,base) }
+        }
+    }
+    fun openActiveDetails() {
+        TravelPlayback.guide?.let { selected = it.locationId; language = it.languageCode; mode = it.scriptType }
+        details = true
+    }
     LaunchedEffect(repository, revision) {
         failed = false
         // Display the bundled, verified baseline immediately while refreshing online content.
-        if (locations == null) runCatching { repository.installed() }.onSuccess { records ->
-            locations = records.flatMap { record ->
-                val array = SharedTourRepository.verify(record).getJSONArray("locations")
-                List(array.length()) { i -> val item = array.getJSONObject(i); ServerLocation(item.getString("locationId"), item.getString("name"),
-                    item.optDouble("latitude"), item.optDouble("longitude"), item.optString("categoryName"), item.optString("categoryId")) }
-            }.also { offline = true }
+        if (locations == null) runCatching { repository.localLocations() }.onSuccess { records ->
+            locations = records.also { offline = true }
         }
         try { val result = repository.locations(); locations = result.first; offline = result.second }
         catch (cancelled: CancellationException) { throw cancelled }
@@ -143,13 +150,14 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         when { tab == "offline" -> tab = "settings"; tab != "map" -> tab = "map"; selected != null -> selected = null; showList -> showList = false; else -> { showSearch = false; query = "" } }
     }
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+        IconButton(onClick = { profileOpen = true }) { Icon(Icons.Default.AccountCircle, stringResource(R.string.q1_profile)) }
         IconButton(onClick = ::home) { Icon(Icons.Default.Home, stringResource(R.string.q1_home)) }
     }) }, bottomBar = {
         Column {
-            if (TravelPlayback.guide != null) TravelMiniPlayer(onOpen = { playerOpen = true })
+            if (TravelPlayback.guide != null) TravelMiniPlayer(onOpen = ::openActiveDetails)
             NavigationBar {
                 NavigationBarItem(selected = tab == "map", onClick = { tab = "map" }, icon = { Icon(Icons.Default.Map, null) }, label = { Text(stringResource(R.string.q1_map)) })
-                NavigationBarItem(selected = playerOpen, onClick = { playerOpen = true }, icon = { Icon(Icons.Default.Headphones, null) }, label = { Text(stringResource(R.string.q1_listen)) })
+                NavigationBarItem(selected = details, onClick = { if (selected != null) details = true else openActiveDetails() }, icon = { Icon(Icons.Default.Info, null) }, label = { Text(stringResource(R.string.q1_details)) })
                 NavigationBarItem(selected = tab in listOf("settings", "offline"), onClick = { tab = "settings" }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.q1_settings)) })
             }
         }
@@ -163,7 +171,9 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
             else -> BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
                 val wide = maxWidth > maxHeight
                 if (mapContent != null) mapContent(visible, ::select, { showList = true })
-                else TravelMap(visible, ::select, { showList = true }, Modifier.fillMaxSize(), position, focusRequest)
+                else TravelMap(visible, ::select, { showList = true }, Modifier.fillMaxSize(), position, focusRequest,
+                    obscuredBottom = if (wide) 0 else placePanelHeight,
+                    obscuredRight = if (wide) with(LocalDensity.current) { (maxWidth / 2).roundToPx() } else 0)
                 Surface(Modifier.align(if (wide) Alignment.TopStart else Alignment.TopCenter).padding(16.dp).fillMaxWidth(if (wide) 0.45f else 1f)
                     .heightIn(max = maxHeight * if (wide) 0.9f else 0.45f), shape = MaterialTheme.shapes.large, tonalElevation = 3.dp) {
                     Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -192,13 +202,13 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
                 Surface(Modifier.align(if (wide) Alignment.BottomEnd else Alignment.BottomCenter).fillMaxWidth(if (wide) 0.5f else 1f)
                     .heightIn(max = maxHeight * if (wide) 0.94f else 0.5f).onSizeChanged { placePanelHeight = it.height }, shape = MaterialTheme.shapes.large, tonalElevation = 2.dp) {
                     when {
-                        place != null -> TravelPlaceCard(place, guide, guideFailed, position, onRetry = { revision++ }, onClose = { selected = null },
+                        place != null -> TravelPlaceCard(place, guide, guideFailed, position, onRetry = ::retry, onClose = { selected = null },
                             onRead = { details = true }, onPlay = { guide?.let(::play) })
                         else -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(stringResource(R.string.q1_places, visible.size), style = MaterialTheme.typography.titleMedium)
                             Text(stringResource(when { failed -> R.string.q1_error; locations == null -> R.string.q1_loading; visible.isEmpty() && nearby -> R.string.q1_nearby_empty;
                                 visible.isEmpty() -> R.string.q1_empty; else -> R.string.q1_discover_hint }), style = MaterialTheme.typography.bodyMedium)
-                            if (failed) TextButton(onClick = { revision++ }) { Text(stringResource(R.string.q1_retry)) }
+                            if (failed) TextButton(onClick = ::retry) { Text(stringResource(R.string.q1_retry)) }
                             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { items(visible, key = { it.id }) { item ->
                                 OutlinedButton(onClick = { select(item.id) }) { Text(item.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
                             } }
@@ -231,10 +241,11 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
                 trailingContent = { TextButton(onClick = { select(item.id) }) { Text(stringResource(R.string.q1_read_more)) } }) }
         }
     }
-    if (details && place != null) ModalBottomSheet(onDismissRequest = { details = false }) {
-        TravelPlaceDetails(place, guide, guideFailed, language, ::setLanguage, mode, { mode = it }, onRetry = { revision++ }, onPlay = { guide?.let(::play) })
+    if (details && place != null) ModalBottomSheet(onDismissRequest = { details = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        TravelPlaceDetails(place, guide, guideFailed, language, ::setLanguage, mode, { mode = it }, onRetry = ::retry, onPlay = { guide?.let(::play) }, onRate = ::setRate)
     }
-    if (playerOpen) ModalBottomSheet(onDismissRequest = { playerOpen = false }) { TravelPlayerPanel(::setRate) }
+    if (details && place == null) ModalBottomSheet(onDismissRequest = { details = false }) { TravelPlayerPanel(::setRate) }
+    if (profileOpen) ModalBottomSheet(onDismissRequest = { profileOpen = false }) { TravelProfile(base) }
     if (playbackError) AlertDialog(onDismissRequest = { playbackError = false }, text = { Text(stringResource(R.string.q1_playback_error)) },
         confirmButton = { TextButton(onClick = { playbackError = false }) { Text(stringResource(R.string.q1_close)) } })
 }

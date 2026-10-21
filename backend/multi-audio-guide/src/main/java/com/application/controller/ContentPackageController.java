@@ -25,7 +25,7 @@ public class ContentPackageController {
 
     @GetMapping("/api/content-packages")
     public List<ContentPackageService.Manifest> packages() {
-        return List.of(service.build("BASE").manifest(), service.build("OPTIONAL").manifest());
+        return service.available();
     }
 
     @GetMapping("/api/content-packages/{scope}/{version}")

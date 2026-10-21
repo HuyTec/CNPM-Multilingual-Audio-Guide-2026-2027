@@ -42,6 +42,11 @@ public class PlaybackService {
     /** Same event UUID is safe to resend; reuse for a different content revision is rejected. */
     @Transactional
     public PlaybackReceipt record(PlaybackRequest request) {
+        return record(request, null);
+    }
+
+    @Transactional
+    public PlaybackReceipt record(PlaybackRequest request, UUID listener) {
         if (request.eventId() == null || request.contentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu eventId hoặc contentId.");
         }
@@ -52,7 +57,7 @@ public class PlaybackService {
         }
         GuideContent guide = guides.findPublicById(request.contentId()).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Nội dung không khả dụng để ghi nhận lượt nghe."));
-        boolean created = playbacks.insert(request.eventId(), guide);
+        boolean created = playbacks.insert(request.eventId(), guide, listener);
         if (!created) requireSameContent(playbacks.contentForEvent(request.eventId()).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.CONFLICT, "eventId đã được sử dụng.")), request.contentId());
         return new PlaybackReceipt(request.eventId(), created);

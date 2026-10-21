@@ -23,11 +23,17 @@ public class PlaybackRepository {
     public PlaybackRepository(NamedParameterJdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     public boolean insert(UUID eventId, GuideContent guide) {
+        return insert(eventId, guide, null);
+    }
+
+    public boolean insert(UUID eventId, GuideContent guide, UUID listener) {
+        var params = new java.util.HashMap<String,Object>();
+        params.put("id",eventId);params.put("content",guide.contentId());params.put("location",guide.locationId());params.put("language",guide.languageCode());params.put("listener",listener);
         return jdbc.update("""
-                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline)
-                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', FALSE)
+                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline, listener_id)
+                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', FALSE, :listener)
                 ON CONFLICT (id) DO NOTHING
-                """, Map.of("id", eventId, "content", guide.contentId(), "location", guide.locationId(), "language", guide.languageCode())) == 1;
+                """, params) == 1;
     }
 
     public Optional<UUID> contentForEvent(UUID eventId) {
