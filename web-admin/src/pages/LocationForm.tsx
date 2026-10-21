@@ -19,6 +19,7 @@ import { AudioPlayer } from "../components/ui/AudioPlayer";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { ErrorState, LoadingState } from "../components/ui/States";
+import { PoiMediaEditor } from "../components/locations/PoiMediaEditor";
 
 function blankLocation(): ContentLocation {
   return {
@@ -47,6 +48,7 @@ export default function LocationForm() {
   const [revision, setRevision] = useState(0);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
+  const [mediaDirty, setMediaDirty] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -132,7 +134,8 @@ export default function LocationForm() {
   }, [asset.audioUrl, authorization, previews]);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      dirty && currentLocation.pathname !== nextLocation.pathname,
+      (dirty || mediaDirty) &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
   // Register the latest navigation guard before redirecting a newly saved draft.
   useEffect(() => {
@@ -141,14 +144,14 @@ export default function LocationForm() {
   }, [id, form.editVersion, form.id, dirty, navigate]);
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty || mediaDirty) {
         event.preventDefault();
         event.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", guard);
     return () => window.removeEventListener("beforeunload", guard);
-  }, [dirty]);
+  }, [dirty, mediaDirty]);
   useEffect(
     () => () => {
       urls.current.forEach((url) => URL.revokeObjectURL(url));
@@ -580,6 +583,10 @@ export default function LocationForm() {
             />
           </section>
         </div>
+        <PoiMediaEditor
+          disabled={busy || uploadBusy}
+          onDirtyChange={setMediaDirty}
+        />
         <div className="form-footer">
           <span role="status" aria-live="polite">
             {message ||
@@ -630,6 +637,12 @@ export default function LocationForm() {
           Thay đổi chưa lưu sẽ bị mất. Hãy ở lại và lưu nháp nếu cần giữ nội
           dung.
         </p>
+        {mediaDirty && (
+          <p>
+            Ảnh xem trước chỉ giữ trong phiên này; Lưu nháp chưa lưu các ảnh đó
+            lên máy chủ.
+          </p>
+        )}
       </ConfirmDialog>
     </>
   );

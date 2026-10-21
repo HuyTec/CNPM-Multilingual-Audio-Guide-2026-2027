@@ -27,6 +27,10 @@ import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DemoApp(mapContent: LocationMapContent = { locations, onMarker, onShowList -> MapPreview(locations, onMarker, onShowList = onShowList) }, startDestination: String = "tour") {
+    if (startDestination == "tour") {
+        TravelQ1App()
+        return
+    }
     val shared = startDestination == "tour"
     val nav = rememberNavController()
     var appLanguage by rememberSaveable { mutableStateOf("VI") }

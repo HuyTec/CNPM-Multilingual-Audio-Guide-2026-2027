@@ -186,7 +186,7 @@ private fun SharedNarration(guide: ServerGuide, base: String) {
 }
 
 @Composable
-private fun SharedOfflineContent(repository: SharedTourRepository) {
+internal fun SharedOfflineContent(repository: SharedTourRepository) {
     val scope = rememberCoroutineScope()
     var installed by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }
     var available by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }

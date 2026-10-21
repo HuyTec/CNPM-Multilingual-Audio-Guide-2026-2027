@@ -1,4 +1,14 @@
-# TravelVoice — Android
+# TravelQ1 — Android
+
+## Bản xem trước UX ngày 21/10/2026
+
+Màn mặc định mới: `MainActivity → DemoApp → TravelQ1App`. Bản đồ Google là nội dung chính; tìm kiếm mở từ biểu tượng, chọn ghim mở box giới thiệu và đọc tiếp trong sheet. Nút Home bên phải tên app xóa lựa chọn để tìm nơi khác. Nút định vị ở góc dưới phải phần bản đồ đưa camera về GPS và hiện ghim xanh/vùng sai số; thao tác này không tự bật bộ lọc Gần tôi. Mini-player giữ phiên nghe khi đổi màn; Ngoại tuyến nằm trong Cài đặt. Ngôn ngữ thuyết minh và tốc độ được lưu trên thiết bị.
+
+Chỉ xin quyền vị trí sau khi bấm **Gần tôi** và xác nhận lời giải thích. Lấy vị trí một lần, có timeout và hủy khi ra nền; không có geofence trong mốc UX này. Khi đang nghe và chuyển app/nhấn Home, media foreground service hiển thị thông báo điều khiển; mở lại app gỡ thông báo. Force-stop không được xem là thao tác chuyển nền. TTS vẫn chuyển theo câu, chưa có timeline thời gian chính xác hoặc phụ đề timestamp.
+
+Địa chỉ API không còn trong UI mặc định. Emulator mặc định dùng `10.0.2.2:8080`; build cho thiết bị LAN bằng `-PtravelApiBaseUrl=http://<IP-LAN>:8080/` (cấu hình build, không phải secret). Dữ liệu/ảnh published, API và PRD không đổi trong mốc UX. Android hiển thị placeholder ảnh; album trong form Web Admin là bản xem trước trong bộ nhớ, chưa có lưu ảnh lên server/gói offline.
+
+Phần dưới ghi nhận luồng APK 0.2 trước khi thay shell UX; các màn prototype vẫn dùng riêng cho kiểm thử legacy.
 
 **APK 0.2-shared-content (versionCode 2):** màn chính đọc danh sách và bài từ cùng backend/PostgreSQL với Web du khách và Web Admin. Bảy điểm demo, VI/EN/FR/JA/ZH/RU × FULL/SHORT; mặc định VI/FULL. `Làm mới nội dung` gọi lại máy chủ. Khi mạng lỗi, nguồn gói đã xác minh được ghi rõ; không dùng dữ liệu giả để báo kết nối thành công.
 
@@ -8,7 +18,7 @@ Jetpack Compose / Material 3, `MainActivity` → `DemoApp` → `SharedTourScreen
 
 ## Kết nối và Google Maps
 
-Emulator dùng `http://10.0.2.2:8080/`; điện thoại thật nhập IP LAN của máy backend trong **Kết nối máy chủ**. Giá trị emulator cũ cổng 8081 được chuyển sang 8080; địa chỉ tùy chỉnh được giữ. Cần cài APK mới thay bản demo cũ.
+Emulator dùng `http://10.0.2.2:8080/`; điện thoại thật nhận địa chỉ LAN qua property build `travelApiBaseUrl` ở trên. Cần cài APK mới thay bản demo cũ.
 
 Sao chép `secrets.properties.example` thành `secrets.properties`, đặt `MAPS_API_KEY` của Android (hoặc biến môi trường `ANDROID_MAPS_API_KEY`); không commit tệp. SDK Google Maps 20.1.0, bật Maps SDK for Android/billing. Restriction Android apps: package **vn.hvp.travelvoice.demo**, SHA-1 debug hiện tại **09:34:78:C0:96:63:FF:90:DD:B1:C0:E8:EB:C2:7C:39:17:C1:A4:42**. Máy/keystore khác hoặc bản release phải lấy fingerprint tương ứng. Key Web và key Android cấu hình riêng.
 

@@ -14,6 +14,11 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import vn.hvp.travelvoice.R
 import vn.hvp.travelvoice.domain.model.MapCamera
 import vn.hvp.travelvoice.domain.model.MapPoint
 
@@ -31,6 +36,12 @@ class MapSession(
     private var points = emptyList<MapPoint>()
     private var closed = false
     private var fitNext = !restoreCamera
+    private var userPoint: LatLng? = null
+    private var userAccuracy = 0f
+    private var userMarker: Marker? = null
+    private var accuracyCircle: Circle? = null
+    private var centerUserWhenReady = false
+    private val userTitle = context.getString(R.string.q1_current_location)
     private val observer: LifecycleEventObserver
 
     init {
@@ -87,6 +98,38 @@ class MapSession(
         current.clear()
         points.forEach { point -> current.addMarker(MarkerOptions().position(LatLng(point.latitude, point.longitude)).title(point.name))?.tag = point.id }
         if (fitNext) { fitToPoints(); fitNext = false }
+        renderUserLocation()
+        if (centerUserWhenReady) centerOnUser()
+    }
+
+    /** Display a one-shot fix separately from POIs, and retain it across marker refreshes. */
+    fun showUserLocation(latitude: Double, longitude: Double, accuracyMeters: Float) {
+        if (closed || !latitude.isFinite() || !longitude.isFinite() || latitude !in -90.0..90.0 || longitude !in -180.0..180.0) return
+        userPoint = LatLng(latitude, longitude)
+        userAccuracy = accuracyMeters.takeIf { it.isFinite() && it > 0 } ?: 0f
+        centerUserWhenReady = true
+        renderUserLocation(); centerOnUser()
+    }
+
+    private fun renderUserLocation() {
+        val current = map ?: return
+        val point = userPoint ?: return
+        userMarker?.remove(); accuracyCircle?.remove()
+        userMarker = current.addMarker(MarkerOptions().position(point).title(userTitle)
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).zIndex(2f))
+        accuracyCircle = current.addCircle(CircleOptions().center(point).radius(userAccuracy.toDouble())
+            .strokeWidth(2f).strokeColor(0xFF1A73E8.toInt()).fillColor(0x201A73E8))
+    }
+
+    private fun centerOnUser() {
+        val current = map ?: return
+        val point = userPoint ?: return
+        view.doOnLayout {
+            if (!closed) {
+                current.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 16f))
+                centerUserWhenReady = false
+            }
+        }
     }
 
     fun zoomBy(delta: Double) {

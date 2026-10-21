@@ -23,7 +23,9 @@ android {
         targetSdk = 36
         versionCode = 2
         versionName = "0.2-shared-content"
-        buildConfigField("String", "DEMO_API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        val serverUrl = providers.gradleProperty("travelApiBaseUrl").orElse("http://10.0.2.2:8080/").get()
+        require(serverUrl.matches(Regex("https?://[a-zA-Z0-9.:-]+/?"))) { "travelApiBaseUrl must be an HTTP(S) origin" }
+        buildConfigField("String", "DEMO_API_BASE_URL", "\"${serverUrl.trimEnd('/')}/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
