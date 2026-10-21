@@ -1,66 +1,101 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { TourLocation } from '../lib/guide';
-import { districtOne, isDistrictOneStop, loadGoogleMaps } from '../lib/googleMaps';
+import { districtOne, isDistrictOneStop, osmAndLocationUrl } from '../lib/osmMap';
+
+function popupFor(item: TourLocation, language: string, scriptType: string) {
+  const content = document.createElement('div');
+  content.className = 'map-popup';
+
+  const name = document.createElement('strong');
+  name.textContent = item.name;
+  content.append(name);
+
+  const guide = document.createElement('a');
+  guide.href = `/locations/${item.locationId}?${new URLSearchParams({ language, scriptType })}`;
+  guide.textContent = 'Mở bài thuyết minh';
+  content.append(guide);
+
+  const osmand = document.createElement('a');
+  osmand.href = osmAndLocationUrl(item);
+  osmand.target = '_blank';
+  osmand.rel = 'noreferrer';
+  osmand.textContent = 'Mở vị trí trong OsmAnd ↗';
+  content.append(osmand);
+  return content;
+}
 
 export default function TourMap({ items, language, scriptType }: { items: TourLocation[]; language: string; scriptType: string }) {
   const container = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<'loading' | 'ready' | 'error' | 'denied'>('loading');
-  const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim();
-  const stopCount = items.filter(isDistrictOneStop).length;
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [attempt, setAttempt] = useState(0);
+  const stops = useMemo(() => items.filter(isDistrictOneStop), [items]);
+
   useEffect(() => {
-    if (!key || !stopCount) return;
+    const host = container.current;
+    if (!host || !stops.length) return;
+
     let active = true;
-    let dispose = () => {};
-    const timer = setTimeout(() => { if (active) setState('error'); }, 20_000);
-    const authFailure = () => { if (active) { clearTimeout(timer); setState('denied'); } };
-    window.addEventListener('google-maps-auth-failure', authFailure);
-    void loadGoogleMaps(key).then(maps => {
-      if (!active || !container.current) return;
-      const host = container.current;
-      const map = new maps.Map(host, {
-        center: districtOne.center, zoom: 15, minZoom: 14, maxZoom: 19,
-        restriction: { latLngBounds: districtOne.bounds, strictBounds: true },
-        mapId: import.meta.env.VITE_GOOGLE_MAPS_MAP_ID || 'DEMO_MAP_ID',
-        mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
-        clickableIcons: false, gestureHandling: 'cooperative', keyboardShortcuts: true,
-      });
-      const ready = maps.event.addListenerOnce(map, 'tilesloaded', () => {
-        if (active) { clearTimeout(timer); setState(current=>current==='denied'?current:'ready'); }
-      });
-      const markers = items.filter(isDistrictOneStop).map(item => {
-        const link = document.createElement('a'); link.className = 'map-marker';
-        link.href = `/locations/${item.locationId}?${new URLSearchParams({ language, scriptType })}`;
-        link.setAttribute('aria-label', `Mở ${item.name}`); link.textContent = '●';
-        const marker = new maps.marker.AdvancedMarkerElement({ map,
-          position: { lat: item.latitude, lng: item.longitude }, title: item.name });
-        marker.append(link);
-        return marker;
-      });
-      // Keep a fixed camera instead of fitting neighbouring-district fixtures.
-      dispose = () => {
-        maps.event.removeListener(ready);
-        markers.forEach(marker => { marker.map = null; marker.remove(); });
-        maps.event.clearInstanceListeners(map); host.replaceChildren();
-      };
-    }).catch((error: unknown) => {
-      if (active) {
-        const detail=error instanceof Error?error.message:'Unknown error';
-        console.warn('TravelVoice map setup:',detail.replace(/AIza[\w-]+/g,'[redacted]').replace(/https?:\/\/\S+/g,'[URL]'));
-        clearTimeout(timer); setState(current=>current==='denied'?current:'error');
-      }
+    let hasTiles = false;
+    const mapBounds = L.latLngBounds(
+      [districtOne.bounds.south, districtOne.bounds.west],
+      [districtOne.bounds.north, districtOne.bounds.east],
+    );
+    const map = L.map(host, {
+      center: [districtOne.center.lat, districtOne.center.lng],
+      zoom: 15,
+      minZoom: 14,
+      maxZoom: 19,
+      maxBounds: mapBounds,
+      maxBoundsViscosity: 1,
+      scrollWheelZoom: false,
+      keyboard: true,
     });
-    return () => { active = false; clearTimeout(timer); window.removeEventListener('google-maps-auth-failure', authFailure); dispose(); };
-  }, [items, key, language, scriptType, stopCount]);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+    });
+    const timer = window.setTimeout(() => { if (active && !hasTiles) setState('error'); }, 15_000);
+    tiles.once('tileload', () => {
+      hasTiles = true;
+      if (active) { window.clearTimeout(timer); setState('ready'); }
+    });
+    tiles.addTo(map);
+
+    const iconFor = (number: number) => L.divIcon({
+      className: 'guide-map-icon',
+      html: `<span class="map-marker" aria-hidden="true">${new Intl.NumberFormat('vi-VN', { minimumIntegerDigits: 2 }).format(number)}</span>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -18],
+    });
+    stops.forEach((item, index) => {
+      L.marker([item.latitude, item.longitude], {
+        title: item.name,
+        alt: `Mở thông tin ${item.name}`,
+        icon: iconFor(index + 1),
+        keyboard: true,
+        riseOnHover: true,
+      }).addTo(map).bindPopup(popupFor(item, language, scriptType));
+    });
+
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+      map.remove();
+    };
+  }, [language, scriptType, stops, attempt]);
+
   return <section className="map-section" aria-label="Bản đồ địa điểm">
-    <h2>Bản đồ Google Maps · Quận 1</h2>
-    {!stopCount ? <p role="status">Không có điểm thuộc tuyến Quận 1 trong kết quả này. Bạn vẫn có thể chọn bài bên dưới.</p>
-      : !key ? <p role="status">Bản đồ Google Maps chưa được cấu hình. Bạn vẫn có thể chọn địa điểm trong danh sách bên dưới.</p>
-      : <><div ref={container} className="tour-map" role="region" aria-label="Google Maps, vùng tham quan Quận 1" />
-        {state === 'loading' && <p role="status">Đang tải Google Maps…</p>}
-        {state === 'ready' && <p role="status">Bản đồ đã sẵn sàng.</p>}
-        {state === 'error' && <p role="alert">Google Maps chưa tải được. Hãy kiểm tra kết nối hoặc tiếp tục chọn địa điểm bên dưới.</p>}</>}
-    {state === 'denied' && <p role="alert">Google Maps chưa được cấp quyền cho ứng dụng này. Bạn vẫn có thể chọn địa điểm trong danh sách bên dưới.</p>}
-    <p className="player-hint">Khung kéo và thu phóng cố định quanh Quận 1; chỉ ghim các điểm thuộc tuyến Quận 1. Đây là vùng demo hình chữ nhật, chưa phải đường biên hành chính.</p>
-    <p className="player-hint">Bản đồ cần mạng; không tải bản đồ nền vào gói offline. Danh sách bên dưới là cách chọn địa điểm bằng bàn phím.</p>
+    <h2>Bản đồ OpenStreetMap · Quận 1</h2>
+    {!stops.length ? <p role="status">Không có điểm thuộc tuyến Quận 1 trong kết quả này. Bạn vẫn có thể chọn bài bên dưới.</p>
+      : <><div key={attempt} ref={container} className="tour-map" role="region" aria-label="Bản đồ OpenStreetMap với địa điểm thuyết minh Quận 1" />
+        {state === 'loading' && <p role="status">Đang tải bản đồ…</p>}
+        {state === 'ready' && <p role="status">Bản đồ đã sẵn sàng. Chọn một ghim để mở bài thuyết minh hoặc vị trí trong OsmAnd.</p>}
+        {state === 'error' && <div role="alert" className="map-error"><p>Chưa tải được bản đồ nền. Hãy kiểm tra kết nối Internet.</p>
+          <button className="secondary-button" onClick={() => { setState('loading'); setAttempt(value => value + 1); }}>Tải lại bản đồ</button></div>}</>}
+    <p className="player-hint">Khung bản đồ giới hạn quanh tuyến demo Quận 1; đây không phải đường biên hành chính đã kiểm chứng.</p>
+    <p className="player-hint">Bản đồ nền cần Internet. Dữ liệu bản đồ © OpenStreetMap contributors; không tải tile nền vào gói offline.</p>
   </section>;
 }

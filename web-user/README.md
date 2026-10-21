@@ -29,26 +29,20 @@ Danh sách mặc định là bảy điểm từ tài liệu nhóm cung cấp; v�
   trong lần online trước. Dev server không cung cấp app shell offline. HTTPS cần
   cho triển khai ngoài localhost; chưa deploy.
 
-## Google Maps và vùng Quận 1
+## OpenStreetMap, OsmAnd và vùng Quận 1
 
-Sao chép .env.example thành .env.local, tự điền VITE_GOOGLE_MAPS_API_KEY; khởi động
-lại Vite. Bật Maps JavaScript API và billing theo cấu hình Google Cloud của nhóm.
-Giới hạn key theo website/referrer localhost và domain triển khai, chỉ cho API cần dùng.
-Không commit key. Có thể đặt VITE_GOOGLE_MAPS_MAP_ID riêng; mặc định DEMO_MAP_ID.
+Web User hiển thị nền OpenStreetMap trong ứng dụng, không cần Google Maps API key.
+Chọn **Bản đồ** để xem tuyến Quận 1; bấm một ghim để mở bài thuyết minh hoặc mở tọa độ
+đó trong OsmAnd. Liên kết OsmAnd dùng URL pin tương thích với ứng dụng di động và bản đồ web.
 
-Bản đồ tải SDK chính thức khi chọn Bản đồ, khóa camera quanh Quận 1 bằng strictBounds
-và zoom 14–19. Không fit toàn bộ fixture để kéo sang quận khác. Chỉ ghim Dinh Độc Lập,
-Nhà hát Thành phố, Nhà thờ Đức Bà, Bitexco; ba điểm lân cận vẫn đọc/nghe trong danh sách.
-Vùng giới hạn là hình chữ nhật demo, **không phải polygon ranh giới hành chính**;
-phần nền giáp ranh có thể xuất hiện. Chưa có dữ liệu đường biên được kiểm chứng để cắt sát.
-Không tải tile Google vào gói offline. Thiếu key/lỗi SDK vẫn dùng được danh sách.
-Android cũng dùng Google Maps SDK, cùng bốn ID và vùng camera; key Android cấu hình
-riêng theo package/SHA-1 trong android/README.md. Sau cập nhật restriction, lần kiểm tra
-SDK Web thật vẫn nhận lỗi xác thực từ Google; nhóm đang kiểm tra API/billing.
-Danh sách và đọc bài vẫn hoạt động khi bản đồ lỗi.
+Camera giới hạn trong vùng demo Quận 1, zoom 14–19. Chỉ ghim Dinh Độc Lập, Nhà hát Thành
+phố, Nhà thờ Đức Bà và Bitexco; ba điểm lân cận vẫn mở được từ danh sách bên dưới. Khung
+giới hạn là hình chữ nhật demo, **không phải ranh giới hành chính đã kiểm chứng**. Nền bản
+đồ cần Internet; không tải tile vào gói offline. Bản đồ dùng tile OSM tiêu chuẩn và hiển thị
+ghi công OpenStreetMap contributors. Khi triển khai có lưu lượng lớn, cần dùng nhà cung cấp
+tile phù hợp hoặc tự host; không dùng tile server cộng đồng để tải trước hay dùng offline.
 
-Nguồn cấu hình: https://developers.google.com/maps/documentation/javascript/examples/control-bounds-restriction
-và https://developers.google.com/maps/documentation/javascript/get-api-key.
+Android tiếp tục dùng Google Maps SDK với key riêng theo package/SHA-1 trong android/README.md.
 
 ## Kiểm tra
 
@@ -60,17 +54,14 @@ $env:LIVE_GUIDE_API='1'
 npm run test:e2e -- guide.live.spec.ts tour.live.spec.ts
 npm run test:e2e -- --config playwright.offline.config.ts
 npm run test:e2e -- --config playwright.maps.config.ts
-$env:LIVE_GOOGLE_MAPS='1'
-npm run test:e2e -- --config playwright.google-live.config.ts
-Remove-Item Env:LIVE_GOOGLE_MAPS
 Remove-Item Env:LIVE_GUIDE_API
 ```
 
 Guide/playback UI tests giả lập API hoặc media adapter, không chứng minh DB/voice thật.
 Guide/tour live tests dùng backend/PostgreSQL thật. Offline live dùng production preview
-cổng 4175 và gói thật; ca lỗi chủ động sửa response để kiểm tra checksum. Google adapter
-config dùng key giả riêng và SDK giả lập để kiểm tra giới hạn/lỗi, **không chứng minh
-Google tiles hoặc credentials thật**. Kết quả đã chạy và giới hạn ghi trong SESSION_REPORT.
+cổng 4175 và gói thật; ca lỗi chủ động sửa response để kiểm tra checksum. Map tests kiểm
+tra marker, popup, giới hạn khu vực và URL OsmAnd; chúng có thể giả lập tile để không phụ
+thuộc mạng bên ngoài.
 
-Triển khai cần reverse proxy /api và /demo-audio, SPA fallback index.html, HTTPS và
-key Google giới hạn đúng domain. Chưa có bằng chứng CI/CD, thiết bị thật hoặc đủ sáu voice TTS.
+Triển khai cần reverse proxy /api và /demo-audio, SPA fallback index.html, HTTPS và tile
+provider phù hợp lưu lượng. Chưa có bằng chứng CI/CD, thiết bị thật hoặc đủ sáu voice TTS.

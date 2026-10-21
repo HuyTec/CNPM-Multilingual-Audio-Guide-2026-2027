@@ -22,18 +22,4 @@ test.describe('District tour — live data', () => {
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(axe.violations).toEqual([]);
   });
-  test('Google map is configured or honestly reports missing key', async ({ page }, info) => {
-    test.skip(process.env.LIVE_GOOGLE_MAPS !== '1', 'Live Google SDK has its own opt-in verification; guide data checks do not prove map authorization');
-    await page.goto('/?view=map');
-    await expect(page.getByRole('heading', { name: 'Bản đồ Google Maps · Quận 1' })).toBeVisible();
-    if (!await page.locator('.tour-map').count()) {
-      await expect(page.getByText('Bản đồ Google Maps chưa được cấu hình.', { exact: false })).toBeVisible();
-      return; // Configuration state only; does not assert live Google tiles.
-    }
-    await expect(page.getByText('Bản đồ đã sẵn sàng.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await expect(page.locator('.map-marker')).toHaveCount(4);
-    await page.screenshot({ path: info.outputPath('tour-map.png'), fullPage: true });
-    await page.getByRole('link', { name: 'Mở Dinh Độc Lập', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
-  });
 });

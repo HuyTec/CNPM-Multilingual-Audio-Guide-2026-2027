@@ -92,6 +92,7 @@ legend { padding: 0; margin-bottom: 12px; }
 .header-nav, .player-actions, .catalog-view { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .header-nav { font-size: 0.875rem; }
 .secondary-button { min-height: 44px; padding: 8px 16px; border: 1px solid var(--reading-rule); border-radius: 6px; color: var(--trail-teal); background: var(--reading-paper); font-weight: 600; }
+.map-open-link { display: inline-flex; align-items: center; margin-bottom: 16px; text-decoration: none; }
 .secondary-button:hover, .secondary-button[aria-pressed="true"] { background: var(--trail-wash); border-color: var(--trail-teal); }
 button:disabled { opacity: 0.55; cursor: default; }
 .guide-player { padding: 20px 0; margin: 0 0 24px; border-top: 1px solid var(--reading-rule); border-bottom: 1px solid var(--reading-rule); }
@@ -123,8 +124,15 @@ button:disabled { opacity: 0.55; cursor: default; }
 .link-entry form { max-width: 640px; }
 .catalog-message { padding: 32px 0; }
 .map-section { margin-bottom: 24px; }
-.tour-map { height: 440px; border: 1px solid var(--reading-rule); border-radius: 8px; }
-.map-marker { display: block; padding: 8px; font-size: 28px; line-height: 1; color: var(--trail-teal); text-shadow: 0 0 2px white; }
+.tour-map { position: relative; z-index: 0; height: 440px; border: 1px solid var(--reading-rule); border-radius: 8px; overflow: hidden; }
+.tour-map .leaflet-container { height: 100%; color: var(--story-ink); font: inherit; }
+.tour-map .leaflet-control-attribution { font-size: 0.7rem; }
+.guide-map-icon { border: 0; background: transparent; }
+.map-marker { display: grid; width: 34px; height: 34px; place-items: center; border: 2px solid var(--reading-paper); border-radius: 50%; background: var(--trail-teal); color: var(--reading-paper); box-shadow: 0 2px 6px #17263d66; font-size: 0.75rem; font-weight: 700; }
+.map-popup { display: grid; max-width: 240px; gap: 8px; }
+.map-popup strong { overflow-wrap: anywhere; }
+.map-popup a { min-height: 32px; }
+.map-error { margin-top: 12px; }
 .offline-page { max-width: 840px; margin: auto; }
 .package-list li { margin: 16px 0; padding: 24px; border: 1px solid var(--reading-rule); border-radius: 8px; background: var(--reading-paper); }
 .package-list h2, .package-list h3 { font-size: 1.125rem; margin-top: 0; }
