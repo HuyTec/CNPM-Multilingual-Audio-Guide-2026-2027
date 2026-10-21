@@ -103,3 +103,5 @@ Thiết kế, backlog nháp và biên bản review được quản lý trực ti
 ## Chạy dự án
 
 Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
+
+Đọc code theo từng chức năng Web/Android → API → database tại [Hướng dẫn đọc code TravelVoice](./docs/vi/DEMO_CODE_GUIDE.md), có mục lục, sơ đồ, link file/hàm và test tương ứng.

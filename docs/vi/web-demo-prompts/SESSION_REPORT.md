@@ -125,3 +125,9 @@ Review theo local Web Interface Guidelines và [bản nguồn Vercel](https://ra
 Admin lint/build và image local đã cập nhật; còn cảnh báo chunk ExcelJS lớn. Review local command.md + nguồn Vercel: không còn P0/P1 phát hiện trong các màn sửa; git diff --check sạch. Fixture generator PASS 7 điểm / 84 bài; DB live Flyway 3.4.
 
 Giới hạn: khung bản đồ là hình chữ nhật demo, chưa phải polygon hành chính; chưa kiểm tra đủ sáu voice TTS/thiết bị thật/GPS/geofence/QR/HTTPS/CI/CD. Gói ký demo còn key theo tiến trình, chưa production trust/history. Bước tiếp theo: sửa xác thực key Web trên Google Cloud rồi chạy lại `playwright.google-live.config.ts`; không suy ra Web Maps đạt từ Android hoặc adapter giả.
+
+## Hướng dẫn đọc code — 21/10/2026
+
+- Cập nhật docs/vi/DEMO_CODE_GUIDE.md theo source 5dd713d: 15 mục, routes/data/SQL, Web/Android/Admin, audio/TTS/map/offline, workspace, analytics, legacy và test; thêm link từ README gốc.
+- Phân biệt workspace/published, source thật/mock, số liệu offline chưa đầy đủ, stack 8080/3000 và stack 8081/3001 riêng. Giữ kết quả runtime cũ kèm ngày/giới hạn, không chạy lại suite để viết docs.
+- Chỉ thay tài liệu; kiểm tra 123 đích link file, 15 anchor mục lục, reference/code fence: PASS; git diff --check sạch. Không sửa source, cấu hình, DB, Jira hoặc triển khai.

@@ -45,7 +45,7 @@
     <string name="q1_offline">Ngoại tuyến</string>
     <string name="q1_offline_hint">Xem gói đã tải, kiểm tra cập nhật và quản lý dung lượng.</string>
     <string name="q1_about">Thông tin ứng dụng</string>
-    <string name="q1_about_body">TravelQ1 · Khám phá và nghe thuyết minh đa ngôn ngữ. Bản xem trước trải nghiệm.</string>
+    <string name="q1_about_body">TravelQ1 · Khám phá và nghe thuyết minh đa ngôn ngữ.</string>
     <string name="q1_location_title">Tìm những nơi gần bạn</string>
     <string name="q1_location_reason">TravelQ1 dùng vị trí để đưa bản đồ về nơi bạn đang đứng và tìm những địa điểm gần bạn. Bạn vẫn có thể chọn địa điểm khi không cấp quyền.</string>
     <string name="q1_allow">Cho phép vị trí</string>

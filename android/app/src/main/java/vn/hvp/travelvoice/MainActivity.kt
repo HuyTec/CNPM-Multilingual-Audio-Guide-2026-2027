@@ -9,7 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
-import vn.hvp.travelvoice.ui.navigation.DemoApp
+import vn.hvp.travelvoice.ui.navigation.TravelQ1App
 import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 import vn.hvp.travelvoice.platform.audio.TravelPlayback
 
@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
                     isAppearanceLightNavigationBars = !dark
                 }
             }
-            TravelVoiceTheme(darkTheme = dark) { DemoApp() }
+            TravelVoiceTheme(darkTheme = dark) { TravelQ1App() }
         }
     }
 }

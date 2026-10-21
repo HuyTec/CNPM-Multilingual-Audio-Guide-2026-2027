@@ -58,8 +58,8 @@ import java.util.Locale
 fun SharedTourScreen(modifier: Modifier = Modifier, offlinePage: Boolean = false) {
     val context = LocalContext.current.applicationContext
     val preferences = remember { context.getSharedPreferences("demo-server", Context.MODE_PRIVATE) }
-    var base by rememberSaveable { mutableStateOf(preferences.getString("base", BuildConfig.DEMO_API_BASE_URL)!!
-        .let { if(it.trimEnd('/')=="http://10.0.2.2:8081")BuildConfig.DEMO_API_BASE_URL else it }) }
+    var base by rememberSaveable { mutableStateOf(preferences.getString("base", BuildConfig.API_BASE_URL)!!
+        .let { if(it.trimEnd('/')=="http://10.0.2.2:8081")BuildConfig.API_BASE_URL else it }) }
     var address by rememberSaveable { mutableStateOf(base) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
     val repository = remember(base) { SharedTourRepository(context, base) }

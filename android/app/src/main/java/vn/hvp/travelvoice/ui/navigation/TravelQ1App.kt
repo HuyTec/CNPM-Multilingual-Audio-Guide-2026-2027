@@ -51,7 +51,7 @@ import vn.hvp.travelvoice.ui.screens.*
 fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit, () -> Unit) -> Unit)? = null) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("travelq1-settings", Context.MODE_PRIVATE) }
-    val base = BuildConfig.DEMO_API_BASE_URL
+    val base = BuildConfig.API_BASE_URL
     val repository = remember { SharedTourRepository(context.applicationContext, base) }
     var tab by rememberSaveable { mutableStateOf("map") }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }

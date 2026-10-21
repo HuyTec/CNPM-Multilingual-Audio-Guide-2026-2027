@@ -24,7 +24,7 @@ import javax.crypto.spec.GCMParameterSpec
 class TouristIdentity(context: Context) {
     private companion object { val lock = Any() }
     private val prefs = context.applicationContext.getSharedPreferences("tourist-secure-v1", Context.MODE_PRIVATE)
-    private fun storageName(name: String) = if (name == "session") "session-" + SharedTourRepository.sha(vn.hvp.travelvoice.BuildConfig.DEMO_API_BASE_URL.toByteArray()) else name
+    private fun storageName(name: String) = if (name == "session") "session-" + SharedTourRepository.sha(vn.hvp.travelvoice.BuildConfig.API_BASE_URL.toByteArray()) else name
     private fun key(): SecretKey = synchronized(lock) {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey("travelq1-tourist", null) as? SecretKey) ?: KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
