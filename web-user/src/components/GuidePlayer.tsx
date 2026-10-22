@@ -1,17 +1,14 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import type { Guide } from '../lib/guide';
 import { GuidePlayback } from '../lib/playback';
+import { usePlaybackReceipt } from '../lib/usePlaybackReceipt';
 
 const number = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 export function GuidePlayer({ guide }: { guide: Guide }) {
-  const [receiptError, setReceiptError] = useState(false);
+  const receipt = usePlaybackReceipt();
   const [controller] = useState(() => new GuidePlayback(guide, () => {
     // A playback receipt is sent only after the real media/TTS start callback.
-    const eventId = crypto.randomUUID();
-    void fetch('/api/playbacks', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventId, contentId: guide.contentId }) }).then(response => {
-      setReceiptError(!response.ok);
-    }).catch(() => setReceiptError(true));
+    receipt.record(guide.contentId);
   }));
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot);
   useEffect(() => {
@@ -54,6 +51,7 @@ export function GuidePlayer({ guide }: { guide: Guide }) {
       </div>
       {isTts && <p className="player-hint">{state.voice}. Vị trí theo đoạn văn; tạm dừng/đổi tốc độ có thể đọc lại từ gần từ cuối cùng trình duyệt báo.</p>}
     </div>}
-    {receiptError && <p className="player-hint" role="status">Lượt nghe chưa gửi được đến máy chủ.</p>}
+    {receipt.failed && <div><p className="player-hint" role="status">Lượt nghe chưa gửi được đến máy chủ. Bạn vẫn có thể tiếp tục nghe.</p>
+      <button className="secondary-button" disabled={receipt.retrying} onClick={() => void receipt.retry()}>{receipt.retrying ? 'Đang gửi lại…' : 'Gửi lại lượt nghe'}</button></div>}
   </section>;
 }

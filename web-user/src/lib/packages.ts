@@ -55,7 +55,16 @@ export async function verifyPackage(stored: Pick<StoredPackage, 'manifest' | 'by
 }
 export async function installedPackages() {
   const packages = await allStored();
-  return Promise.all(packages.map(async stored => ({ stored, payload: await verifyPackage(stored) })));
+  return Promise.all(packages.map(async stored => {
+    const payload = await verifyPackage(stored);
+    if (!Array.isArray(stored.assets) || stored.assets.length !== payload.assets.length) throw new Error('Gói đã lưu thiếu audio. Hãy tải lại khi có mạng.');
+    for (const expected of payload.assets) {
+      const asset = stored.assets.find(item => item.url === expected.url);
+      if (!asset || asset.bytes.byteLength !== expected.sizeBytes || await digest(asset.bytes) !== expected.sha256)
+        throw new Error('Audio đã lưu không còn toàn vẹn. Hãy tải lại gói khi có mạng.');
+    }
+    return { stored, payload };
+  }));
 }
 export async function downloadPackage(manifest: PackageManifest, signal: AbortSignal, progress: (message: string) => void) {
   if (!crypto.subtle || !navigator.storage?.estimate) throw new Error('Môi trường lưu trữ/xác minh chưa được hỗ trợ.');

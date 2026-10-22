@@ -25,6 +25,7 @@ export function useGuide({ locationId, language, scriptType }: Selection): Guide
           if (active) setState({ status: 'unavailable' });
           return;
         }
+        if (response.status >= 400 && response.status < 500) allowOffline = false;
         if (!response.ok) throw new Error('Request failed');
         allowOffline = false;
         const guide = parseGuide(await response.json(), { locationId, language, scriptType });

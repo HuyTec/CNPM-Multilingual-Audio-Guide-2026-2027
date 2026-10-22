@@ -7,7 +7,7 @@ test.describe('Live Web → backend → PostgreSQL guide', () => {
   test.skip(process.env.LIVE_GUIDE_API !== '1', 'Set LIVE_GUIDE_API=1 with the real demo backend running');
   const location = '20000000-0000-0000-0000-000000000001';
 
-  test('actual WAV starts only on click; position, pause/resume, speed and receipt work', async ({ page }) => {
+  test('actual WAV starts only on click; position, pause/resume, speed and receipt work', async ({ page, request }) => {
     const receipts: string[] = [];
     page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/playbacks')) receipts.push(request.postData()!); });
     await page.goto(`/locations/${location}?language=VI&scriptType=SHORT`);
@@ -16,7 +16,12 @@ test.describe('Live Web → backend → PostgreSQL guide', () => {
     const response = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/api/playbacks'));
     await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
     await expect(page.locator('.guide-player [role="status"]').first()).toContainText('Đang phát · Audio thu sẵn');
-    expect((await response).ok()).toBe(true);
+    const recorded = await response;
+    expect(recorded.ok()).toBe(true);
+    expect((await recorded.json()).created).toBe(true);
+    const repeated = await request.post('/api/playbacks', { data: JSON.parse(receipts[0]) });
+    expect(repeated.ok()).toBe(true);
+    expect((await repeated.json()).created).toBe(false);
     const slider = page.locator('#playback-position');
     await expect.poll(async () => Number(await slider.inputValue())).toBeGreaterThan(0);
     await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click();

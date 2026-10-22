@@ -2,6 +2,31 @@ import { expect, test } from '@playwright/test';
 
 test.describe('Real signed package / production service worker', () => {
   test.skip(process.env.LIVE_GUIDE_API !== '1', 'Requires real backend and production preview');
+  test('stored audio corruption is rejected before reporting a package verified', async ({ page }) => {
+    await page.goto('/offline');
+    await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
+    await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
+    await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
+    await page.evaluate(() => new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('travelvoice-content-v1', 1);
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const db = open.result; const tx = db.transaction('packages', 'readwrite');
+        const store = tx.objectStore('packages'); const read = store.get('OPTIONAL');
+        read.onsuccess = () => {
+          const stored = read.result;
+          new Uint8Array(stored.assets[0].bytes)[0] ^= 1;
+          store.put(stored);
+        };
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+      };
+    }));
+    await page.reload();
+    await expect(page.getByRole('status')).toContainText('Chưa đọc/xác minh được bộ nhớ');
+    await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toHaveCount(0);
+  });
   test('confirm download, verify, protect base and reopen actual guide offline', async ({ page, context, request }) => {
     page.on('pageerror', error => console.log('Offline page error:', error.message));
     page.on('requestfailed', request => console.log('Offline request failed:', request.url(), request.failure()?.errorText));
@@ -32,6 +57,7 @@ test.describe('Real signed package / production service worker', () => {
     await page.reload();
     await expect(page.locator('.script-text')).toBeVisible();
     await page.getByRole('link', { name: 'Khám phá', exact: true }).click();
+    await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
     await context.setOffline(false);
   });

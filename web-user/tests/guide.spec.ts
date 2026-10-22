@@ -19,6 +19,21 @@ async function mockApi(page: Page) {
 }
 
 test.describe('Guide browser contract — synthetic API', () => {
+  test('a forbidden guide response never reads stale offline storage', async ({ page }) => {
+    await page.addInitScript(() => {
+      Reflect.set(window, 'offlineReads', 0);
+      const original = indexedDB.open.bind(indexedDB);
+      indexedDB.open = (...args: Parameters<IDBFactory['open']>) => {
+        Reflect.set(window, 'offlineReads', Number(Reflect.get(window, 'offlineReads')) + 1);
+        return original(...args);
+      };
+    });
+    await page.route('**/api/**', route => route.fulfill({ status: 403 }));
+    await page.goto(path);
+    await expect(page.getByRole('heading', { name: 'Chưa tải được thuyết minh' })).toBeVisible();
+    expect(await page.evaluate(() => Reflect.get(window, 'offlineReads'))).toBe(0);
+    await expect(page.locator('.script-text')).toHaveCount(0);
+  });
   test('direct link defaults to FULL, supports all four variants, refresh and history', async ({ page }) => {
     const requests: string[] = [];
     await page.route('**/api/**', async route => {

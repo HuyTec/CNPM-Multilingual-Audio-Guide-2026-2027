@@ -4,7 +4,18 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('District tour — live data', () => {
   test.skip(process.env.LIVE_GUIDE_API !== '1', 'Requires real backend');
   test('catalog opens exact selected location and all six languages / two modes', async ({ page, request }, info) => {
+    const calls: number[] = [];
+    page.on('response', response => { if (/\/api\/(locations\?|categories)/.test(response.url())) calls.push(response.status()); });
     await page.goto('/');
+    await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
+    await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+    expect(calls).not.toContain(400);
+    const categories = await request.get('/api/categories');
+    expect(categories.status()).toBe(200);
+    await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('');
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(10);
+    await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('10000000-0000-0000-0000-000000000101');
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
     await page.locator('select[name="language"]').selectOption('FR');
     await page.getByRole('link', { name: /Dinh Độc Lập/ }).click();

@@ -11,6 +11,7 @@ export function OfflinePage() {
   const [shellReady, setShellReady] = useState(!!navigator.serviceWorker?.controller);
   const [pending, setPending] = useState<PackageManifest | null>(null);
   const transfer = useRef<AbortController | null>(null);
+  const baseReady = installed.some(item => item.stored.scope === 'BASE' && item.payload.isBase);
   useEffect(() => {
     void installedPackages().then(value => { setInstalled(value); setMessage(value.length ? 'Nội dung đã lưu đã qua xác minh.' : 'Chưa có nội dung offline. Hãy kết nối mạng để chuẩn bị lần đầu.'); })
       .catch(() => setMessage('Chưa đọc/xác minh được bộ nhớ. Hãy tải lại gói khi có mạng.'));
@@ -20,14 +21,16 @@ export function OfflinePage() {
   }, []);
   async function check() {
     setBusy(true); setMessage('Đang kiểm tra phiên bản trên máy chủ…');
+    const controller = new AbortController(); transfer.current = controller;
+    const timer = window.setTimeout(() => controller.abort(), 15_000);
     try {
-      const response = await fetch('/api/content-packages', { cache: 'no-store' });
+      const response = await fetch('/api/content-packages', { cache: 'no-store', signal: controller.signal });
       if (!response.ok) throw new Error();
       const list = await response.json() as PackageManifest[];
       if (!Array.isArray(list) || list.some(item => item.status !== 'APPROVED')) throw new Error();
       setAvailable(list); setMessage('Đã kiểm tra. Chỉ tải sau khi bạn xác nhận.');
     } catch { setMessage('Không kiểm tra được cập nhật. Nội dung đã cài vẫn giữ nguyên.'); }
-    finally { setBusy(false); }
+    finally { window.clearTimeout(timer); transfer.current = null; setBusy(false); }
   }
   async function install(manifest: PackageManifest) {
     setPending(null); setBusy(true); setDownloading(true); const controller = new AbortController(); transfer.current = controller;
@@ -46,6 +49,7 @@ export function OfflinePage() {
   return <section className="offline-page">
     <title>Nội dung offline · TravelVoice</title><p className="eyebrow">Mang câu chuyện theo bạn</p><h1>Nội dung offline</h1>
     <p>Web và Android dùng cùng phiên bản gói, mã địa điểm và bài thuyết minh. Bản đồ nền cần mạng.</p>
+    {!baseReady && <p className="fallback-note">Chưa có nội dung cơ bản đã xác minh. Hãy kiểm tra cập nhật và xác nhận tải gói cơ bản khi có mạng trước khi dùng offline.</p>}
     {!shellReady && <p className="fallback-note">Chưa xác nhận ứng dụng sẵn sàng mở lại khi mất mạng. Hãy dùng bản production/preview, cho phép lưu trữ và tải lại trang khi có mạng.</p>}
     <p role="status">{message}</p>
     <div className="player-actions"><button className="primary-button" disabled={busy} onClick={() => void check()}>Kiểm tra cập nhật</button>
