@@ -17,12 +17,13 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() { super.onStart(); TravelPlayback.visible(true) }
     override fun onStop() { TravelPlayback.visible(false); super.onStop() }
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Register AppCompat's activity delegate before using its application-locale APIs.
+        super.onCreate(savedInstanceState)
         val preferences = getSharedPreferences("travelq1-settings", Context.MODE_PRIVATE)
         val systemChoice = if (android.os.Build.VERSION.SDK_INT >= 33) AppCompatDelegate.getApplicationLocales().toLanguageTags().takeIf { it in listOf("vi","en") } else null
         val language = systemChoice ?: preferences.getString("app-language", "vi")!!
         preferences.edit().putString("app-language",language).apply()
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language))
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val prefs = remember { getSharedPreferences("travelq1-settings", Context.MODE_PRIVATE) }
