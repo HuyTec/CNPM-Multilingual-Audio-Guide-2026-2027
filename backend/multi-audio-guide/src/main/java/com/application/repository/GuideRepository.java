@@ -21,7 +21,7 @@ public class GuideRepository {
             JOIN languages lang ON lang.code = g.language_code
             LEFT JOIN audio_assets a ON a.content_id = g.id
             WHERE g.status = 'APPROVED' AND l.status = 'APPROVED'
-              AND c.is_active AND lang.is_active AND length(trim(g.script_text)) > 0
+              AND c.is_active AND lang.is_active AND g.script_text ~ '[^[:space:]]'
             """;
     private static final RowMapper<GuideContent> MAPPER = (rs, index) -> new GuideContent(
             rs.getObject("id", UUID.class), rs.getObject("location_id", UUID.class), rs.getString("name"),

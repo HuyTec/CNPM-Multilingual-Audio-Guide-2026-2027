@@ -1,25 +1,28 @@
-# React + TypeScript + Vite
+# TravelVoice · Web Admin
 
-Trang `/analytics` mặc định đọc thống kê PostgreSQL thật qua backend (Basic Auth demo, tự cập nhật 5 giây, kỳ báo cáo và XLSX). Xem [hướng dẫn local/cùng Wi-Fi](../docs/vi/LIVE_DEMO_SETUP.md). Biên tập/phản hồi và mô tả mock cũ bên dưới vẫn là prototype; thống kê giả lập ở `/analytics?source=mock`.
+Danh sách, biên tập và thống kê mặc định dùng PostgreSQL thật qua cùng backend cổng 8080 với Web du khách/Android. Hợp đồng: [API backend, mục 3.4](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Phản hồi giả lập chỉ ở `/analytics?source=mock`.
 
 ## Demo Web Admin UC-06 / UC-07
 
-Giao diện tiếng Việt, React Router, Tailwind, dữ liệu giả lập trong `src/mocks/`. Thiết kế và kết quả review được lưu tại [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21), câu hỏi chưa chốt tại [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Yêu cầu sản phẩm hiện hành nằm trong [PRD](../docs/en/PRD_Report.md).
+Giao diện tiếng Việt, React Router, Tailwind. Yêu cầu hiện hành: [PRD](../docs/en/PRD_Report.md), UC-06/UC-07. Mã mock cũ được giữ cho prototype riêng, không thay thế API của danh sách/form chính.
 
 - `/locations`: danh sách, tìm kiếm, trạng thái và phân trang.
 - `/locations/new`, `/locations/:id/edit`: lưu nháp, gửi duyệt, kịch bản ngôn ngữ × FULL/SHORT, audio preview/retry và cảnh báo chưa lưu. Không thay thế bản published.
-- `/analytics`: kỳ 30 ngày, thống kê, bộ lọc/chi tiết phản hồi trong URL, trạng thái một chiều và XLSX thật từ dữ liệu mock.
+- `/analytics`: thống kê lượt nghe Web/Android thật, kỳ 30 ngày, tự cập nhật 5 giây và xuất XLSX từ API.
 
-Dùng **Tình huống kiểm thử** cuối trang để kiểm tra rỗng, lỗi, dữ liệu dài, lỗi upload và lỗi export. Loading xuất hiện khi tải hoặc đổi kỳ. Mặc định giả lập Admin đã đăng nhập; chưa tích hợp backend hay dịch vụ xác thực. Audio nghe thử chỉ tồn tại trong phiên; sau reload chọn lại file, metadata vẫn được giữ. localStorage dùng hai khóa `hvp-demo-locations-v1` và `hvp-demo-feedback-v1`.
+Đăng nhập bằng tài khoản Basic Auth demo cấu hình tại backend. Local hiện lưu cấu hình trong `.env.admin.local` ở root (ignored); không gửi mật khẩu vào chat/commit. Phiên chỉ giữ trong bộ nhớ tab, reload cần đăng nhập lại. Form có sáu ngôn ngữ × FULL/SHORT; text và audio lưu trong DB, tải lại vẫn nghe thử được. Xung đột phiên bản trả 409 và giữ dữ liệu đang nhập. Lưu nháp cho phép thiếu trường; gửi duyệt kiểm tra tên/danh mục/tọa độ/bán kính. Audio MP3/WAV/OGG tối đa 20 MB; upload lỗi giữ text và cho thử lại.
 
-Kiểm thử luồng và accessibility:
+Kiểm thử tích hợp local với backend và Web Admin Docker đang chạy ở cổng 3000:
 
 ```powershell
 npx.cmd playwright install chromium
-npm.cmd run test:e2e
+# Đặt DEMO_ADMIN_USERNAME/DEMO_ADMIN_PASSWORD trong môi trường test, không ghi giá trị vào lệnh.
+$env:LIVE_CONTENT_API='1'
+npx.cmd playwright test --config playwright.content-live.config.ts
+Remove-Item Env:LIVE_CONTENT_API
 ```
 
-Ảnh kiểm tra desktop/mobile nằm trong `test-results/` (được gitignore). Không chạy hai bộ Playwright đồng thời vào cùng thư mục output.
+Suite live không giả lập API; tạo bản nháp có tiền tố `Codex UI integration`, ghi ID vào `test-results-content/owned-ids.json` để người chạy dọn đúng dữ liệu test. Không dùng suite prototype cũ làm bằng chứng DB tích hợp. Không chạy hai bộ Playwright đồng thời cùng thư mục output.
 
 ## Cài đặt và chạy trên Windows
 
@@ -36,10 +39,10 @@ Mở PowerShell tại thư mục gốc repository, rồi chạy:
 ```powershell
 cd .\web-admin
 npm.cmd ci
-npm.cmd run dev
+npm.cmd run dev -- --port 5174
 ```
 
-`npm.cmd ci` cài đúng phiên bản trong `package-lock.json`. Sau khi phát triển, kiểm tra và đóng gói bằng:
+Vite cổng 5174 proxy `/api` và `/demo-audio` sang 8080; có thể đổi `API_PROXY_TARGET`. Bản Compose ở http://127.0.0.1:3000/ dùng nginx proxy backend. `npm.cmd ci` cài đúng phiên bản trong `package-lock.json`. Kiểm tra và đóng gói bằng:
 
 ```powershell
 npm.cmd run lint

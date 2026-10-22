@@ -18,9 +18,12 @@ import {
 import LocationList from "./pages/LocationList";
 import LocationForm from "./pages/LocationForm";
 import AnalyticsFeedback from "./pages/AnalyticsFeedback";
+import { AdminContentGate, AdminProvider } from "./components/AdminProvider";
+import { useAdminSession } from "./lib/admin-content";
 function Layout() {
   const location = useLocation();
   const [params, setParams] = useSearchParams();
+  const { authorization, setAuthorization } = useAdminSession();
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main">
@@ -58,13 +61,13 @@ function Layout() {
           <p>
             Thống kê lấy từ database.
             <br />
-            Biên tập / phản hồi còn giả lập.
+            Biên tập lưu vào DB chung; phản hồi còn giả lập.
           </p>
           <div className="profile">
             <span className="avatar">AD</span>
             <div>
               <strong>Quản trị viên</strong>
-              <small>Thống kê có xác thực riêng</small>
+              <small>Quản trị demo có xác thực</small>
             </div>
           </div>
         </div>
@@ -82,40 +85,55 @@ function Layout() {
           </div>
         </header>
         <main id="main" tabIndex={-1}>
-          <Outlet />
-        </main>
-        {(!location.pathname.startsWith("/analytics") ||
-          params.get("source") === "mock") && (
-          <footer className="demo-controls">
-            <label htmlFor="scenario">
-              <FlaskConical size={15} aria-hidden="true" />
-              Tình huống kiểm thử
-            </label>
-            <select
-              id="scenario"
-              name="scenario"
-              value={params.get("scenario") || "normal"}
-              onChange={(e) => {
-                const next = new URLSearchParams(params);
-                next.set("scenario", e.target.value);
-                next.delete("page");
-                setParams(next);
-              }}
+          {authorization && (
+            <button
+              className="button secondary"
+              type="button"
+              onClick={() => setAuthorization("")}
             >
-              <option value="normal">Dữ liệu thường</option>
-              <option value="empty">Không có dữ liệu</option>
-              <option value="error">Lỗi tải dữ liệu</option>
-              <option value="long">Dữ liệu dài</option>
-              {location.pathname.includes("/edit") ||
-              location.pathname.endsWith("/new") ? (
-                <option value="upload-error">Lỗi upload audio</option>
-              ) : location.pathname.startsWith("/analytics") ? (
-                <option value="export-error">Lỗi xuất báo cáo</option>
-              ) : null}
-            </select>
-            <small>Chỉ dùng để kiểm tra giao diện demo</small>
-          </footer>
-        )}
+              Đăng xuất quản trị
+            </button>
+          )}
+          {location.pathname.startsWith("/locations") ? (
+            <AdminContentGate>
+              <Outlet />
+            </AdminContentGate>
+          ) : (
+            <Outlet />
+          )}
+        </main>
+        {location.pathname.startsWith("/analytics") &&
+          params.get("source") === "mock" && (
+            <footer className="demo-controls">
+              <label htmlFor="scenario">
+                <FlaskConical size={15} aria-hidden="true" />
+                Tình huống kiểm thử
+              </label>
+              <select
+                id="scenario"
+                name="scenario"
+                value={params.get("scenario") || "normal"}
+                onChange={(e) => {
+                  const next = new URLSearchParams(params);
+                  next.set("scenario", e.target.value);
+                  next.delete("page");
+                  setParams(next);
+                }}
+              >
+                <option value="normal">Dữ liệu thường</option>
+                <option value="empty">Không có dữ liệu</option>
+                <option value="error">Lỗi tải dữ liệu</option>
+                <option value="long">Dữ liệu dài</option>
+                {location.pathname.includes("/edit") ||
+                location.pathname.endsWith("/new") ? (
+                  <option value="upload-error">Lỗi upload audio</option>
+                ) : location.pathname.startsWith("/analytics") ? (
+                  <option value="export-error">Lỗi xuất báo cáo</option>
+                ) : null}
+              </select>
+              <small>Chỉ dùng để kiểm tra giao diện demo</small>
+            </footer>
+          )}
       </div>
     </div>
   );
@@ -126,7 +144,11 @@ function ExistingForm() {
 }
 const router = createBrowserRouter([
   {
-    element: <Layout />,
+    element: (
+      <AdminProvider>
+        <Layout />
+      </AdminProvider>
+    ),
     children: [
       { index: true, element: <Navigate replace to="/locations" /> },
       { path: "/locations", element: <LocationList /> },

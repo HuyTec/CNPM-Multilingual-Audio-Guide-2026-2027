@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useBlocker, useParams, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Upload, ShieldCheck } from "lucide-react";
 import {
-  categories,
-  getLocations,
-  languages,
-  longLocations,
-  saveLocation,
-  type Asset,
-  type Location,
-} from "../mocks/data";
+  Link,
+  useBlocker,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
+import { ArrowLeft, Upload, ShieldCheck } from "lucide-react";
+import { type Asset, type Location } from "../mocks/data";
+import {
+  adminRequest,
+  useAdminSession,
+  type ContentLocation,
+} from "../lib/admin-content";
 import { Button } from "../components/ui/Button";
 import { Field } from "../components/ui/Field";
 import { AudioPlayer } from "../components/ui/AudioPlayer";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { ErrorState, LoadingState } from "../components/ui/States";
-import { useDemoLoad } from "../lib/demo";
+import { PoiMediaEditor } from "../components/locations/PoiMediaEditor";
 
-function blankLocation(): Location {
+function blankLocation(): ContentLocation {
   return {
     id: crypto.randomUUID(),
     name: "",
@@ -27,26 +30,25 @@ function blankLocation(): Location {
     longitude: "",
     radius: "",
     status: "DRAFT",
-    packageVersion: "working-demo",
+    packageVersion: "Chưa gán phiên bản làm việc",
+    editVersion: 0,
     assets: {},
   };
 }
 export default function LocationForm() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
-  const scenario = params.get("scenario") || "normal";
-  const [form, setForm] = useState<Location>(
-    () =>
-      (scenario === "long" ? longLocations() : getLocations()).find(
-        (x) => x.id === id,
-      ) || blankLocation(),
-  );
-  const found =
-    !id ||
-    (scenario === "long" ? longLocations() : getLocations()).some(
-      (x) => x.id === id,
-    );
+  const navigate = useNavigate();
+  const { authorization, config } = useAdminSession();
+  const categories = config!.categories,
+    languages = config!.languages;
+  const [form, setForm] = useState<ContentLocation>(blankLocation);
+  const [found, setFound] = useState(true);
+  const [load, setLoad] = useState(id ? "loading" : "ready");
+  const [revision, setRevision] = useState(0);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
+  const [mediaDirty, setMediaDirty] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -72,26 +74,84 @@ export default function LocationForm() {
     languageCode: language,
     scriptType: type,
     packageVersion: form.packageVersion,
-    text:
-      scenario === "long"
-        ? "Nội dung dài minh họa để kiểm tra bố cục. ".repeat(150)
-        : "",
+    text: "",
   };
-  const load = useDemoLoad(`${id || "new"}:${scenario}`, scenario);
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+    const abort = new AbortController();
+    void adminRequest<ContentLocation>(
+      `/api/admin/content/locations/${id}`,
+      authorization,
+      { signal: abort.signal },
+    )
+      .then((data) => {
+        if (data.id !== id || !data.assets)
+          throw new Error("Dữ liệu địa điểm không hợp lệ.");
+        if (active) {
+          setForm(data);
+          setFound(true);
+          setLoad("ready");
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setMessage(error.message);
+          if (error.status === 404) setFound(false);
+          setLoad("error");
+        }
+      });
+    return () => {
+      active = false;
+      abort.abort();
+    };
+  }, [id, authorization, revision]);
+  useEffect(() => {
+    const path = asset.audioUrl;
+    if (!path?.startsWith("/api/content-audio/") || previews[path]) return;
+    let active = true;
+    void fetch(
+      path.replace("/api/content-audio/", "/api/admin/content/audio/"),
+      { headers: { Authorization: authorization }, cache: "no-store" },
+    )
+      .then((response) => {
+        if (!response.ok) throw new Error("Chưa tải được audio xem trước.");
+        return response.blob();
+      })
+      .then((blob) => {
+        if (active) {
+          const url = URL.createObjectURL(blob);
+          urls.current.push(url);
+          setPreviews((old) => ({ ...old, [path]: url }));
+        }
+      })
+      .catch((error) => {
+        if (active) setUploadError(error.message);
+      });
+    return () => {
+      active = false;
+    };
+  }, [asset.audioUrl, authorization, previews]);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      dirty && currentLocation.pathname !== nextLocation.pathname,
+      (dirty || mediaDirty) &&
+      currentLocation.pathname !== nextLocation.pathname,
   );
+  // Register the latest navigation guard before redirecting a newly saved draft.
+  useEffect(() => {
+    if (!id && form.editVersion && !dirty)
+      void navigate(`/locations/${form.id}/edit`, { replace: true });
+  }, [id, form.editVersion, form.id, dirty, navigate]);
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => {
-      if (dirty) {
+      if (dirty || mediaDirty) {
         event.preventDefault();
         event.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", guard);
     return () => window.removeEventListener("beforeunload", guard);
-  }, [dirty]);
+  }, [dirty, mediaDirty]);
   useEffect(
     () => () => {
       urls.current.forEach((url) => URL.revokeObjectURL(url));
@@ -134,9 +194,10 @@ export default function LocationForm() {
     if (
       !form.radius.trim() ||
       !Number.isFinite(Number(form.radius)) ||
+      !Number.isInteger(Number(form.radius)) ||
       Number(form.radius) <= 0
     )
-      next.radius = "Nhập bán kính lớn hơn 0 mét.";
+      next.radius = "Nhập bán kính là số nguyên lớn hơn 0 mét.";
     setErrors(next);
     if (Object.keys(next).length) {
       document.getElementById(Object.keys(next)[0])?.focus();
@@ -144,7 +205,7 @@ export default function LocationForm() {
     }
     return true;
   }
-  /** Validate the demo allowlist and browser decoding; replace only the chosen audio key. */
+  /** Validate decoding, upload to the authenticated backend, and replace one audio variant. */
   async function upload(file: File, retry = false) {
     const target = retry ? pendingFile?.key || key : key;
     const current = retry ? pendingFile?.asset || asset : asset;
@@ -157,14 +218,6 @@ export default function LocationForm() {
     }
     setUploadBusy(true);
     setUploadError("");
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    if (scenario === "upload-error" && !retry) {
-      setUploadError(
-        "Upload giả lập thất bại. Dữ liệu đã nhập được giữ nguyên; hãy thử lại.",
-      );
-      setUploadBusy(false);
-      return;
-    }
     const url = URL.createObjectURL(file);
     const decodable = await new Promise<boolean>((resolve) => {
       const preview = new Audio();
@@ -189,7 +242,31 @@ export default function LocationForm() {
       setUploadBusy(false);
       return;
     }
-    urls.current.push(url);
+    let uploaded: Pick<Asset, "audioUrl" | "audioName" | "audioStatus">;
+    try {
+      const payload = new FormData();
+      payload.set("locationId", form.id);
+      payload.set("language", current.languageCode.toUpperCase());
+      payload.set("scriptType", current.scriptType);
+      payload.set("file", file);
+      uploaded = await adminRequest("/api/admin/content/audio", authorization, {
+        method: "POST",
+        body: payload,
+      });
+      if (!uploaded.audioUrl)
+        throw new Error("Server chưa trả về tệp audio đã lưu.");
+      urls.current.push(url);
+      setPreviews((old) => ({ ...old, [uploaded.audioUrl!]: url }));
+    } catch (error) {
+      URL.revokeObjectURL(url);
+      setUploadError(
+        error instanceof Error
+          ? error.message
+          : "Upload chưa thành công; dữ liệu vẫn được giữ.",
+      );
+      setUploadBusy(false);
+      return;
+    }
     // Merge only audio metadata: text edited during an upload/retry must survive.
     setForm((old) => ({
       ...old,
@@ -197,9 +274,7 @@ export default function LocationForm() {
         ...old.assets,
         [target]: {
           ...(old.assets[target] || current),
-          audioName: file.name,
-          audioUrl: url,
-          audioStatus: "ready",
+          ...uploaded,
         },
       },
     }));
@@ -212,20 +287,29 @@ export default function LocationForm() {
     setSaveStatus(null);
     setBusy(true);
     setMessage("");
-    await new Promise((resolve) => setTimeout(resolve, 400));
     const next = { ...form, status, assets: { ...form.assets, [key]: asset } };
     try {
-      saveLocation(next);
-      setForm(next);
+      const saved = await adminRequest<ContentLocation>(
+        `/api/admin/content/locations/${form.id}`,
+        authorization,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        },
+      );
+      setForm(saved);
       setDirty(false);
       setMessage(
         status === "DRAFT"
-          ? "Đã lưu bản nháp trong trình duyệt."
-          : "Đã gửi duyệt giả lập. Bản đã xuất bản vẫn được giữ nguyên.",
+          ? "Đã lưu bản nháp vào database chung."
+          : "Đã gửi duyệt trong database. Bản đã xuất bản vẫn được giữ nguyên.",
       );
-    } catch {
+    } catch (error) {
       setMessage(
-        "Không thể lưu trong trình duyệt. Dữ liệu form được giữ nguyên; hãy thử lại.",
+        error instanceof Error
+          ? error.message
+          : "Không thể lưu vào database. Dữ liệu form được giữ nguyên; hãy thử lại.",
       );
     }
     setBusy(false);
@@ -251,7 +335,13 @@ export default function LocationForm() {
       <>
         <h1>Chỉnh sửa địa điểm</h1>
         {found ? (
-          <ErrorState retry={() => query("scenario", "normal")} />
+          <ErrorState
+            message={message}
+            retry={() => {
+              setLoad("loading");
+              setRevision((value) => value + 1);
+            }}
+          />
         ) : (
           <p>
             Không tìm thấy địa điểm. <Link to="/locations">Về danh sách</Link>
@@ -279,7 +369,7 @@ export default function LocationForm() {
         <ShieldCheck size={20} aria-hidden="true" />
         <p>
           {form.published
-            ? `Phiên bản ${form.published.version} đang chạy trên ứng dụng được giữ nguyên cho đến khi bản thay thế được duyệt và xuất bản.`
+            ? "Bản APPROVED đang chạy trên ứng dụng được giữ nguyên cho đến khi bản thay thế được duyệt và xuất bản."
             : "Lưu nháp hoặc gửi duyệt không xuất bản nội dung lên ứng dụng du khách."}
         </p>
       </div>
@@ -405,7 +495,7 @@ export default function LocationForm() {
             <Field
               id="script"
               label="Nội dung thuyết minh"
-              help="Nội dung demo; chưa phải dữ liệu được duyệt."
+              help="Bản biên tập chỉ công khai sau khi được duyệt và xuất bản."
             >
               <textarea
                 disabled={busy}
@@ -432,7 +522,7 @@ export default function LocationForm() {
             >
               <Upload size={24} aria-hidden="true" />
               <strong>Kéo tệp audio vào đây hoặc chọn tệp</strong>
-              <p className="muted">MP3, WAV, OGG · Cấu hình minh họa</p>
+              <p className="muted">MP3, WAV, OGG · Tối đa 20 MB mỗi tệp</p>
               <label htmlFor="audio-file">
                 Chọn audio cho {language} / {type}
               </label>
@@ -483,15 +573,26 @@ export default function LocationForm() {
                   " · Chọn lại tệp để nghe thử sau khi tải lại trang."}
               </p>
             )}
-            <AudioPlayer src={asset.audioUrl} transcript={asset.text} />
+            <AudioPlayer
+              src={
+                asset.audioUrl?.startsWith("/api/content-audio/")
+                  ? previews[asset.audioUrl]
+                  : asset.audioUrl
+              }
+              transcript={asset.text}
+            />
           </section>
         </div>
+        <PoiMediaEditor
+          disabled={busy || uploadBusy}
+          onDirtyChange={setMediaDirty}
+        />
         <div className="form-footer">
           <span role="status" aria-live="polite">
             {message ||
               (dirty
                 ? "Có thay đổi chưa lưu"
-                : "Dữ liệu demo được lưu trong trình duyệt")}
+                : "Đang biên tập dữ liệu từ database chung")}
           </span>
           <div className="actions">
             <Button
@@ -536,6 +637,12 @@ export default function LocationForm() {
           Thay đổi chưa lưu sẽ bị mất. Hãy ở lại và lưu nháp nếu cần giữ nội
           dung.
         </p>
+        {mediaDirty && (
+          <p>
+            Ảnh xem trước chỉ giữ trong phiên này; Lưu nháp chưa lưu các ảnh đó
+            lên máy chủ.
+          </p>
+        )}
       </ConfirmDialog>
     </>
   );

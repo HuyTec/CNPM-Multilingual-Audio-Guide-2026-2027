@@ -15,10 +15,12 @@
 
 Ứng dụng thuyết minh âm thanh đa ngôn ngữ cho du lịch.
 
-- **Du khách (Android):** chọn địa điểm, xem nội dung hướng dẫn, nghe thuyết minh theo ngôn ngữ đã chọn. Dùng được khi không có mạng nhờ dữ liệu gốc đóng gói sẵn trong ứng dụng; nội dung mới chỉ được tải khi người dùng đồng ý.
+- **Du khách (Web và Android):** hai client dùng chung use case cốt lõi, quy tắc nghiệp vụ, Backend API và nguồn nội dung APPROVED; không cần tài khoản du khách. Web cho phép mở URL/QR địa điểm để nghe mà không cài app. Android có dữ liệu cơ bản đóng gói; Web cần chuẩn bị và xác minh nội dung trong lần truy cập có mạng trước khi dùng offline. Khả năng TTS, lưu trữ và theo dõi vị trí được nghiệm thu riêng theo nền tảng.
 - **Quản trị viên (Web):** quản lý địa điểm, nội dung, audio; xem thống kê và phản hồi của du khách.
 
 Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
+
+Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Source hiện có cả ba client và backend; mức độ hoàn thành phải đối chiếu theo từng luồng. Phạm vi phụ trách của Huy là **backend và Android**; xem [review code và luồng API](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md).
 
 ## Công nghệ sử dụng
 
@@ -33,14 +35,12 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
 **Lý do chọn Java cho backend:** cùng nền JVM với Kotlin nên dễ chuyển đổi và đọc hiểu code giữa hai phần.
 
-### Đang cân nhắc (chưa chốt)
+### Stack hiện có trong source
 
-Các mục dưới đây mới là đề xuất, chưa phải quyết định của nhóm:
-
-- Web: Vite, TypeScript
-- Android: Jetpack Compose, Room, Media3, WorkManager
-- Backend: Flyway, PostGIS
-- Lưu trữ file audio và gói nội dung: S3 hoặc MinIO
+- Web: Vite, React, TypeScript, Tailwind.
+- Android: Jetpack Compose, OkHttp, Google Maps, MediaPlayer và TTS của thiết bị; chưa dùng Room, Media3 hoặc WorkManager.
+- Backend: Spring JDBC, Flyway, PostgreSQL/PostGIS; uploaded audio hiện lưu BYTEA trong database.
+- S3/MinIO, xác thực production và quy trình xuất bản nội dung còn là phần cần thiết kế/triển khai, chưa suy ra từ demo.
 
 ## Kiến trúc
 
@@ -56,7 +56,7 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Business Logic Layer:** xử lý các quy tắc và nghiệp vụ của hệ thống (service).
 - **Data Access Layer:** làm việc với cơ sở dữ liệu (repository).
 
-> Cấu trúc package chi tiết sẽ được xác định sau khi PRD được kiểm chứng.
+Discovery đi đủ controller → service → repository; Admin content và package hiện dùng JDBC trực tiếp trong service. Chi tiết từng file và các giới hạn nằm trong [báo cáo backend/Android](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md).
 
 ## Quy trình và công cụ
 
@@ -73,11 +73,12 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - `HVP-17: add health check endpoint`
 - `HVP-19: add backend Dockerfile with heap limit`
 
-## Cấu trúc thư mục dự kiến
+## Cấu trúc thư mục
 
 ```text
 /backend       Spring Boot API
 /web-admin     React web admin
+/web-user      React web du khách
 /android       Kotlin Android app
 /docs          Tài liệu, sơ đồ
 /.github       Workflow GitHub Actions
@@ -94,10 +95,10 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Thiết kế/review Web Admin:** [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21); **Android:** [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22).
 - **Thiết lập và hạ tầng:** [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Câu hỏi nghiệp vụ được ghi tại Epic tương ứng.
 
-Thiết kế, backlog nháp và biên bản review được quản lý trực tiếp trên Jira. Repository giữ PRD, hướng dẫn cài đặt/chạy và các tệp nguồn/ảnh tham khảo; không duy trì thêm bản Markdown thiết kế trùng nội dung Jira.
+Thiết kế và backlog nháp quản lý trên Jira. Repository giữ PRD, hướng dẫn chạy, nguồn nội dung/sơ đồ/ảnh tham khảo. Theo yêu cầu ngày 22/10/2026, giữ một [báo cáo review backend và Android](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md) có link source, API và luồng xử lý.
 
 > Lưu ý: PRD và các sơ đồ đang trong giai đoạn kiểm chứng, nội dung có thể thay đổi.
 
 ## Chạy dự án
 
-Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
+Xem hướng dẫn cài và chạy [backend](./backend/README.md), [Android](./android/README.md), [web-admin](./web-admin/README.md), [web-user](./web-user/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [CI/CD](./docs/vi/CI_CD_SETUP.md).

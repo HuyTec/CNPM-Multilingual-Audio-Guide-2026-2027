@@ -36,12 +36,17 @@ public class PlaybackService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngôn ngữ hoặc loại kịch bản không hợp lệ.");
         }
         return guides.find(locationId, lang, type).orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Chưa có thuyết minh đã duyệt cho lựa chọn này."));
+                HttpStatus.NOT_FOUND, "Nội dung cho địa điểm này hiện đang được cập nhật."));
     }
 
     /** Same event UUID is safe to resend; reuse for a different content revision is rejected. */
     @Transactional
     public PlaybackReceipt record(PlaybackRequest request) {
+        return record(request, null);
+    }
+
+    @Transactional
+    public PlaybackReceipt record(PlaybackRequest request, UUID listener) {
         if (request.eventId() == null || request.contentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu eventId hoặc contentId.");
         }
@@ -52,7 +57,7 @@ public class PlaybackService {
         }
         GuideContent guide = guides.findPublicById(request.contentId()).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Nội dung không khả dụng để ghi nhận lượt nghe."));
-        boolean created = playbacks.insert(request.eventId(), guide);
+        boolean created = playbacks.insert(request.eventId(), guide, listener);
         if (!created) requireSameContent(playbacks.contentForEvent(request.eventId()).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.CONFLICT, "eventId đã được sử dụng.")), request.contentId());
         return new PlaybackReceipt(request.eventId(), created);

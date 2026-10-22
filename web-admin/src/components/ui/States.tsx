@@ -7,10 +7,16 @@ export function LoadingState() {
     </div>
   );
 }
-export function ErrorState({ retry }: { retry: () => void }) {
+export function ErrorState({
+  retry,
+  message = "Không thể tải dữ liệu máy chủ. Hãy thử lại.",
+}: {
+  retry: () => void;
+  message?: string;
+}) {
   return (
     <div className="notice error" role="status">
-      <p>Không thể tải dữ liệu demo. Hãy thử lại.</p>
+      <p>{message}</p>
       <Button secondary onClick={retry}>
         Thử lại
       </Button>

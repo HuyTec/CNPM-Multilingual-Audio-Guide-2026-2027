@@ -1,0 +1,151 @@
+.poi-media {
+  margin-top: 24px;
+  --poi-photo-surface: #f5f7f5;
+  --poi-photo-border: #dce3df;
+  --poi-photo-ink: #344b41;
+}
+.poi-media-layout {
+  padding: 0 24px 24px;
+  display: grid;
+  grid-template-columns: minmax(180px, 230px) minmax(0, 1fr);
+  gap: 28px;
+}
+.poi-media-preview-note {
+  color: #755000;
+  background: #fff7df;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 0 24px 20px;
+}
+.poi-cover,
+.poi-gallery {
+  min-width: 0;
+}
+.poi-cover h3,
+.poi-gallery h3 {
+  margin-top: 0;
+}
+.poi-cover > .button {
+  width: 100%;
+  margin-top: 12px;
+}
+.poi-photo-count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--poi-photo-ink);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.poi-photo-empty,
+.poi-photo-drop {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1px dashed var(--poi-photo-border);
+  border-radius: 8px;
+  color: var(--poi-photo-ink);
+  background: var(--poi-photo-surface);
+  text-align: center;
+}
+.poi-photo-empty {
+  min-height: 170px;
+}
+.poi-photo-drop p {
+  margin: 0;
+}
+.poi-media-status {
+  margin: 14px 0;
+  color: var(--poi-photo-ink);
+  font-size: 12px;
+}
+.poi-media .field-error {
+  overflow-wrap: anywhere;
+}
+.poi-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.poi-photo {
+  position: relative;
+  margin: 0;
+  min-width: 0;
+}
+.poi-photo-preview {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 0;
+  background: var(--poi-photo-surface);
+  cursor: zoom-in;
+}
+.poi-photo-preview:hover {
+  filter: brightness(0.94);
+}
+.poi-photo-preview img {
+  display: block;
+  width: 100%;
+  height: 128px;
+  object-fit: cover;
+}
+.poi-photo figcaption {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  align-items: baseline;
+  font-size: 12px;
+  color: var(--poi-photo-ink);
+}
+.poi-photo figcaption span {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.poi-photo figcaption small {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.poi-photo-remove {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: white;
+  color: #9d352c;
+  border: 1px solid var(--poi-photo-border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.poi-photo-remove:hover {
+  background: #ffebe8;
+}
+.poi-photo-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.poi-lightbox {
+  display: block;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+  max-height: 65vh;
+  object-fit: contain;
+}
+@media (max-width: 760px) {
+  .poi-media-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .poi-cover {
+    max-width: 280px;
+  }
+}

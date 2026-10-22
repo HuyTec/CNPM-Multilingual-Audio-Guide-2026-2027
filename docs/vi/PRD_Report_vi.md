@@ -11,7 +11,7 @@
 
 ## **1.2. Mục đích sản phẩm**
 
-* Ứng dụng thuyết minh âm thanh đa ngôn ngữ giúp du khách khám phá các điểm tham quan và tiếp cận nội dung hướng dẫn đa ngôn ngữ đã được kiểm chứng thông qua ứng dụng di động.
+* Ứng dụng thuyết minh âm thanh đa ngôn ngữ giúp du khách khám phá điểm tham quan và tiếp cận nội dung đã được kiểm chứng qua Web du khách hoặc ứng dụng Android. Hai client phục vụ cùng tác nhân Du khách, dùng chung các use case cốt lõi và quy tắc nghiệp vụ.
 * Hệ thống cho phép du khách khám phá địa điểm lân cận, tìm kiếm điểm tham quan, xem vị trí trên bản đồ, đọc nội dung hướng dẫn bằng nhiều ngôn ngữ, nghe thuyết minh và sử dụng tài liệu hướng dẫn thiết yếu ngay cả khi ngoại tuyến.
 * Hệ thống cũng có Web Admin Dashboard để quản lý thông tin địa điểm, nội dung hướng dẫn đa ngôn ngữ, tệp âm thanh, thống kê hệ thống và phản hồi của du khách.
 
@@ -19,7 +19,7 @@
 
 Hệ thống được thiết kế cho các nhóm người dùng chính sau:
 
-* **Du khách (Tourist):** Sử dụng ứng dụng di động để khám phá địa điểm, tiếp cận nội dung hướng dẫn đa ngôn ngữ, nghe thuyết minh, nhận thông báo theo vị trí và quản lý nội dung ngoại tuyến.
+* **Du khách (Tourist):** Sử dụng Web du khách hoặc Android để khám phá địa điểm, đọc nội dung đa ngôn ngữ, nghe thuyết minh, nhận thông báo vị trí và quản lý nội dung ngoại tuyến theo điều kiện nền tảng tại mục 2.4. Du khách không cần tài khoản để truy cập.
 * **Quản trị viên/Biên tập viên nội dung:** Sử dụng trang quản trị web để tạo và duy trì thông tin địa điểm, kịch bản thuyết minh và tệp âm thanh.
 * **Quản trị viên hệ thống/Chủ sản phẩm:** Sử dụng trang quản trị web để theo dõi thống kê sử dụng hệ thống và quản lý phản hồi của du khách.
 
@@ -49,12 +49,15 @@ Các mục tiêu chính của hệ thống:
 
 **Hệ thống bao gồm các nhóm chức năng sau:**
 
+Thuật ngữ **Ứng dụng du khách (Tourist Application)** bao gồm Web du khách và Android. Cách trình bày, điều hướng, quyền và adapter nền tảng có thể khác nhau; định danh nội dung, quy tắc duyệt/xuất bản, dự phòng ngôn ngữ, yêu cầu phát, an toàn gói và trạng thái phản hồi được dùng chung. Web Admin là giao diện riêng có phân quyền. Điều kiện nền tảng và nghiệm thu được quy định tại mục 2.4.
+
 **Khám phá và chọn địa điểm**
 
 * Khám phá các địa điểm du lịch lân cận.
 * Tìm địa điểm theo từ khóa.
 * Duyệt địa điểm theo danh mục.
 * Chọn địa điểm từ bản đồ tương tác.
+* Mở địa điểm qua URL riêng, gồm URL được mã hóa trong QR, không bắt buộc cài Android. Đây là đường vào của UC-01, không phải use case riêng hoặc chức năng quản lý QR.
 * Use case liên quan: UC-01 – Khám phá và chọn địa điểm.
 
 **Nội dung hướng dẫn đa ngôn ngữ**
@@ -68,7 +71,7 @@ Các mục tiêu chính của hệ thống:
 
 * Phát âm thanh thuyết minh đã được tạo sẵn.
 * Hỗ trợ tạm dừng, tiếp tục, tua và điều chỉnh tốc độ phát.
-* Dùng Text-to-Speech (TTS) của hệ điều hành làm phương án dự phòng khi không có âm thanh.
+* Dùng Text-to-Speech (TTS) của nền tảng làm phương án dự phòng khi không có âm thanh.
 * Use case liên quan: UC-03 – Phát thuyết minh âm thanh.
 
 **Quản lý nội dung ngoại tuyến**
@@ -76,7 +79,7 @@ Các mục tiêu chính của hệ thống:
 * Kiểm tra bản cập nhật nội dung đã được phê duyệt.
 * Tải xuống và cài đặt các gói ngoại tuyến đã được xác minh.
 * Quản lý nội dung tải thêm tùy chọn.
-* Bảo vệ nội dung ngoại tuyến cơ bản đóng gói sẵn.
+* Bảo vệ Base Content đã xác minh theo quy tắc cấp phát nền tảng tại mục 2.4.
 * Use case liên quan: UC-04 – Quản lý và cập nhật nội dung ngoại tuyến.
 
 **Thông báo theo vị trí**
@@ -105,7 +108,7 @@ Các mục tiêu chính của hệ thống:
 ## **2.2. Ngoài phạm vi**
 
 * Quy trình phê duyệt và xuất bản nội dung (UC-06 chỉ lưu DRAFT / PENDING_REVIEW).
-* Thu thập sự kiện phân tích và gửi phản hồi từ ứng dụng di động (UC-07 chỉ sử dụng dữ liệu này).
+* Thu thập sự kiện phân tích và gửi phản hồi từ ứng dụng du khách (UC-07 chỉ sử dụng dữ liệu này).
 * Xác thực quản trị viên và quản lý tài khoản.
 * Tự tải nội dung hướng dẫn hoặc tự phát âm thanh như một phần của thao tác thông báo. Chọn thông báo chỉ mở màn hình Chi tiết địa điểm; sau đó UC-02 tải nội dung bằng trigger riêng.
 * Chỉ đường từng chặng đến địa điểm.
@@ -117,18 +120,36 @@ Hệ thống có ba tác nhân chính. Các phụ thuộc nền tảng và dịc
 
 | Tác nhân | Loại | Mô tả | UC liên quan |
 | :---- | :---- | :---- | :---- |
-| **Du khách (Tourist)** | Chính | Sử dụng ứng dụng di động để khám phá và chọn địa điểm, truy cập nội dung đa ngôn ngữ, phát âm thanh, quản lý nội dung ngoại tuyến và nhận thông báo theo vị trí. | UC-01, UC-02, UC-03, UC-04, UC-05 |
+| **Du khách (Tourist)** | Chính | Sử dụng ứng dụng du khách để khám phá và chọn địa điểm, truy cập nội dung đa ngôn ngữ, phát âm thanh, quản lý nội dung ngoại tuyến và nhận thông báo theo vị trí. | UC-01, UC-02, UC-03, UC-04, UC-05 |
 | **Quản trị viên nội dung (Content Admin / Editor)** | Chính | Tạo và chỉnh sửa thông tin địa điểm, kịch bản đa ngôn ngữ và tài nguyên âm thanh; lưu bản nháp, gửi nội dung để duyệt. | UC-06 |
 | **Quản trị viên hệ thống/Chủ sản phẩm (System Admin / Product Owner)** | Chính | Xem thống kê hệ thống, quản lý trạng thái phản hồi và xuất báo cáo qua Web Admin Dashboard. | UC-07 |
 | **Dịch vụ bản đồ (Map Service)** | Dịch vụ phụ | Hiển thị bản đồ tương tác và các điểm đánh dấu; Map View ngoại tuyến dùng nền đơn giản không có ô bản đồ (chỉ trực tuyến; khi ngoại tuyến, duyệt địa điểm qua danh sách). | UC-01 |
-| **Định vị và Geofencing của hệ điều hành (OS Location & Geofencing)** | Phụ thuộc nền tảng | Cung cấp tọa độ và độ chính xác, hỗ trợ đăng ký geofence và sự kiện đi vào vùng. | UC-01, UC-05 |
-| **Thông báo hệ điều hành (OS Notification)** | Phụ thuộc nền tảng | Hiển thị thông báo hệ thống và mở ứng dụng di động bằng locationId. | UC-05 |
-| **Âm thanh và TTS của hệ điều hành (OS Audio & Text-to-Speech)** | Phụ thuộc nền tảng | Cung cấp phát âm thanh, xử lý quyền ưu tiên âm thanh (audio focus) và TTS dự phòng trên thiết bị. | UC-03 |
+| **Định vị và Geofencing của nền tảng (Platform Location & Geofencing)** | Phụ thuộc nền tảng | Cung cấp tọa độ và độ chính xác, hỗ trợ đăng ký geofence và sự kiện đi vào vùng. | UC-01, UC-05 |
+| **Thông báo nền tảng (Platform Notification)** | Phụ thuộc nền tảng | Hiển thị thông báo hệ thống và mở ứng dụng du khách bằng locationId. | UC-05 |
+| **Âm thanh và TTS của nền tảng (Platform Audio & Text-to-Speech)** | Phụ thuộc nền tảng | Cung cấp phát âm thanh, xử lý quyền ưu tiên âm thanh (audio focus) và TTS dự phòng trên thiết bị. | UC-03 |
 | **Máy chủ nội dung / CDN (Content Server / CDN)** | Phụ thuộc hạ tầng | Cung cấp nội dung hướng dẫn APPROVED, tài nguyên âm thanh và các gói nội dung. | UC-02, UC-03, UC-04 |
 | **Dịch vụ xuất bản nội dung (Content Publication Service)** | Phụ thuộc bên ngoài | Thực hiện duyệt và xuất bản, cấp phiên bản gói và chuyển trạng thái ARCHIVED. Content Approver là vai trò duyệt bên ngoài thuộc phụ thuộc này, không phải tác nhân chính hay use case bổ sung trong phạm vi. | UC-04, UC-06 |
 | **Xác thực quản trị viên (Admin Authentication)** | Phụ thuộc bên ngoài | Xác thực và phân quyền người dùng Web Admin; quản lý tài khoản nằm ngoài phạm vi. | UC-06, UC-07 |
 
 **Tên gọi tương đương:** Content Admin/Editor, Content Administrator và Administrators/Content Editors đều chỉ Quản trị viên nội dung (Content Admin / Editor). System Administrators/Product Owners chỉ Quản trị viên hệ thống/Chủ sản phẩm. “Admin” trong UC-06 là Quản trị viên nội dung; “Admin” hoặc “Administrator” trong UC-07 là Quản trị viên hệ thống/Chủ sản phẩm.
+
+## **2.4. Use case chung và điều kiện nền tảng**
+
+**Quyết định sản phẩm xác nhận ngày 19/10/2026:** Web du khách và Android là hai client của cùng sản phẩm. UC-01–UC-05 mô tả mục tiêu chung của Du khách; UC-06–UC-07 vẫn là mục tiêu Web Admin. Không nhân đôi use case theo nền tảng. Hai client du khách dùng cùng Backend API và cơ sở dữ liệu/kho nội dung có thẩm quyền. Cùng locationId, languageCode, scriptType và tham chiếu nội dung đã xuất bản phải xác định cùng tài liệu trên hai client; không bắt buộc dùng chung mã nguồn UI hoặc adapter thiết bị.
+
+| Use case | Yêu cầu chung | Điều kiện Android | Điều kiện Web du khách |
+| --- | --- | --- | --- |
+| UC-01 | Khám phá/chọn địa điểm; từ chối quyền vẫn có đường chọn thủ công. | Tích hợp định vị/bản đồ native; liên kết hợp lệ có thể mở địa điểm tương ứng. | URL HTTPS công khai mở địa điểm không cần cài đặt hoặc đăng nhập; xử lý quyền trình duyệt khi tìm lân cận. |
+| UC-02 | Nội dung APPROVED, FULL/SHORT, dự phòng Đang chọn → EN → VI và giữ scriptType. | Máy chủ hoặc kho nội dung cục bộ đã xác minh. | Cùng API/định danh nội dung; dùng nội dung cục bộ trình duyệt đã xác minh khi sẵn sàng ngoại tuyến. |
+| UC-03 | Phát do người dùng khởi tạo, điều khiển phát, TTS phù hợp, xử lý lỗi; không tự phát khi điều hướng. | Audio/TTS nền tảng và vòng đời audio focus. | Adapter audio/TTS trình duyệt/nền tảng; phải kiểm thử giọng và điều khiển, không mặc định giống Android. |
+| UC-04 | Gói đã xác minh, đồng ý tải rõ ràng, cài nguyên tử, lưu phiên bản và bảo vệ Base Content. | Base Content đóng gói khi cài ứng dụng. | Cấp phát và xác minh Base Content trong lần đầu truy cập có mạng trước khi báo sẵn sàng ngoại tuyến. Không hứa truy cập lần đầu khi chưa có mạng. |
+| UC-05 | Phát hiện đi vào geofence khi được hỗ trợ; cooldown, thông báo/banner đúng ngôn ngữ, điều hướng locationId, không tự phát. | Quyền định vị/geofence/thông báo native và vòng đời ứng dụng. | Theo dõi vị trí và banner tiền cảnh cần phiên đang hoạt động, có quyền. Không hứa theo dõi nền/khi đóng tab hoặc thông báo hệ thống nếu chưa kiểm chứng trên danh sách trình duyệt hỗ trợ. |
+
+Khả năng nền tảng không hỗ trợ hoặc bị từ chối phải được giải thích và xử lý bằng luồng ngoại lệ/thủ công tương ứng. Không được âm thầm coi đó là chức năng hoàn thành hoặc thay đổi quy tắc nghiệp vụ. Phiên bản trình duyệt/OS, giọng đọc hỗ trợ, độ bền lưu trữ và phạm vi tiền cảnh/chạy nền cần có ma trận nghiệm thu; phiên bản và môi trường kiểm thử cụ thể còn là \[?\].
+
+**Nghiệm thu theo giai đoạn:** Trước tiên hoàn thành một luồng thật xuyên suốt: mở/chọn địa điểm → lấy nội dung APPROVED → chọn ngôn ngữ và FULL/SHORT → phát audio tương ứng hoặc TTS → Web Admin sử dụng dữ liệu lượt phát đã ghi. Demo luồng này trên cả hai client với cùng backend/nội dung; gắn nhãn rõ nội dung minh họa hoặc hành vi còn mock. Kiểm tra sự kiện được lưu bền vững, thống kê nhất quán và gửi lại an toàn thay vì dựa vào số liệu tĩnh. Thu thập sự kiện vẫn là tích hợp bên ngoài được UC-07 sử dụng. Hoàn thiện dần các luồng khác theo cùng PRD; thứ tự này không loại bỏ ngoại tuyến, thông báo hoặc quản trị. Một mốc demo không chứng minh mọi use case đã hoàn thành.
+
+Để du khách sử dụng thật, Web du khách phải có URL HTTPS truy cập được; URL demo chỉ trong máy/mạng nội bộ là môi trường phát triển/kiểm thử. Có thể giữ màn mock hiện tại làm tham khảo/công cụ tình huống có nhãn rõ trong lúc tích hợp; chúng không phải bằng chứng nghiệm thu lưu dữ liệu thật, audio, quyền hoặc cài gói.
 
 # **3. EPIC VÀ YÊU CẦU SẢN PHẨM**
 
@@ -158,7 +179,7 @@ Cung cấp văn bản và âm thanh hướng dẫn đa ngôn ngữ đã được
 ### **3.2.2. Chức năng**
 
 * **FR-04:** Truy xuất nội dung APPROVED theo locationId, languageCode và scriptType, hỗ trợ ngôn ngữ và phương án dự phòng (UC-02).
-* **FR-05:** Điều khiển phát âm thanh và dùng TTS của hệ điều hành làm dự phòng khi không có âm thanh sử dụng được (UC-03).
+* **FR-05:** Điều khiển phát âm thanh và dùng TTS của nền tảng làm dự phòng khi không có âm thanh sử dụng được (UC-03).
 
 ### **3.2.3. Use case liên quan**
 
@@ -172,7 +193,7 @@ Giữ dữ liệu địa điểm và nội dung hướng dẫn thiết yếu lu�
 
 ### **3.3.2. Chức năng**
 
-* **FR-06:** Nội dung cơ bản đóng gói sẵn (Base Content), kiểm tra cập nhật, chọn gói tùy chọn và tải các gói mới hơn đã được phê duyệt (UC-04).
+* **FR-06:** Base Content cấp phát theo mục 2.4, kiểm tra cập nhật, chọn gói tùy chọn và tải các gói mới hơn đã được phê duyệt (UC-04).
 * **FR-07:** Cài đặt nguyên tử, có xác minh, với dữ liệu địa điểm, kịch bản và âm thanh hiện có tương ứng (UC-04).
 * **FR-08:** Xóa nội dung tùy chọn, hủy thao tác và bảo vệ vật lý đối với Base Content (UC-04).
 
@@ -220,15 +241,15 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | :---- | :---- | :---- |
 | **Mã UC** | UC-01 | |
 | **Tên UC** | **Khám phá và chọn địa điểm** | |
-| **Loại** | Ứng dụng di động – Dành cho du khách | |
+| **Loại** | Ứng dụng du khách – Web / Android | |
 | **Mục tiêu** | Du khách chọn một điểm tham quan để xem chi tiết và truy cập nội dung hướng dẫn đa ngôn ngữ. | |
 | **Tác nhân chính** | Du khách | |
-| **Tác nhân phụ** | Dịch vụ bản đồ, Định vị và Geofencing của hệ điều hành | |
-| **Tiền điều kiện** | Du khách mở ứng dụng di động; GPS được bật trên thiết bị hoặc có thể tìm kiếm thủ công. | |
+| **Tác nhân phụ** | Dịch vụ bản đồ, Định vị và Geofencing của nền tảng | |
+| **Tiền điều kiện** | Du khách mở Web du khách hoặc Android, gồm đường vào từ URL riêng của địa điểm. Quyền vị trí có thể được sử dụng cho tìm lân cận; tìm thủ công và liên kết địa điểm hợp lệ vẫn dùng được khi không có quyền đó. | |
 | **Hậu điều kiện** | Hệ thống xác định locationId và ứng dụng điều hướng đến **màn hình Chi tiết địa điểm**. | |
 | **Luồng chính** | **Hành động của tác nhân** | **Phản hồi của hệ thống** |
-| | **1.** Du khách mở ứng dụng và chọn **“Tìm địa điểm lân cận”. A2, A3, A4** | **2.** Hệ thống bắt đầu quá trình tìm địa điểm lân cận. |
-| | | **3.** Nếu chưa xác định quyền truy cập vị trí, hệ thống giải thích lý do cần vị trí cho tìm kiếm lân cận và hiển thị hộp thoại xin quyền của hệ điều hành. Nếu được cấp quyền, tiếp tục bước 4; nếu bị từ chối, thực hiện **E1**. |
+| | **1.** Du khách mở ứng dụng và chọn **“Tìm địa điểm lân cận”** hoặc dùng đường vào A1–A4. | **2.** Hệ thống bắt đầu tìm lân cận khi người dùng chọn cách tìm này. |
+| | | **3.** Nếu chưa xác định quyền vị trí, hệ thống giải thích lý do cần truy cập và yêu cầu quyền qua nền tảng hiện tại. Nếu được cấp quyền, tiếp tục bước 4; nếu bị từ chối hoặc không hỗ trợ, thực hiện **E1**. |
 | | | **4.** Hệ thống lấy vĩ độ, kinh độ và độ chính xác hiện tại. |
 | | | **5.** Hệ thống tìm địa điểm trong bán kính cấu hình từ 100 đến 500 mét và sắp xếp kết quả theo khoảng cách tăng dần. **E2** |
 | | | **6.** Hệ thống hiển thị các địa điểm trong bán kính theo khoảng cách tăng dần; \[3–5\] địa điểm gần nhất được hiển thị trước kèm khoảng cách. |
@@ -242,13 +263,14 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **A3** | |
 | | **1.** Chọn **“Duyệt theo danh mục”**. | **2.** Hệ thống hiển thị các địa điểm thuộc danh mục đã chọn. **E4** |
 | | **3.** Chuyển đến bước 7 của luồng chính. | |
-| **Luồng ngoại lệ** | **E1:** Nếu du khách chưa cho phép truy cập vị trí hoặc hệ thống không lấy được tọa độ GPS hiện tại, ứng dụng hiển thị **“Cần quyền truy cập vị trí để tự động tìm các điểm tham quan gần bạn”**, kèm tùy chọn **“Mở cài đặt”**. Dù từ chối, du khách vẫn có thể tiếp tục qua **A1**, **A2**, **A3**. | |
+| | **A4: Mở liên kết địa điểm / URL từ QR.** Du khách mở URL chứa tham chiếu địa điểm, ví dụ quét QR. Hệ thống kiểm tra locationId và mở Chi tiết địa điểm để kích hoạt UC-02. Web du khách không yêu cầu cài đặt hoặc đăng nhập; điều hướng không bắt đầu phát. Nếu địa điểm không khả dụng, hệ thống giải thích lỗi và cho khám phá thủ công, không mở nhầm địa điểm khác. | |
+| **Luồng ngoại lệ** | **E1:** Nếu du khách chưa cấp quyền vị trí hoặc hệ thống không lấy được tọa độ hiện tại, ứng dụng hiển thị **“Cần quyền truy cập vị trí để tự động tìm các điểm tham quan gần bạn”**, kèm cài đặt/hướng dẫn phù hợp nền tảng nếu có. Du khách vẫn tiếp tục bằng từ khóa, danh mục, chọn bản đồ hoặc liên kết địa điểm hợp lệ. | |
 | | **E2:** Nếu tọa độ GPS hợp lệ nhưng không tìm thấy địa điểm trong bán kính hiện tại, hệ thống hiển thị **“Không tìm thấy điểm tham quan nào ở gần.”** Du khách có thể mở rộng bán kính hoặc dùng **A1**, **A2**, **A3**. | |
 | | **E3:** Nếu từ khóa không khớp địa điểm nào trong cơ sở dữ liệu, hệ thống hiển thị **trạng thái trống (Empty State)** và gợi ý từ khóa khác hoặc địa điểm phổ biến để tiếp tục khám phá. | |
 | | **E4:** Nếu danh mục đã chọn không có địa điểm, hệ thống hiển thị **Empty State** và gợi ý danh mục khác hoặc địa điểm phổ biến. | |
 | **Điểm mở rộng** | Không áp dụng | |
-| **Kích hoạt** | **Do người dùng:** Du khách mở ứng dụng di động hoặc đến màn hình **Khám phá / Bản đồ**. Du khách chọn **“Tìm địa điểm lân cận”**, sử dụng thanh **Tìm kiếm**, chọn **Danh mục** hoặc một **điểm đánh dấu** trên bản đồ tương tác. | |
-| **Giả định** | **Dữ liệu:** Cơ sở dữ liệu máy chủ hoặc SQLite cục bộ đóng gói sẵn chứa dữ liệu địa điểm đã được kiểm chứng, gồm tọa độ GPS, mô tả, danh mục và ảnh thu nhỏ. **Thiết bị:** Thiết bị di động hỗ trợ dịch vụ định vị. Khi định vị không khả dụng, du khách vẫn tìm kiếm và chọn địa điểm thủ công. **Nền tảng ngoại tuyến:** Ứng dụng đã bao gồm cơ sở dữ liệu địa điểm và nội dung hướng dẫn cơ bản ngay khi cài đặt lần đầu; chỉ cần UC-04 cho gói tùy chọn hoặc gói mới hơn đã được phê duyệt. | |
+| **Kích hoạt** | **Do người dùng:** Du khách mở ứng dụng du khách hoặc đến màn hình **Khám phá / Bản đồ**. Du khách chọn **“Tìm địa điểm lân cận”**, sử dụng thanh **Tìm kiếm**, chọn **Danh mục**, chọn một **điểm đánh dấu** trên bản đồ tương tác hoặc mở URL/liên kết QR của địa điểm (A4). | |
+| **Giả định** | **Dữ liệu:** Cơ sở dữ liệu máy chủ hoặc kho nội dung cục bộ đã xác minh chứa thông tin địa điểm, gồm tọa độ, mô tả, danh mục và ảnh thu nhỏ. **Nền tảng:** Định vị có thể cần quyền hoặc không khả dụng; vẫn cho chọn thủ công. **Nội dung cơ bản ngoại tuyến:** Android đóng gói dữ liệu địa điểm/hướng dẫn khi cài đặt; Web du khách cấp phát và xác minh khi sử dụng trực tuyến lần đầu theo mục 2.4. UC-04 quản lý gói tùy chọn/mới hơn sau khi nội dung cơ bản sẵn sàng. | |
 | **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Bán kính tìm GPS:** Bán kính tìm địa điểm có thể cấu hình trong khoảng **100–500 mét**. Hệ thống dùng giá trị mặc định cố định trong cấu hình ứng dụng, không chỉnh qua Web Admin Dashboard. **BR2 – Xếp hạng kết quả:** Kết quả dựa trên GPS được sắp xếp theo **khoảng cách tăng dần**. Kết quả theo từ khóa hoặc danh mục có thể xếp theo **độ liên quan hoặc khoảng cách**. **BR3 – Quyền vị trí:** Nếu du khách từ chối quyền vị trí, hệ thống không được ngăn họ tiếp tục sử dụng ứng dụng. Các chức năng phụ thuộc GPS bị tắt; hệ thống phải cung cấp cách chọn địa điểm khác như **Tìm theo từ khóa**, **Duyệt theo danh mục** hoặc **Xem bản đồ**. | |
 | **Tác giả** | | |
 | **Ngày** | | |
@@ -260,7 +282,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | :---- | :---- | :---- |
 | **Mã UC** | UC-02 | |
 | **Tên UC** | **Truy cập nội dung hướng dẫn đa ngôn ngữ** | |
-| **Loại** | Ứng dụng di động – Dành cho du khách | |
+| **Loại** | Ứng dụng du khách – Web / Android | |
 | **Mục tiêu** | Truy xuất và hiển thị nội dung hướng dẫn đã được phê duyệt theo ngôn ngữ và chế độ thời lượng du khách chọn. | |
 | **Tác nhân chính** | Du khách | |
 | **Tác nhân phụ** | Máy chủ nội dung / CDN | |
@@ -278,7 +300,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **E2:** Nếu địa điểm đã chọn không có nội dung hướng dẫn đã được phê duyệt, hệ thống hiển thị **“Nội dung cho địa điểm này đang được cập nhật.”** Chức năng **Nghe thuyết minh** không khả dụng. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do hệ thống:** Sau khi điều hướng hợp lệ đến màn hình Chi tiết địa điểm, kể cả chọn từ UC-01 hoặc chọn thông báo/banner UC-05, hệ thống kích hoạt UC-02 với ngôn ngữ hiện tại và chế độ FULL mặc định. **Do người dùng:** Khi du khách đổi **Ngôn ngữ** hoặc **Chế độ thời lượng** (FULL / SHORT), hệ thống kích hoạt lại UC-02 để tải nội dung tương ứng. | |
-| **Giả định** | **Dữ liệu nội dung:** Mỗi địa điểm có thể có một hoặc nhiều kịch bản theo các ngôn ngữ và loại nội dung khác nhau (FULL, SHORT). **Ngôn ngữ hỗ trợ:** Hệ thống có danh sách ngôn ngữ định trước; mỗi ngôn ngữ dùng languageCode hợp lệ. **Nguồn dữ liệu:** Khi trực tuyến, hệ thống có thể truy xuất nội dung đã được phê duyệt từ API/máy chủ; khi ngoại tuyến, nội dung cần thiết nằm trong Base Content đóng gói sẵn hoặc một gói đã được phê duyệt, cài qua UC-04. | |
+| **Giả định** | **Dữ liệu nội dung:** Mỗi địa điểm có thể có một hoặc nhiều kịch bản theo các ngôn ngữ và loại nội dung khác nhau (FULL, SHORT). **Ngôn ngữ hỗ trợ:** Hệ thống có danh sách ngôn ngữ định trước; mỗi ngôn ngữ dùng languageCode hợp lệ. **Nguồn dữ liệu:** Khi trực tuyến, hệ thống có thể truy xuất nội dung đã được phê duyệt từ API/máy chủ; khi ngoại tuyến, nội dung cần thiết có trong Base Content đã xác minh hoặc gói APPROVED cài qua UC-04, theo mục 2.4. | |
 | **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Phê duyệt nội dung:** Chỉ nội dung hướng dẫn có status = APPROVED được cung cấp cho du khách. **BR2 – Ngôn ngữ dự phòng:** Thứ tự ưu tiên là Ngôn ngữ đã chọn → Tiếng Anh (EN) → Tiếng Việt (VI). | |
 | **Tác giả** | | |
 | **Ngày** | | |
@@ -290,27 +312,29 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | :---- | :---- | :---- |
 | **Mã UC** | UC-03 | |
 | **Tên UC** | **Phát thuyết minh âm thanh** | |
-| **Loại** | Ứng dụng di động – Dành cho du khách | |
-| **Mục tiêu** | Cho phép du khách nghe nội dung hướng dẫn tương ứng với địa điểm, ngôn ngữ và chế độ nội dung đã chọn. | |
+| **Loại** | Ứng dụng du khách – Web / Android | |
+| **Mục tiêu** | Cho phép du khách nghe nội dung hướng dẫn đã được phê duyệt cho địa điểm, ngôn ngữ thực tế và chế độ nội dung đã chọn, bằng âm thanh tạo sẵn hoặc Text-to-Speech (TTS) của nền tảng khi âm thanh đó không khả dụng hoặc không phát được. | |
 | **Tác nhân chính** | Du khách | |
-| **Tác nhân phụ** | Âm thanh và TTS của hệ điều hành, Máy chủ nội dung / CDN | |
-| **Tiền điều kiện** | UC-02 đã tải thành công nội dung hướng dẫn tương ứng; có locationId, languageCode, scriptType và scriptText hợp lệ. | |
-| **Hậu điều kiện** | Nội dung hướng dẫn được phát thành công hoặc hệ thống chuyển sang cơ chế phát dự phòng phù hợp. Trạng thái và vị trí phát hiện tại được duy trì. | |
+| **Tác nhân phụ** | Âm thanh và TTS của nền tảng, Máy chủ nội dung / CDN | |
+| **Tiền điều kiện** | UC-02 đã tải thành công nội dung hướng dẫn APPROVED; có locationId, languageCode thực tế sau quy tắc dự phòng ngôn ngữ của UC-02, scriptType hợp lệ và scriptText không rỗng. Khả năng sử dụng engine và giọng TTS phù hợp được kiểm tra khi cần phát dự phòng; đây không phải điều kiện bắt buộc để đọc văn bản hoặc phát audio đang có. | |
+| **Hậu điều kiện** | **Thành công:** Nội dung hướng dẫn đã được phê duyệt được phát bằng audio tương ứng hoặc TTS; ứng dụng cho biết nguồn phát đang dùng. Trạng thái và vị trí hiện tại được duy trì trong phiên phát đang hoạt động. **Trường hợp khác:** Nếu cả audio và TTS đều không sử dụng được (E3), hệ thống không báo phát thành công; văn bản đã tải cùng địa điểm, ngôn ngữ và chế độ nội dung hiện tại vẫn được giữ để đọc hoặc thử lại. | |
 | **Luồng chính** | **Hành động của tác nhân** | **Phản hồi của hệ thống** |
 | | **1.** Du khách chọn **Phát âm thanh**. | Hệ thống nhận yêu cầu phát nội dung hướng dẫn cho địa điểm hiện tại. |
-| | | **2.** Hệ thống xác định nội dung âm thanh tương ứng bằng locationId, languageCode và scriptType. |
-| | | **3.** Hệ thống kiểm tra tệp âm thanh tương ứng có sẵn từ nguồn dữ liệu hiện tại hay không. |
-| | | **4.** Hệ thống tải tệp âm thanh và chuẩn bị phiên phát. |
+| | | **2.** Hệ thống xác định audio tương ứng bằng locationId, languageCode thực tế và scriptType do UC-02 cung cấp. |
+| | | **3.** Hệ thống kiểm tra tệp âm thanh tương ứng có sẵn từ nguồn dữ liệu hiện tại hay không. Nếu không có, thực hiện E1. |
+| | | **4.** Hệ thống tải tệp âm thanh và chuẩn bị phiên phát. Nếu tải hoặc chuẩn bị thất bại, thực hiện E1. |
 | | | **5.** Hệ thống bắt đầu phát âm thanh. |
-| | | **6.** Ứng dụng cập nhật trạng thái **Đang phát (Playing)** và hiển thị các điều khiển phát. |
+| | | **6.** Khi âm thanh bắt đầu phát, ứng dụng cập nhật trạng thái **Đang phát (Playing)**, cho biết nguồn là audio tạo sẵn và hiển thị các điều khiển phát. |
 | | **7.** Du khách tiếp tục nghe thuyết minh. | Hệ thống duy trì trạng thái và vị trí phát hiện tại cho đến khi phát xong hoặc có thao tác/sự kiện khác. |
-| **Luồng thay thế** | **A1:** Khi âm thanh đang phát, du khách có thể tạm dừng, tiếp tục, tua tới/lùi hoặc đổi tốc độ. Hệ thống cập nhật ngay trạng thái phát và tiếp tục từ vị trí tương ứng theo thao tác đã chọn. | |
-| **Luồng ngoại lệ** | **E1:** Nếu không tìm thấy hoặc không phát được tệp âm thanh tương ứng, hệ thống dùng Text-to-Speech của hệ điều hành để đọc scriptText do UC-02 cung cấp. Hệ thống cập nhật trạng thái phát tương ứng và cho phép du khách tiếp tục nghe nội dung hướng dẫn. | |
-| | **E2:** Nếu sự kiện ưu tiên cao hơn, như cuộc gọi đến hoặc ứng dụng khác, chiếm quyền xuất âm thanh, hệ thống tạm dừng nội dung hướng dẫn và lưu vị trí hiện tại. Khi audio focus được khôi phục, có thể tiếp tục phát từ vị trí đã lưu. | |
+| **Luồng thay thế** | **A1: Điều khiển phát.** Khi audio tạo sẵn hoặc TTS đang phát, du khách có thể tạm dừng, tiếp tục, tua tới/lùi hoặc đổi tốc độ. Hệ thống cập nhật phiên phát đang hoạt động và tiếp tục từ vị trí tương ứng theo thao tác đã chọn. | |
+| | **A2: Phát hướng dẫn bằng Text-to-Speech.** Khi xảy ra E1: **1.** Hệ thống thông báo audio tạo sẵn không khả dụng và sẽ dùng TTS. **2.** Hệ thống khởi tạo dịch vụ TTS của nền tảng và kiểm tra giọng đọc sử dụng được, phù hợp với languageCode thực tế do UC-02 trả về. Khi ngoại tuyến, giọng này phải hoạt động không cần kết nối mạng. Nếu dịch vụ hoặc giọng phù hợp không khả dụng, thực hiện E3. **3.** Hệ thống chuẩn bị giọng đọc từ nguyên văn scriptText đã được phê duyệt cho locationId và scriptType hiện tại; không dịch, tóm tắt hoặc tạo nội dung hướng dẫn mới. **4.** Hệ thống bắt đầu phát TTS. Khi tiếng đọc bắt đầu, hiển thị **Đang phát — Text-to-Speech** cùng các điều khiển tại A1. **5.** Hệ thống duy trì trạng thái và vị trí phát TTS cho đến khi kết thúc hoặc có thao tác/sự kiện khác; gián đoạn audio focus thực hiện E2. | |
+| **Luồng ngoại lệ** | **E1: Audio không khả dụng hoặc phát thất bại.** Nếu audio tương ứng không tồn tại hoặc không thể tải, chuẩn bị hay phát, kể cả lỗi trong khi đang phát, hệ thống dừng/giải phóng phiên audio lỗi và thực hiện A2 bằng nội dung UC-02 đã tải. Không được phát đồng thời audio lỗi và TTS. | |
+| | **E2: Gián đoạn audio focus.** Nếu sự kiện ưu tiên cao hơn, như cuộc gọi đến hoặc ứng dụng khác, chiếm quyền xuất âm thanh, hệ thống tạm dừng phiên audio hoặc TTS đang hoạt động và lưu vị trí phát hiện tại. Khi audio focus được khôi phục, có thể tiếp tục phát từ vị trí đã lưu. | |
+| | **E3: TTS không khả dụng hoặc thất bại.** Nếu engine TTS không khởi tạo được, không có giọng sử dụng được phù hợp với languageCode thực tế, giọng cần mạng nhưng không có kết nối, hoặc tổng hợp/phát tiếng nói thất bại, hệ thống kết thúc lần chuẩn bị/phát và báo lỗi giải thích rằng hiện chưa thể đọc hướng dẫn thành tiếng. Hệ thống giữ scriptText cùng địa điểm, ngôn ngữ và chế độ nội dung hiện tại, cho phép thử lại sau khi nguyên nhân được xử lý. Không được giữ trạng thái Đang tải vô thời hạn, báo phát thành công, âm thầm dùng giọng của ngôn ngữ khác hoặc thay đổi nội dung đã được phê duyệt. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Du khách chọn **Phát âm thanh** trên màn hình Chi tiết địa điểm sau khi UC-02 đã tải nội dung hướng dẫn được phê duyệt. | |
-| **Giả định** | Mỗi kịch bản có thể có tệp âm thanh tương ứng cho từng languageCode và scriptType. Thiết bị di động hỗ trợ phát âm thanh và cơ chế quản lý audio focus. Thiết bị cung cấp dịch vụ TTS của hệ điều hành cho ít nhất một ngôn ngữ tương thích với nội dung hiện tại. Khi ngoại tuyến, tệp âm thanh cần thiết nằm trong Base Content đóng gói sẵn hoặc gói đã được phê duyệt cài qua UC-04, hoặc scriptText vẫn có sẵn để TTS dự phòng. | |
-| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Nhất quán nội dung phát:** Âm thanh được phát phải khớp locationId, languageCode và scriptType hiện tại do UC-02 cung cấp. **BR2 – Ưu tiên âm thanh tạo sẵn:** Nếu có tệp âm thanh tạo sẵn hợp lệ, hệ thống phải ưu tiên sử dụng. Chỉ dùng TTS của hệ điều hành làm dự phòng khi tệp âm thanh không khả dụng. | |
+| **Giả định** | Mỗi kịch bản có thể có audio tương ứng tùy chọn theo languageCode và scriptType. Nền tảng hiện tại cung cấp audio/TTS cùng xử lý gián đoạn/vòng đời qua adapter. Engine, giọng, điều khiển và yêu cầu mạng khác nhau giữa thiết bị/trình duyệt và phải được kiểm chứng. Phát ngoại tuyến cần audio cục bộ tương ứng từ Base Content đã xác minh hoặc gói UC-04, hoặc scriptText cục bộ cùng giọng offline phù hợp languageCode thực tế. Chỉ có văn bản không bảo đảm đọc thành tiếng khi ngoại tuyến. Mục 2.4 quy định cấp phát nội dung cơ bản; phạm vi ngôn ngữ/giọng và môi trường kiểm thử cần được nhóm xác nhận. | |
+| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Nhất quán nội dung phát:** Audio và TTS phải khớp locationId, languageCode thực tế và scriptType hiện tại do UC-02 cung cấp. **BR2 – Ưu tiên âm thanh tạo sẵn:** Ưu tiên audio tạo sẵn tương ứng và hợp lệ khi phát được; chỉ dùng TTS của nền tảng làm dự phòng khi audio đó không khả dụng hoặc bị lỗi. **BR3 – Nhất quán văn bản đã duyệt và giọng đọc:** TTS đọc nguyên văn scriptText APPROVED do UC-02 tải bằng giọng phù hợp với languageCode thực tế. UC-02 chịu trách nhiệm dự phòng ngôn ngữ; UC-03 không tự dịch, tóm tắt hoặc thay ngôn ngữ hay loại kịch bản khác. **BR4 – Khả năng TTS ngoại tuyến:** Chỉ cung cấp TTS ngoại tuyến khi có văn bản cần thiết và giọng tương thích hoạt động không cần mạng; nếu không, thực hiện E3. **BR5 – Nguồn phát và kích hoạt:** Cho biết audio hay TTS đang hoạt động, chỉ cho một nguồn phát tại một thời điểm và chỉ bắt đầu khi du khách chọn Phát hoặc theo nhánh dự phòng của yêu cầu đó. Việc mở Chi tiết địa điểm hoặc chọn thông báo không tự khởi động audio hay TTS. | |
 | **Tác giả** | | |
 | **Ngày** | | |
 | **Sơ đồ hoạt động** | Xem UC03_activity.drawio | |
@@ -321,11 +345,11 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | :---- | :---- | :---- |
 | **Mã UC** | UC-04 | |
 | **Tên UC** | **Quản lý và cập nhật nội dung ngoại tuyến** | |
-| **Loại** | Ứng dụng di động – Dành cho du khách | |
-| **Mục tiêu** | Cho phép du khách cập nhật, bổ sung hoặc xóa nội dung ngoại tuyến khi có nội dung mới hơn, trong khi nội dung ngoại tuyến cơ bản đã được đóng gói sẵn với ứng dụng, để văn bản và âm thanh hướng dẫn vẫn dùng được khi không có Internet. | |
+| **Loại** | Ứng dụng du khách – Web / Android | |
+| **Mục tiêu** | Cho phép du khách cập nhật, bổ sung hoặc xóa nội dung ngoại tuyến, đồng thời giữ Base Content đã xác minh để văn bản/audio dùng được khi không có mạng sau khi nội dung cơ bản sẵn sàng. Android đóng gói nội dung cơ bản; Web du khách cấp phát trong lần đầu dùng có mạng (mục 2.4). | |
 | **Tác nhân chính** | Du khách | |
 | **Tác nhân phụ** | Không áp dụng | |
-| **Tiền điều kiện** | Ứng dụng đã chứa nội dung ngoại tuyến cơ bản đóng gói sẵn. Chỉ cần Internet khi kiểm tra hoặc tải cập nhật; xóa nội dung tùy chọn không cần kết nối mạng. | |
+| **Tiền điều kiện** | Base Content đã xác minh sẵn sàng trong kho nội dung cục bộ theo mục 2.4. Cần mạng để cấp phát lần đầu trên Web và để kiểm tra/tải cập nhật; xóa nội dung tùy chọn không cần mạng. Nếu nội dung cơ bản chưa sẵn sàng, giải thích cần chuẩn bị trực tuyến trước thay vì báo Sẵn sàng ngoại tuyến. | |
 | **Hậu điều kiện** | **Thành công:** Nội dung ngoại tuyến được cập nhật và hiển thị Đã cập nhật / Sẵn sàng ngoại tuyến (Up to Date / Offline Ready), hoặc nội dung tùy chọn đã chọn được xóa và trạng thái nội dung được cập nhật. **Trường hợp khác (không có cập nhật, hủy hoặc lỗi):** Nội dung ngoại tuyến đã cài hiện tại được giữ nguyên. | |
 | **Luồng chính** | **Hành động của tác nhân** | **Phản hồi của hệ thống** |
 | | **1.** Du khách mở Quản lý nội dung ngoại tuyến. | Hệ thống hiển thị nội dung đã cài và trạng thái phiên bản. |
@@ -336,15 +360,15 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | | **6.** Nếu gói đã được phê duyệt hợp lệ, hệ thống thay thế nguyên tử các kịch bản và tài nguyên âm thanh cục bộ bị ảnh hưởng bằng gói đã xác minh, đồng thời lưu phiên bản mới. |
 | | | **7.** Hệ thống hiển thị Đã cập nhật / Sẵn sàng ngoại tuyến. |
 | **Luồng thay thế** | **A1: Không có bản cập nhật.** Tại bước 3, nếu không có phiên bản mới hơn, hệ thống thông báo nội dung hiện tại đã là mới nhất. Use case kết thúc và không thay đổi gì. | |
-| | **A2: Xóa nội dung ngoại tuyến tùy chọn.** Du khách chọn Xóa nội dung. Hệ thống hiển thị nội dung đã tải thêm, yêu cầu chọn mục cần xóa và xác nhận. Sau khi xác nhận, hệ thống xóa nội dung đã chọn khỏi bộ nhớ cục bộ và cập nhật trạng thái. Nội dung cơ bản đóng gói sẵn không bao giờ bị xóa (**BR-01**). Nếu du khách hủy, không thay đổi gì. | |
+| | **A2: Xóa nội dung ngoại tuyến tùy chọn.** Du khách chọn Xóa nội dung. Hệ thống hiển thị nội dung đã tải thêm, yêu cầu chọn mục cần xóa và xác nhận. Sau khi xác nhận, hệ thống xóa nội dung đã chọn khỏi bộ nhớ cục bộ và cập nhật trạng thái. Base Content được bảo vệ không bị thao tác này xóa (**BR-01**). Nếu du khách hủy, không thay đổi gì. | |
 | | **A3: Du khách hủy cập nhật.** Tại bước 4, nếu không xác nhận cập nhật, hệ thống giữ nguyên nội dung hiện tại và kết thúc use case. | |
 | **Luồng ngoại lệ** | **E1: Không đủ dung lượng.** Nếu thiết bị không đủ dung lượng trống để cập nhật, hệ thống dừng thao tác, không thay đổi dữ liệu và thông báo dung lượng cần thiết. Hệ thống có thể đề xuất mở Quản lý nội dung ngoại tuyến để du khách xóa nội dung tùy chọn. | |
 | | **E2: Mất kết nối mạng.** Nếu mất Internet khi đang tải, hệ thống dừng tải và loại bỏ dữ liệu chưa hoàn chỉnh. Khi có kết nối, du khách có thể thử lại sau bằng cách chọn Cập nhật lần nữa. Nội dung đã cài hiện tại được giữ nguyên. | |
 | | **E3: Gói cập nhật không hợp lệ.** Nếu nội dung tải về không vượt qua xác minh tính toàn vẹn hoặc không cài đặt được, hệ thống loại bỏ dữ liệu không hợp lệ, giữ phiên bản ngoại tuyến hiện tại và thông báo thử lại. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Du khách mở mục Nội dung ngoại tuyến / Cập nhật và chọn Kiểm tra cập nhật, Cập nhật hoặc Xóa nội dung. **Do hệ thống:** Hệ thống phát hiện phiên bản mới hơn và hiển thị Có bản cập nhật (Update Available). Chỉ bắt đầu tải sau khi du khách xác nhận. | |
-| **Giả định** | Nội dung ngoại tuyến cơ bản đóng gói sẵn cho phép UC-02 và UC-03 hoạt động không có Internet và không cần tải trước. Máy chủ cung cấp các gói cập nhật có phiên bản, đã xuất bản và được phê duyệt cho các địa điểm được hỗ trợ. Thiết bị cho phép lưu thêm văn bản và âm thanh hướng dẫn cục bộ. Hệ thống lưu phiên bản nội dung cục bộ và có thể so sánh với phiên bản máy chủ. | |
-| **Tham chiếu: Quy tắc nghiệp vụ** | **BR-01 – Bảo vệ nội dung cơ bản:** Không được xóa nội dung ngoại tuyến cơ bản đóng gói sẵn bằng chức năng quản lý nội dung ngoại tuyến. **BR-02 – Cập nhật an toàn:** Chỉ gói **APPROVED** đã xác minh thành công mới được thay thế nội dung hiện có. Nếu cập nhật lỗi, không được ghi đè hoặc xóa nội dung đã cài. **BR-03 – Quản lý phiên bản:** Hệ thống phải lưu phiên bản nội dung cục bộ để so sánh với máy chủ. **BR-04 – Cài đặt gói nguyên tử:** Một phiên bản gói phải cài đồng thời các kịch bản và tài nguyên âm thanh tương ứng; ứng dụng di động không được dùng gói thiếu thành phần hoặc có trạng thái DRAFT/PENDING_REVIEW. | |
+| **Giả định** | Nội dung cơ bản đóng gói trên Android cho phép dùng offline mà chưa cần tải nội dung trước. Web du khách cần lần truy cập đầu có mạng để cấp phát/xác minh cùng nội dung cơ bản trước khi dùng offline. Máy chủ cung cấp gói có phiên bản, đã xuất bản và được phê duyệt. Kho cục bộ nền tảng giữ nội dung và phiên bản đã cài. Phải kiểm thử khả năng/độ bền lưu trữ trình duyệt; khi kho không có hoặc bị xóa từ bên ngoài, báo đúng trạng thái và yêu cầu chuẩn bị online lại thay vì nhận là nội dung vẫn còn. Chức năng xóa của ứng dụng phải giữ Base Content. | |
+| **Tham chiếu: Quy tắc nghiệp vụ** | **BR-01 – Bảo vệ nội dung cơ bản:** Chức năng quản lý nội dung ngoại tuyến của ứng dụng không được xóa Base Content đã xác minh, theo mục 2.4. **BR-02 – Cập nhật an toàn:** Chỉ gói **APPROVED** đã xác minh thành công mới được thay thế nội dung hiện có. Nếu cập nhật lỗi, không được ghi đè hoặc xóa nội dung đã cài. **BR-03 – Quản lý phiên bản:** Hệ thống phải lưu phiên bản nội dung cục bộ để so sánh với máy chủ. **BR-04 – Cài đặt gói nguyên tử:** Một phiên bản gói phải cài đồng thời các kịch bản và tài nguyên âm thanh tương ứng; ứng dụng du khách không được dùng gói thiếu thành phần hoặc có trạng thái DRAFT/PENDING_REVIEW. | |
 | **Tác giả** | | |
 | **Ngày** | | |
 | **Sơ đồ hoạt động** | Xem UC04_activity.drawio | |
@@ -355,11 +379,11 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | :---- | :---- | :---- |
 | **Mã UC** | UC-05 | |
 | **Tên UC** | **Nhận thông báo theo vị trí** | |
-| **Loại** | Ứng dụng di động – Dành cho du khách | |
+| **Loại** | Ứng dụng du khách – Web / Android | |
 | **Mục tiêu** | Thông báo khi du khách đi vào khu vực của một địa điểm du lịch và cho phép truy cập nhanh thông tin địa điểm tương ứng. | |
 | **Tác nhân chính** | Du khách | |
-| **Tác nhân phụ** | Định vị và Geofencing của hệ điều hành, Thông báo hệ điều hành | |
-| **Tiền điều kiện** | **1.** Ứng dụng di động đã được cài và thiết bị hỗ trợ định vị, geofencing. **2.** Cơ sở dữ liệu cục bộ chứa dữ liệu địa điểm cần thiết, gồm tọa độ, bán kính geofence, locationId và tên địa điểm bản địa hóa. **Lưu ý:** Quyền vị trí và thông báo có thể chưa được cấp; các trường hợp này xử lý tại E1 và E2. | |
+| **Tác nhân phụ** | Định vị và Geofencing của nền tảng, Thông báo hệ điều hành | |
+| **Tiền điều kiện** | **1.** Web du khách hoặc Android đang chạy trong nền tảng/phiên hỗ trợ theo dõi vị trí theo mục 2.4. **2.** Kho nội dung cục bộ đã xác minh có tọa độ, bán kính geofence, locationId và tên bản địa hóa. Quyền vị trí/thông báo có thể chưa khả dụng; xử lý qua E1/E2. Không được biểu diễn theo dõi nền không hỗ trợ hoặc đã tạm ngưng là dịch vụ đang hoạt động. | |
 | **Hậu điều kiện** | **Thành công:** Thông báo theo vị trí hoặc banner trong ứng dụng được hiển thị. Nếu du khách chọn, ứng dụng mở màn hình Chi tiết địa điểm tương ứng bằng locationId; sau đó UC-02 được kích hoạt bằng trigger riêng để tải nội dung hướng dẫn. **Trường hợp khác:** Không hiển thị thông báo theo vị trí (E1, E2, A3) hoặc không điều hướng (A2). | |
 | **Luồng chính** | **Hành động của tác nhân** | **Phản hồi của hệ thống** |
 | | **1.** Du khách đi vào geofence đã cấu hình của một địa điểm du lịch. | Hệ thống phát hiện sự kiện đi vào geofence. |
@@ -372,7 +396,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **A2: Không chọn thông báo.** Nếu du khách không chọn thông báo hoặc banner đã hiển thị, hệ thống không điều hướng. Du khách có thể tiếp tục dùng ứng dụng bình thường. | |
 | | **A3: Khoảng chờ thông báo còn hiệu lực.** Tại bước 3, nếu khoảng chờ của địa điểm chưa hết, hệ thống không hiển thị thông báo (BR1). Du khách có thể tiếp tục dùng ứng dụng bình thường. | |
 | **Luồng ngoại lệ** | **E1: Quyền vị trí không khả dụng.** Nếu quyền vị trí bị tắt, thu hồi hoặc không khả dụng, hệ thống không thể theo dõi geofence và không tạo thông báo theo vị trí. Du khách vẫn có thể khám phá và chọn địa điểm thủ công bằng UC-01. | |
-| | **E2: Quyền thông báo không khả dụng.** Nếu quyền thông báo bị tắt hoặc không khả dụng, hệ thống không thể hiển thị thông báo hệ điều hành. Nếu ứng dụng ở tiền cảnh, vẫn có thể hiển thị banner trong ứng dụng (A2). | |
+| | **E2: Quyền thông báo không khả dụng.** Nếu không có quyền hoặc hỗ trợ nền tảng, hệ thống không thể hiển thị thông báo hệ thống. Nếu ứng dụng đang hoạt động và theo dõi vị trí có quyền vẫn khả dụng, có thể hiển thị banner trong ứng dụng (A1). | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do hệ thống:** Thiết bị đi vào geofence đã cấu hình của một địa điểm du lịch. **Do người dùng:** Sau khi nhận thông báo, du khách chọn để mở địa điểm tương ứng. | |
 | **Giả định** | Cơ sở dữ liệu cục bộ chứa thông tin địa điểm đã được kiểm chứng: locationId, latitude, longitude, radius và tên bản địa hóa. Theo dõi geofence có thể hoạt động bằng dữ liệu đã có trên thiết bị. Mỗi địa điểm được theo dõi có bán kính geofence hợp lệ. Ứng dụng có thể mở màn hình Chi tiết địa điểm bằng locationId hợp lệ. **Phạm vi MVP:** Chọn thông báo chỉ mở màn hình Chi tiết địa điểm; bản thân thông báo không tải nội dung hoặc phát âm thanh. Sau khi màn hình mở, UC-02 được kích hoạt bằng trigger do hệ thống của riêng UC-02; phát âm thanh vẫn là thao tác do du khách khởi tạo trong UC-03. | |
@@ -392,7 +416,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | **Tác nhân chính** | Quản trị viên nội dung / Biên tập viên (Content Admin / Editor) | |
 | **Tác nhân phụ** | Không có | |
 | **Tiền điều kiện** | Quản trị viên đã được xác thực và được phân quyền quản lý nội dung. | |
-| **Hậu điều kiện** | **Thành công:** Dữ liệu địa điểm, nội dung hướng dẫn và tài nguyên âm thanh được lưu với trạng thái DRAFT hoặc PENDING_REVIEW. Khi chỉnh sửa phiên bản đã được phê duyệt, bản đang xuất bản vẫn sẵn có cho ứng dụng di động trong khi bản thay thế chờ duyệt. **Trường hợp khác:** Không gửi dữ liệu. Quản trị viên vẫn ở biểu mẫu và dữ liệu đã nhập được giữ nguyên (E1, E2). | |
+| **Hậu điều kiện** | **Thành công:** Dữ liệu địa điểm, nội dung hướng dẫn và tài nguyên âm thanh được lưu với trạng thái DRAFT hoặc PENDING_REVIEW. Khi chỉnh sửa phiên bản đã được phê duyệt, bản đang xuất bản vẫn sẵn có cho ứng dụng du khách trong khi bản thay thế chờ duyệt. **Trường hợp khác:** Không gửi dữ liệu. Quản trị viên vẫn ở biểu mẫu và dữ liệu đã nhập được giữ nguyên (E1, E2). | |
 | **Luồng chính** | **Hành động của tác nhân** | **Phản hồi của hệ thống** |
 | | **1.** Quản trị viên chọn địa điểm hiện có hoặc Thêm địa điểm mới. | **2.** Hệ thống mở biểu mẫu tương ứng. |
 | | **3.** Quản trị viên nhập hoặc sửa tên địa điểm bản địa hóa cho từng ngôn ngữ hỗ trợ, danh mục, tọa độ GPS và bán kính geofence. | **4.** Hệ thống ghi nhận thông tin đã nhập. |
@@ -401,14 +425,14 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **9.** Quản trị viên nghe thử âm thanh và rà soát nội dung đã nhập. | **10.** Hệ thống cung cấp phần nghe thử và hiển thị dữ liệu đã nhập. |
 | | **11.** Quản trị viên chọn Gửi duyệt (Submit for Review). | **12.** Hệ thống kiểm tra tất cả trường bắt buộc. |
 | | | **13.** Nếu dữ liệu hợp lệ, hệ thống lưu nội dung và chuyển sang PENDING_REVIEW. Nếu có bản đã được phê duyệt, hệ thống giữ bản đang xuất bản cho đến khi phụ thuộc phê duyệt và xuất bản bên ngoài hoàn tất. |
-| **Luồng thay thế** | **A1: Lưu nháp.** Nếu nội dung chưa hoàn chỉnh, quản trị viên chọn Lưu nháp (Save Draft) thay cho Gửi duyệt. Hệ thống lưu DRAFT mà không yêu cầu điền đủ các trường bắt buộc. Nội dung không được cung cấp cho ứng dụng di động. | |
+| **Luồng thay thế** | **A1: Lưu nháp.** Nếu nội dung chưa hoàn chỉnh, quản trị viên chọn Lưu nháp (Save Draft) thay cho Gửi duyệt. Hệ thống lưu DRAFT mà không yêu cầu điền đủ các trường bắt buộc. Nội dung không được cung cấp cho ứng dụng du khách. | |
 | | **A2: Sửa địa điểm hiện có.** Tại bước 1, quản trị viên chọn địa điểm hiện có. Hệ thống tải dữ liệu vào biểu mẫu; quản trị viên sửa một hoặc nhiều mục như tên, tọa độ, nội dung hướng dẫn hoặc âm thanh. Có thể chỉ thay âm thanh của một ngôn ngữ; khi đó hệ thống cập nhật tài nguyên đó và giữ nguyên dữ liệu khác. Thay đổi được lưu DRAFT hoặc gửi PENDING_REVIEW (bước 11–13, A1), đồng thời bảo vệ bản đang xuất bản (BR4). Nội dung được trả về với trạng thái REJECTED được chỉnh sửa tương tự, rồi lưu nháp hoặc gửi duyệt lại. | |
 | **Luồng ngoại lệ** | **E1: Tệp âm thanh không hợp lệ hoặc tải lên thất bại.** Tại bước 8, nếu định dạng không được hỗ trợ, tệp không xử lý được hoặc tải lên lỗi, hệ thống từ chối tệp, hiển thị lỗi và giữ nguyên dữ liệu biểu mẫu. Quản trị viên chọn tệp khác hoặc thử tải lại. | |
 | | **E2: Thiếu dữ liệu địa điểm bắt buộc.** Tại bước 12, nếu thiếu thông tin như tên, danh mục, vĩ độ, kinh độ hoặc bán kính geofence, hệ thống chặn gửi và đánh dấu các trường cần hoàn thiện. Quản trị viên quay lại biểu mẫu. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Quản trị viên mở Quản lý địa điểm và chọn tạo hoặc sửa địa điểm. | |
-| **Giả định** | Web Admin có Internet. Hệ thống hỗ trợ lưu văn bản hướng dẫn và tài nguyên âm thanh. Quản trị viên chuẩn bị nội dung và âm thanh trước hoặc trong khi chỉnh sửa. Ngôn ngữ hỗ trợ và danh mục địa điểm đã được cấu hình. Phê duyệt, xuất bản và đồng bộ ứng dụng di động do phụ thuộc xuất bản nội dung bên ngoài mô tả ở trên đảm nhiệm; use case này không xuất bản nội dung. | |
-| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Thông tin địa điểm bắt buộc:** Để gửi duyệt, mỗi địa điểm phải có ít nhất tên hợp lệ, danh mục, tọa độ GPS và bán kính geofence. Có thể lưu DRAFT khi dữ liệu chưa đầy đủ. **BR2 – Trạng thái nội dung:** Use case này chỉ lưu DRAFT hoặc PENDING_REVIEW. Nội dung chỉ được cung cấp cho ứng dụng di động sau khi được phê duyệt và xuất bản bên ngoài. **BR3 – Ánh xạ nội dung:** Mỗi kịch bản và tài nguyên âm thanh phải gắn với ít nhất locationId, languageCode, scriptType để UC-02 và UC-03 xác định nội dung và âm thanh khớp nhau; phiên bản gói được phụ thuộc xuất bản bên ngoài cấp sau. **BR4 – Bảo vệ nội dung đã duyệt:** Chỉnh sửa nội dung đã được phê duyệt không được xóa phiên bản hiện đang cung cấp cho ứng dụng di động cho đến khi bản thay thế được phê duyệt và xuất bản. | |
+| **Giả định** | Web Admin có Internet. Hệ thống hỗ trợ lưu văn bản hướng dẫn và tài nguyên âm thanh. Quản trị viên chuẩn bị nội dung và âm thanh trước hoặc trong khi chỉnh sửa. Ngôn ngữ hỗ trợ và danh mục địa điểm đã được cấu hình. Phê duyệt, xuất bản và đồng bộ ứng dụng du khách do phụ thuộc xuất bản nội dung bên ngoài mô tả ở trên đảm nhiệm; use case này không xuất bản nội dung. | |
+| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Thông tin địa điểm bắt buộc:** Để gửi duyệt, mỗi địa điểm phải có ít nhất tên hợp lệ, danh mục, tọa độ GPS và bán kính geofence. Có thể lưu DRAFT khi dữ liệu chưa đầy đủ. **BR2 – Trạng thái nội dung:** Use case này chỉ lưu DRAFT hoặc PENDING_REVIEW. Nội dung chỉ được cung cấp cho ứng dụng du khách sau khi được phê duyệt và xuất bản bên ngoài. **BR3 – Ánh xạ nội dung:** Mỗi kịch bản và tài nguyên âm thanh phải gắn với ít nhất locationId, languageCode, scriptType để UC-02 và UC-03 xác định nội dung và âm thanh khớp nhau; phiên bản gói được phụ thuộc xuất bản bên ngoài cấp sau. **BR4 – Bảo vệ nội dung đã duyệt:** Chỉnh sửa nội dung đã được phê duyệt không được xóa phiên bản hiện đang cung cấp cho ứng dụng du khách cho đến khi bản thay thế được phê duyệt và xuất bản. | |
 | **Tác giả** | | |
 | **Ngày** | | |
 | **Sơ đồ hoạt động** | Xem UC06_activity.drawio | |
@@ -438,7 +462,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **E2: Xuất báo cáo thất bại.** Tại A3, nếu không tạo được báo cáo, hệ thống hiển thị lỗi và cho phép quản trị viên thử lại. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Quản trị viên chọn Thống kê và phản hồi trên Web Admin Dashboard. | |
-| **Giả định** | Ứng dụng di động ghi các sự kiện sử dụng cần cho thống kê thông qua phụ thuộc thu thập sự kiện phân tích bên ngoài. Phản hồi du khách được gửi và lưu qua phụ thuộc gửi phản hồi bên ngoài. Hệ thống có đủ dữ liệu để tính các chỉ số cơ bản cần thiết. Quản trị viên được phép tải báo cáo khi dùng chức năng Xuất. Lọc, xuất và cập nhật trạng thái là hành vi trong use case này, không phải use case riêng. | |
+| **Giả định** | Ứng dụng du khách ghi các sự kiện sử dụng cần cho thống kê thông qua phụ thuộc thu thập sự kiện phân tích bên ngoài. Phản hồi du khách được gửi và lưu qua phụ thuộc gửi phản hồi bên ngoài. Hệ thống có đủ dữ liệu để tính các chỉ số cơ bản cần thiết. Quản trị viên được phép tải báo cáo khi dùng chức năng Xuất. Lọc, xuất và cập nhật trạng thái là hành vi trong use case này, không phải use case riêng. | |
 | **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Kiểm soát truy cập:** Chỉ quản trị viên được phân quyền mới được truy cập dữ liệu thống kê và quản lý phản hồi. **BR2 – Trạng thái phản hồi:** Mỗi phản hồi phải có một trạng thái hợp lệ: NEW, IN_REVIEW hoặc RESOLVED. Bản ghi tiến triển theo thứ tự NEW → IN_REVIEW → RESOLVED. **BR3 – Kỳ báo cáo mặc định:** Dashboard mặc định hiển thị dữ liệu 30 ngày gần nhất. | |
 | **Tác giả** | | |
 | **Ngày** | | |
@@ -483,29 +507,29 @@ Thông tin truy vết chỉnh sửa chỉ giới hạn ở updatedBy và updated
 
 ## **6.2. Sơ đồ thành phần**
 
-**Sơ đồ thành phần đề xuất:** Mobile App gồm UI, Content Service, Audio Player, Geofence Service, Offline Manager và Local Content Store. Content Service truy xuất nội dung APPROVED trực tuyến từ Backend API hoặc ngoại tuyến từ Local Content Store; Audio Player dùng âm thanh tương ứng hoặc OS TTS; Geofence Service dùng OS Location & Geofencing và OS Notification. Offline Manager lấy gói qua Backend API / Content Server / CDN, xác minh và cài đặt nguyên tử. Web Admin giao tiếp với Backend API cho UC-06 và UC-07. Backend API dùng Server Database và Object Storage / CDN. Content Publication Service bên ngoài thực hiện duyệt, cấp phiên bản, xuất bản và chuyển ARCHIVED. Admin Authentication, Analytics Event Capture và Feedback Submission vẫn là phụ thuộc bên ngoài.
+**Sơ đồ thành phần đề xuất:** Web du khách và Android đều có lớp trình bày và adapter nền tảng cho Content Service, Audio Player/TTS, vị trí/thông báo, Offline Manager và Local Content Store. Hai client tuân theo quy tắc chung UC-01–UC-05, dùng cùng Backend API và định danh nội dung đã xuất bản. Trực tuyến lấy nội dung từ backend/kho nội dung; ngoại tuyến dùng kho cục bộ đã xác minh theo mục 2.4. Offline Manager xác minh và cài nguyên tử gói APPROVED. Web Admin là client riêng có phân quyền cho UC-06/UC-07. Backend API dùng Server Database và Object Storage / CDN có thẩm quyền. Content Publication Service bên ngoài thực hiện duyệt, cấp phiên bản, xuất bản và ARCHIVED. Admin Authentication, Analytics Event Capture và Feedback Submission giữ ranh giới bên ngoài; dùng chung backend không cấp quyền Admin cho client du khách.
 
 ## **6.3. Sơ đồ triển khai**
 
-**Sơ đồ triển khai đề xuất:** Thiết bị di động chứa Mobile App, Local Content Store và các dịch vụ nền tảng về vị trí, geofencing, thông báo, âm thanh, TTS. Web Admin truy cập Backend API; API kết nối Server Database và Object Storage / CDN. Content Publication Service và Admin Authentication là ranh giới dịch vụ bên ngoài. Analytics Event Capture hoạt động ở phía di động như một phụ thuộc bên ngoài và tải các sự kiện trong hàng đợi lên khi có kết nối; Feedback Submission cung cấp bản ghi phản hồi qua tích hợp bên ngoài. Giao tiếp máy khách–máy chủ dùng HTTPS theo NFR-06. Nhà cung cấp lưu trữ, môi trường, năng lực và phân bổ triển khai vật lý: \[?\].
+**Sơ đồ triển khai đề xuất:** Android chạy trên thiết bị hỗ trợ với dịch vụ native và kho cục bộ; Web du khách chạy trong trình duyệt hỗ trợ với adapter trình duyệt/nền tảng và kho cục bộ. Hai client cùng Web Admin riêng truy cập một Backend API qua HTTPS. API kết nối cơ sở dữ liệu có thẩm quyền và kho nội dung/audio/package. Web du khách được phục vụ từ URL HTTPS du khách truy cập được; địa chỉ LAN chỉ dành cho phát triển không chứng minh khả năng truy cập công khai. Ranh giới xuất bản/xác thực bên ngoài giữ theo mục 6.4. Thu thập sự kiện trên hai client du khách gửi qua cùng hợp đồng sự kiện đã thống nhất; gửi phản hồi vẫn là tích hợp bên ngoài. Nhà cung cấp, phiên bản trình duyệt hỗ trợ, năng lực và phân bổ triển khai còn là \[?\].
 
 ## **6.4. Dịch vụ và phụ thuộc bên ngoài**
 
-Hệ thống phụ thuộc vào các dịch vụ sau, nằm ngoài phạm vi các use case trong tài liệu. Cấu hình MVP cố định, lưu trữ và phân phối nội dung chỉ hỗ trợ UC-01 đến UC-07 dưới dạng hạ tầng; không định nghĩa thêm epic, chức năng hoặc use case cho chúng.
+Dịch vụ nền tảng dưới đây là khả năng OS native trên Android hoặc khả năng trình duyệt/nền tảng trên Web du khách, theo mục 2.4. Hệ thống phụ thuộc vào các dịch vụ sau, nằm ngoài phạm vi các use case trong tài liệu. Cấu hình MVP cố định, lưu trữ và phân phối nội dung chỉ hỗ trợ UC-01 đến UC-07 dưới dạng hạ tầng; không định nghĩa thêm epic, chức năng hoặc use case cho chúng.
 
 | Dịch vụ | Loại | Vai trò | UC liên quan |
 | :---- | :---- | :---- | :---- |
 | **Map Service** | Bên ngoài | Hiển thị bản đồ tương tác và điểm đánh dấu địa điểm. | UC-01 |
-| **OS Location & Geofencing** | Nền tảng | Cung cấp vị trí, độ chính xác của thiết bị và sự kiện đi vào geofence. | UC-01, UC-05 |
-| **OS Notification** | Nền tảng | Hiển thị thông báo và mở ứng dụng bằng locationId. | UC-05 |
-| **OS Audio & Text-to-Speech** | Nền tảng | Phát âm thanh, quản lý audio focus và đọc scriptText khi âm thanh không khả dụng. | UC-03 |
+| **Platform Location & Geofencing** | Nền tảng | Cung cấp vị trí, độ chính xác của thiết bị và sự kiện đi vào geofence. | UC-01, UC-05 |
+| **Platform Notification** | Nền tảng | Hiển thị thông báo và mở ứng dụng bằng locationId. | UC-05 |
+| **Platform Audio & Text-to-Speech** | Nền tảng | Phát âm thanh, quản lý audio focus và đọc scriptText khi âm thanh không khả dụng. | UC-03 |
 | **Content Server / CDN** | Phụ thuộc hạ tầng | Lưu và phân phối nội dung hướng dẫn đã được phê duyệt, tệp âm thanh và gói ngoại tuyến. | UC-02, UC-03, UC-04 |
 | **Content Publication Service** | Bên ngoài | Nhận nội dung gửi duyệt, hỗ trợ duyệt (APPROVED / REJECTED), cấp phiên bản gói và xuất bản lên Content Server/CDN. | UC-04, UC-06 |
 | **Admin Authentication** | Bên ngoài | Xác thực và phân quyền người dùng Web Admin; quản lý tài khoản nằm ngoài phạm vi. | UC-06, UC-07 |
 
 ### **6.4.1. Vòng đời nội dung**
 
-| Trạng thái | Ý nghĩa | Bên thiết lập | Hiển thị trên ứng dụng di động |
+| Trạng thái | Ý nghĩa | Bên thiết lập | Hiển thị trên ứng dụng du khách |
 | :---- | :---- | :---- | :---- |
 | **DRAFT** | Nội dung đang được soạn. | Quản trị viên nội dung (UC-06) | Không |
 | **PENDING_REVIEW** | Đã gửi, đang chờ duyệt. | Quản trị viên nội dung (UC-06) | Không; phiên bản đã xuất bản trước đó vẫn sẵn có. |
@@ -524,13 +548,13 @@ UC-06 chỉ tạo DRAFT và PENDING_REVIEW. Mọi thay đổi trạng thái khá
 * **NFR-01 — Hiệu năng:** Màn hình Chi tiết địa điểm tải trong \[2\] giây trên 4G và \[1\] giây từ Local Content Store.
 * **NFR-02 — Hiệu năng:** Tìm kiếm lân cận trả kết quả trong \[3\] giây sau khi có vị trí GPS hợp lệ.
 * **NFR-03 — Hiệu năng:** Âm thanh tạo sẵn bắt đầu trong \[2\] giây sau khi chọn Phát; TTS dự phòng bắt đầu trong \[3\] giây khi thiết bị có giọng đọc cho languageCode thực tế được sử dụng.
-* **NFR-04 — Ngoại tuyến:** Gói Base Content tối đa \[150\] MB. Tìm kiếm và duyệt danh mục UC-01, UC-02 và UC-03 hoạt động không cần mạng bằng Base Content. Map View cần mạng; khi ngoại tuyến, duyệt địa điểm qua danh sách. Phát âm thanh dùng tệp đóng gói sẵn nếu có hoặc TTS thiết bị, tuân theo UC-03 E1.
-* **NFR-05 — Nền tảng:** Nền tảng hỗ trợ đề xuất là Android \[8.0+\] và iOS \[15+\].
+* **NFR-04 — Ngoại tuyến:** Base Content tối đa \[150\] MB. Khi nội dung cơ bản đã xác minh và có cục bộ, tìm kiếm/duyệt danh mục UC-01, UC-02 và UC-03 hoạt động không cần mạng. Android đóng gói nội dung cơ bản; Web du khách cần cấp phát trực tuyến lần đầu và môi trường lưu trữ hỗ trợ đã kiểm chứng. Ứng dụng phải báo đúng trạng thái sẵn sàng offline. Map View cần mạng; offline dùng danh sách. Phát cần audio cục bộ hoặc TTS offline tương thích, theo UC-03 E1/E3 và mục 2.4.
+* **NFR-05 — Nền tảng:** Client du khách đã thống nhất là Android và trình duyệt Web. Android tối thiểu đề xuất \[8.0+\]; phiên bản trình duyệt/thiết bị và phạm vi khả năng hỗ trợ còn là \[?\]. Không yêu cầu ứng dụng iOS native trong đợt bàn giao này. Use case chung cần bằng chứng nghiệm thu riêng từng nền tảng, nhất là audio/TTS, kho offline, quyền và hành vi tiền cảnh/chạy nền.
 * **NFR-06 — Bảo mật:** Mọi lưu lượng máy khách–máy chủ dùng HTTPS (TLS). Web Admin yêu cầu xác thực và phân quyền theo vai trò. Gói nội dung được xác minh checksum và chữ ký theo UC-04 BR-02.
 * **NFR-07 — Quyền riêng tư:** Vị trí chỉ dùng cho tìm kiếm lân cận và geofencing; sự kiện phân tích dùng mã định danh ẩn danh. Yêu cầu tuân thủ đề xuất: xử lý dữ liệu tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân, cần người có chuyên môn xác nhận. Đây là yêu cầu cần rà soát, không phải bằng chứng đã tuân thủ.
 * **NFR-08 — Pin:** Theo dõi geofence tiêu thụ tối đa \[3\]% pin mỗi giờ đi bộ sử dụng bình thường. Thiết bị và điều kiện đo: \[nhóm điền\].
 * **NFR-09 — Độ tin cậy:** Cập nhật lỗi hoặc gián đoạn không bao giờ làm hỏng hay xóa nội dung đã cài, theo UC-04 BR-02.
-* **NFR-10 — Khả năng tiếp cận:** UI di động hỗ trợ phóng cỡ chữ hệ thống, nhãn cho trình đọc màn hình và độ tương phản WCAG 2.1 AA.
+* **NFR-10 — Khả năng tiếp cận:** Android hỗ trợ phóng cỡ chữ hệ thống và nhãn trình đọc màn hình; Web du khách hỗ trợ zoom trình duyệt, bàn phím và nhãn trình đọc màn hình. Cả hai hướng đến độ tương phản WCAG 2.1 AA.
 * **NFR-11 — Bản địa hóa:** UI và nội dung hướng dẫn dùng Unicode; ngôn ngữ được hỗ trợ và cờ hỗ trợ được liệt kê trong Phụ lục.
 * **NFR-12 — Tính sẵn sàng:** Server API sẵn sàng ít nhất \[99.5\]% mỗi tháng.
 * **NFR-13 — Khả năng mở rộng:** Hệ thống hỗ trợ ít nhất \[500\] địa điểm và \[1,000\] người dùng đồng thời.

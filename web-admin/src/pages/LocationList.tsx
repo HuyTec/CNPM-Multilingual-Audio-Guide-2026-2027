@@ -1,24 +1,56 @@
 import { Link, useSearchParams } from "react-router-dom";
-import { Plus, Check, VolumeX, FileText, Minus, TriangleAlert } from "lucide-react";
-import { getLocations, longLocations } from "../mocks/data";
+import { useEffect, useState } from "react";
+import {
+  Plus,
+  Check,
+  VolumeX,
+  FileText,
+  Minus,
+  TriangleAlert,
+} from "lucide-react";
+import {
+  adminRequest,
+  useAdminSession,
+  type ContentLocation,
+} from "../lib/admin-content";
 import { DataTable } from "../components/ui/DataTable";
 import { EmptyState } from "../components/ui/EmptyState";
 import { ErrorState, LoadingState, Pagination } from "../components/ui/States";
 import { LocationRow } from "../components/locations/LocationRow";
 import { statusLabels } from "../lib/status";
-import { pageNumber, useDemoLoad } from "../lib/demo";
+import { pageNumber } from "../lib/demo";
 import { number } from "../lib/format";
 
 export default function LocationList() {
   const [params, setParams] = useSearchParams();
-  const scenario = params.get("scenario") || "normal";
-  const load = useDemoLoad(scenario, scenario);
-  const source =
-    scenario === "empty"
-      ? []
-      : scenario === "long"
-        ? longLocations()
-        : getLocations();
+  const scenario = "normal";
+  const { authorization } = useAdminSession();
+  const [source, setSource] = useState<ContentLocation[]>([]);
+  const [load, setLoad] = useState("loading");
+  const [revision, setRevision] = useState(0);
+  useEffect(() => {
+    let active = true;
+    const abort = new AbortController();
+    void adminRequest<ContentLocation[]>(
+      "/api/admin/content/locations",
+      authorization,
+      { signal: abort.signal },
+    )
+      .then((rows) => {
+        if (!Array.isArray(rows)) throw new Error("Invalid locations");
+        if (active) {
+          setSource(rows);
+          setLoad("ready");
+        }
+      })
+      .catch(() => {
+        if (active) setLoad("error");
+      });
+    return () => {
+      active = false;
+      abort.abort();
+    };
+  }, [authorization, revision]);
   const q = params.get("q") || "";
   const status = params.get("status") || "";
   const rows = source.filter(
@@ -126,7 +158,12 @@ export default function LocationList() {
         {load === "loading" ? (
           <LoadingState />
         ) : load === "error" ? (
-          <ErrorState retry={() => filter("scenario", "normal")} />
+          <ErrorState
+            retry={() => {
+              setLoad("loading");
+              setRevision((value) => value + 1);
+            }}
+          />
         ) : !rows.length ? (
           <EmptyState title="Không tìm thấy địa điểm">
             <p>Thử bỏ bộ lọc hoặc thêm địa điểm mới.</p>

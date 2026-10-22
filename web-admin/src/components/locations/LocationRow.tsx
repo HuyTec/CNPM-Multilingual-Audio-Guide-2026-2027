@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { languages, type Location } from "../../mocks/data";
+import type { Location } from "../../mocks/data";
+import { languages } from "../../lib/admin-content";
 import { coordinate, dateTime } from "../../lib/format";
 import { StatusBadge } from "../ui/StatusBadge";
 import { LanguageCoverage } from "./LanguageCoverage";
