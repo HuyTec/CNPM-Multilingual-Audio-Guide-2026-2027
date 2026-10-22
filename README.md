@@ -20,7 +20,7 @@
 
 Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
-**Hướng sản phẩm đã chốt ngày 19/10/2026:** Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Xem ma trận nền tảng và tiêu chí luồng thật đầu tiên tại [PRD VI §2.4](docs/vi/PRD_Report_vi.md). Đây là phạm vi đích; source hiện vẫn gồm demo Android, Web Admin và các phần mock, chưa có Web du khách hoàn chỉnh. Giữ demo để tham khảo và thay mock theo từng luồng có kiểm chứng.
+Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Source hiện có cả ba client và backend; mức độ hoàn thành phải đối chiếu theo từng luồng. Phạm vi phụ trách của Huy là **backend và Android**; xem [review code và luồng API](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md).
 
 ## Công nghệ sử dụng
 
@@ -35,14 +35,12 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
 **Lý do chọn Java cho backend:** cùng nền JVM với Kotlin nên dễ chuyển đổi và đọc hiểu code giữa hai phần.
 
-### Đang cân nhắc (chưa chốt)
+### Stack hiện có trong source
 
-Các mục dưới đây mới là đề xuất, chưa phải quyết định của nhóm:
-
-- Web: Vite, TypeScript
-- Android: Jetpack Compose, Room, Media3, WorkManager
-- Backend: Flyway, PostGIS
-- Lưu trữ file audio và gói nội dung: S3 hoặc MinIO
+- Web: Vite, React, TypeScript, Tailwind.
+- Android: Jetpack Compose, OkHttp, Google Maps, MediaPlayer và TTS của thiết bị; chưa dùng Room, Media3 hoặc WorkManager.
+- Backend: Spring JDBC, Flyway, PostgreSQL/PostGIS; uploaded audio hiện lưu BYTEA trong database.
+- S3/MinIO, xác thực production và quy trình xuất bản nội dung còn là phần cần thiết kế/triển khai, chưa suy ra từ demo.
 
 ## Kiến trúc
 
@@ -58,7 +56,7 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Business Logic Layer:** xử lý các quy tắc và nghiệp vụ của hệ thống (service).
 - **Data Access Layer:** làm việc với cơ sở dữ liệu (repository).
 
-> Cấu trúc package chi tiết sẽ được xác định sau khi PRD được kiểm chứng.
+Discovery đi đủ controller → service → repository; Admin content và package hiện dùng JDBC trực tiếp trong service. Chi tiết từng file và các giới hạn nằm trong [báo cáo backend/Android](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md).
 
 ## Quy trình và công cụ
 
@@ -75,11 +73,12 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - `HVP-17: add health check endpoint`
 - `HVP-19: add backend Dockerfile with heap limit`
 
-## Cấu trúc thư mục dự kiến
+## Cấu trúc thư mục
 
 ```text
 /backend       Spring Boot API
 /web-admin     React web admin
+/web-user      React web du khách
 /android       Kotlin Android app
 /docs          Tài liệu, sơ đồ
 /.github       Workflow GitHub Actions
@@ -96,12 +95,10 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Thiết kế/review Web Admin:** [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21); **Android:** [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22).
 - **Thiết lập và hạ tầng:** [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Câu hỏi nghiệp vụ được ghi tại Epic tương ứng.
 
-Thiết kế, backlog nháp và biên bản review được quản lý trực tiếp trên Jira. Repository giữ PRD, hướng dẫn cài đặt/chạy và các tệp nguồn/ảnh tham khảo; không duy trì thêm bản Markdown thiết kế trùng nội dung Jira.
+Thiết kế và backlog nháp quản lý trên Jira. Repository giữ PRD, hướng dẫn chạy, nguồn nội dung/sơ đồ/ảnh tham khảo. Theo yêu cầu ngày 22/10/2026, giữ một [báo cáo review backend và Android](docs/vi/BACKEND_ANDROID_CODE_REVIEW.md) có link source, API và luồng xử lý.
 
 > Lưu ý: PRD và các sơ đồ đang trong giai đoạn kiểm chứng, nội dung có thể thay đổi.
 
 ## Chạy dự án
 
-Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
-
-Đọc code theo từng chức năng Web/Android → API → database tại [Hướng dẫn đọc code TravelVoice](./docs/vi/DEMO_CODE_GUIDE.md), có mục lục, sơ đồ, link file/hàm và test tương ứng.
+Xem hướng dẫn cài và chạy [backend](./backend/README.md), [Android](./android/README.md), [web-admin](./web-admin/README.md), [web-user](./web-user/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [CI/CD](./docs/vi/CI_CD_SETUP.md).

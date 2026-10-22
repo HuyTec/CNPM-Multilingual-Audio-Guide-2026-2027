@@ -1,8 +1,7 @@
 # TravelVoice · Web du khách
 
 React + Vite + TypeScript + Tailwind; cùng locationId, guide và gói nội dung với Android.
-Hợp đồng: [GUIDE_API.md](../backend/GUIDE_API.md) và
-[CONTENT_PACKAGE_API.md](../backend/CONTENT_PACKAGE_API.md).
+Hợp đồng guide và package: [API backend, mục 3.1 và 3.3](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api).
 
 ```powershell
 cd web-user

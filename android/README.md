@@ -15,7 +15,7 @@
 
 Khởi động backend/PostGIS theo [hướng dẫn backend](../backend/README.md). Giữ backend tại `127.0.0.1:8080`; Android Emulator truy cập qua `http://10.0.2.2:8080/`. Điện thoại thật cần backend trong cùng mạng LAN và build với địa chỉ phù hợp; APK phát hành lần này dành cho cấu hình emulator nêu trên.
 
-Cấu hình Gmail chỉ ở máy chủ theo [Tourist identity và OTP](../backend/TOURIST_AUTH_API.md). Khi chưa cấu hình tài khoản gửi, OTP trả thông báo chưa sẵn sàng và người dùng vẫn dùng được với tư cách khách. Chưa có bằng chứng giao thư Gmail thật trong lượt kiểm tra này.
+Cấu hình Gmail chỉ ở máy chủ theo [backend README](../backend/README.md#gmail-otp). Khi chưa cấu hình tài khoản gửi, OTP trả thông báo chưa sẵn sàng và người dùng vẫn dùng được với tư cách khách. Hợp đồng identity và luồng lưu session nằm trong [review backend/Android](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Giao thư Gmail thật cần kiểm tra riêng.
 
 ## Google Maps
 
@@ -59,4 +59,4 @@ Build bản dùng backend local đã được người dùng chọn:
 
 Output: `.verification-build/app/outputs/apk/release/app-release.apk`. Release không debuggable, dùng R8/resource shrinking và khóa ký riêng. HTTP chỉ được cho phép với các host loopback/emulator trong cấu hình release này; các host khác cần HTTPS. Khi chuyển sang server online, build lại với `-PtravelApiBaseUrl=https://your-api-origin/` và bỏ cờ local.
 
-Hồ sơ thiết kế và bằng chứng kiểm tra: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Prototype cũ chỉ còn là nguồn kiểm thử lịch sử, không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.
+Hồ sơ thiết kế: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Đọc [review từng file và luồng backend/Android](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md), bao gồm kết quả kiểm tra ngày 22/10/2026 và các device test còn bám giao diện cũ. Prototype không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.

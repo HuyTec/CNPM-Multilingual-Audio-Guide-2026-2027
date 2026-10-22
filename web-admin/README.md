@@ -1,6 +1,6 @@
 # TravelVoice · Web Admin
 
-Danh sách, biên tập và thống kê mặc định dùng PostgreSQL thật qua cùng backend cổng 8080 với Web du khách/Android. Hợp đồng: [ADMIN_CONTENT_API.md](../backend/ADMIN_CONTENT_API.md). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Phản hồi giả lập chỉ ở `/analytics?source=mock`.
+Danh sách, biên tập và thống kê mặc định dùng PostgreSQL thật qua cùng backend cổng 8080 với Web du khách/Android. Hợp đồng: [API backend, mục 3.4](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Phản hồi giả lập chỉ ở `/analytics?source=mock`.
 
 ## Demo Web Admin UC-06 / UC-07
 

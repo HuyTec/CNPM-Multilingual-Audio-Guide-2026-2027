@@ -1,74 +1,40 @@
-# Demo Android → PostgreSQL → Web Admin
+# Runbook stack demo riêng — legacy 8081/3001
 
-Demo local/cùng Wi-Fi, không cần thuê server. Audio tiếng Việt phát thật; địa điểm và kịch bản là nội dung minh họa do nhóm chuẩn bị.
+Script này vẫn chạy được một stack hạ tầng riêng; **giao diện Android 1.0.0 hiện dùng TravelQ1App và backend 8080 mặc định**. Các tab Nghe demo/Khám phá prototype không còn là entry point phát hành. Để chạy app hiện tại, ưu tiên [backend README](../../backend/README.md) và [Android README](../../android/README.md).
 
-## Khởi động
+## Khởi động stack legacy
 
-Cần Docker Desktop đang chạy. Tại thư mục gốc repository:
+Cần Docker Desktop. Từ repository root:
 
 ```powershell
-# Emulator hoặc máy local:
 .\scripts\start-live-demo.ps1
-# Cho điện thoại/máy khác trên cùng Wi-Fi tin cậy:
+# Chỉ khi chủ động cho phép máy khác trong LAN:
 .\scripts\start-live-demo.ps1 -Lan
 ```
 
-Lần đầu script tạo `.env.demo.local` (Git bỏ qua) với mật khẩu ngẫu nhiên cho database và Admin. Không đưa file này vào release/commit. Có thể tự cấu hình bằng `demo.env.example`. Project Compose `hvp-live-demo` dùng volume PostgreSQL riêng, backend **8081**, web **3001**, không thay stack cũ ở 8080/3000.
+Script tạo `.env.demo.local` ignored với mật khẩu ngẫu nhiên nếu chưa có, profile demo, backend8081/Admin3001. Project `hvp-live-demo` có volume riêng. Không chia sẻ/commit file env; không nhầm số liệu với stack 8080/3000.
 
-Web Admin: <http://localhost:3001/analytics>. Tài khoản là `DEMO_ADMIN_USERNAME`, mật khẩu là `DEMO_ADMIN_PASSWORD` trong `.env.demo.local`. Credentials chỉ giữ trong bộ nhớ tab, reload cần đăng nhập lại. API `/api/admin/*` kiểm tra xác thực; APK không chứa mật khẩu Admin.
+Web Admin ở `http://localhost:3001/analytics`. Username/password đọc ở máy local từ DEMO_ADMIN_USERNAME/DEMO_ADMIN_PASSWORD trong file env; không chép credentials vào APK hoặc báo cáo. API Admin kiểm Basic Auth; HTTP chỉ dành môi trường local phù hợp, triển khai công khai cần HTTPS và auth phù hợp.
 
-HTTP và Basic Auth chỉ dành cho demo local/mạng tin cậy. Không đưa cấu hình này trực tiếp lên Internet; production cần HTTPS và cơ chế xác thực/phân quyền chính thức.
+## Kết nối Android hiện tại
 
-## Kết nối Android
+APK mặc định 8080 không tự chuyển sang stack 8081. Nếu muốn kiểm thử stack này, build debug theo Android README với `-PtravelApiBaseUrl=http://10.0.2.2:8081/`. Điện thoại thật cần origin LAN/HTTPS phù hợp và cấu hình network của build. Không có ô đổi server trong shell release hiện tại.
 
-Build/cài APK debug theo [Android README](../../android/README.md). Debug cho phép HTTP local; release giữ mặc định HTTPS của Android. Mở tab **Nghe demo**:
+Profile demo hiện tới V4.2: catalog công khai có 7 địa điểm / 84 scripts; 6 fixture hư cấu cũ đã ARCHIVED. Vì vậy không dùng kịch bản chọn Bảo tàng Demo của bản APK cũ. Guide hiện có thể dùng TTS vì 7 điểm chưa có audio thu sẵn. Native voice/Gmail/Maps cần kiểm tra thực tế riêng.
 
-* Emulator: `http://10.0.2.2:8081/` là server mặc định.
-* Điện thoại: cùng Wi-Fi với máy chạy Docker; lấy IPv4 card Wi-Fi bằng `ipconfig`, nhập `http://<IPv4-máy-tính>:8081/`, nhấn **Kết nối server**. `localhost` trên điện thoại là điện thoại đó.
-* Web trên máy khác: `http://<IPv4-máy-tính>:3001/analytics`.
-* Giữ Docker chạy suốt buổi demo. Nếu Windows Firewall chặn, cấu hình quyền cổng 8081/3001 chỉ trên mạng Private theo quy định máy; script không tắt firewall.
+API và flow mới ở [review backend/Android](BACKEND_ANDROID_CODE_REVIEW.md#api). Các device test cũ đang bám prototype, xem finding P1-05; không dùng chúng làm bằng chứng app hiện tại đã kiểm chứng audio/map.
 
-Du khách không cần tài khoản. Android lấy catalog/SHORT guide APPROVED từ backend; server lỗi không tự chuyển sang mock. Tab Khám phá/Ngoại tuyến cũ vẫn là mô phỏng, có nhãn riêng.
-
-## Kịch bản trình diễn
-
-1. Đăng nhập Web Admin, xem tổng lượt phát. Database mới bắt đầu từ **0**, không seed lượt nghe.
-2. Android chọn **Bảo tàng Demo**, đọc đoạn ngắn từ server. Mở màn hình/tải audio chưa tạo lượt.
-3. Nhấn **Phát thuyết minh**. Khi MediaPlayer bắt đầu phát, app gửi sự kiện; chờ **Đã đồng bộ lượt nghe với server**.
-4. Web tự cập nhật mỗi 5 giây khi đang hiển thị, hoặc nhấn **Làm mới số liệu**. Tổng và địa điểm/ngôn ngữ tương ứng tăng một.
-5. Tạm dừng/tiếp tục không tăng lượt. Nghe hết rồi **Nghe lại** tạo phiên mới. Đổi kỳ báo cáo và xuất XLSX để kiểm tra số liệu DB.
-
-Một lượt = **một phiên bắt đầu phát**, không phải nghe hết/người nghe duy nhất. Không thu tài khoản du khách, ID thiết bị hay GPS. Demo ghi online; chưa đồng bộ nội dung/playback offline. Lỗi gửi: app giữ sự kiện trong outbox, gửi lại cùng UUID để chống đếm trùng; không phát lại audio chỉ để gửi lượt nghe.
-
-## Database và API
-
-Flyway: V1 schema, V2 discovery, V2.1 fixture địa điểm (demo), V3 liên kết revision/sự kiện, V3.1 ba SHORT guides/audio metadata (demo). Không sửa migration đã chạy. Profile mặc định không mở API playback demo; giữ profile `demo` với volume đã có seed.
-
-| API | Hành vi |
-| --- | --- |
-| `GET /api/locations` | Catalog APPROVED trong database |
-| `GET /api/locations/{id}/guide?language=VI&scriptType=SHORT` | Revision APPROVED; fallback đang chọn → EN → VI, giữ script type |
-| `GET /demo-audio/{name}.wav` | WAV thật, hỗ trợ HTTP Range |
-| `POST /api/playbacks` | JSON `{eventId, contentId}`; server suy ra location/language và thời điểm nhận; retry cùng ID không tăng count |
-| `GET /api/admin/analytics?from=YYYY-MM-DD&to=YYYY-MM-DD` | Basic Auth; mặc định 30 ngày; ngày inclusive theo Asia/Ho_Chi_Minh, tối đa 366 ngày |
-
-SQL kiểm tra tại root:
+## Kiểm tra và dừng
 
 ```powershell
-docker compose --env-file .env.demo.local -p hvp-live-demo exec postgres psql -U audio_guide -d audio_guide -c "SELECT event_type, language_code, count(*) FROM analytics_events GROUP BY event_type, language_code;"
-docker compose --env-file .env.demo.local -p hvp-live-demo restart backend
+Invoke-RestMethod 'http://localhost:8081/actuator/health'
+Invoke-RestMethod 'http://localhost:8081/api/locations?size=50'
+docker compose --env-file .env.demo.local -p hvp-live-demo logs --tail 100 backend postgres
+docker compose --env-file .env.demo.local -p hvp-live-demo stop
 ```
 
-Refresh sau restart: dữ liệu vẫn trong volume. Dừng bằng `docker compose --env-file .env.demo.local -p hvp-live-demo stop`. Không dùng `down -v` nếu muốn giữ lượt nghe.
+`stop` giữ dữ liệu. Không dùng `down -v` nếu cần giữ lượt nghe và nội dung local. Sau khi sửa backend, chạy lại script để build/up; dùng `-NoBuild` chỉ khi muốn tái sử dụng image.
 
-## Audio và kiểm tra
+## Fixture audio cũ
 
-WAV tại `backend/multi-audio-guide/src/main/resources/static/demo-audio/` được tổng hợp bằng eSpeak NG 1.52.0, giọng `vi`, tốc độ 155. Đây là giọng tổng hợp cơ bản, không phải bản thu du lịch chuyên nghiệp. Transcript lấy từ seed V3.1; tạo lại bằng `./backend/generate-demo-audio.ps1` (Docker), không dùng TTS trả phí.
-
-Backend: `mvnw.cmd verify` với `TEST_DATABASE_URL/USERNAME/PASSWORD` trỏ đến DB PostGIS kiểm thử riêng; không trỏ vào database demo đang dùng.
-
-Web: `npm run lint`, `npm run build`, `npm run test:e2e`. `live-analytics.spec.ts` cần backend 8081 và env `DEMO_ADMIN_PASSWORD`; test tạo sự kiện có thật. UI mock cũ: `/analytics?source=mock`.
-
-Android: host tests không chứng minh audio native. `LivePlaybackTest` cần emulator/backend thật và instrumentation argument `demoAdminPassword`; kiểm tra MediaPlayer tiến thời gian, count tăng sau start/replay và không tăng khi pause/resume. Không nhúng credentials kiểm thử trong APK.
-
-Runbook mô tả cách chạy; kết quả kiểm chứng và giới hạn từng lần được lưu tại Jira HVP-21/HVP-22.
+Ba WAV dưới `backend/multi-audio-guide/src/main/resources/static/demo-audio/` được script [generate-demo-audio.ps1](../../backend/generate-demo-audio.ps1) tổng hợp từ V3_1 bằng eSpeak. Static file còn phục vụ dù location cũ bị archive; đó không phải audio của 7 điểm mới. Không tạo lại file âm thanh chỉ để chạy review.
