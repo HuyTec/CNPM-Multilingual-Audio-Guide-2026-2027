@@ -154,6 +154,65 @@ node scripts/phone-share.smoke.mjs
 Smoke test dùng Chrome với kích thước/user-agent Android và iPhone, GPS giả lập; đây không phải bằng chứng
 chạy trên Safari/iOS vật lý. Không tự phát audio hoặc ghi lượt nghe khi chạy test này.
 
+## Mở bằng điện thoại qua mã QR
+
+QR demo hiện tại nằm ở [ảnh PNG](../docs/qr/web-user-demo.png), [bản SVG để in](../docs/qr/web-user-demo.svg)
+và [đường dẫn HTTPS](../docs/qr/web-user-demo.txt). Dùng camera Android/iPhone quét ảnh rồi chọn mở liên kết.
+Điện thoại có thể dùng Wi-Fi khác hoặc 4G/5G; không cần cùng mạng với máy tính.
+GPS cần được cấp quyền trên điện thoại; giám sát geofence cần bật riêng bằng nút gợi ý theo vị trí.
+
+Đây là link demo Cloudflare Quick Tunnel: máy tính, Docker/backend, cổng Web User và tunnel phải tiếp tục chạy.
+Tắt/ngủ máy hoặc dừng tunnel sẽ làm link không truy cập được; tạo tunnel mới có thể đổi URL và QR.
+Để dùng một QR cố định lâu dài, cần triển khai Web User/backend lên hosting HTTPS và dùng tên miền cố định.
+Đặc tính link tạm: [Cloudflare Quick Tunnels](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/).
+
+Khởi động lại từ thư mục gốc dự án (máy này đã chuẩn bị công cụ):
+
+```powershell
+docker compose up -d backend postgres
+powershell -ExecutionPolicy Bypass -File .\web-user\scripts\share-phone.ps1
+```
+
+Script giữ lại link cũ nếu tunnel còn khỏe; nếu tạo link mới sẽ ghi lại cả PNG, SVG và TXT trong `docs/qr/`.
+Muốn cập nhật giao diện khi link đang chạy, chạy `npm run build` tại `web-user`, rồi tải lại trang trên điện thoại.
+Dừng đúng các tiến trình chia sẻ do script tạo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\web-user\scripts\share-phone.ps1 -Stop
+```
+
+Cổng chia sẻ dùng production build tại `127.0.0.1:4176` (đổi bằng `PUBLIC_WEB_PORT`), chuyển tiếp những API
+công khai cần cho du khách. Không chuyển tiếp API quản trị, actuator, mã nguồn Vite hoặc file `.env`.
+Không dùng trực tiếp Vite dev server làm địa chỉ công khai.
+
+Trên máy khác, chuẩn bị Node, Python với Pillow và các thư viện QR cục bộ trước khi chạy script:
+
+```powershell
+New-Item -ItemType Directory -Path .local-tools/python -Force
+python -m pip install --target .local-tools/python "qrcode[pil]"
+```
+
+Tải cloudflared từ [release chính thức](https://github.com/cloudflare/cloudflared/releases), lưu executable Windows
+tại `.local-tools/cloudflared.exe` và đối chiếu SHA-256 với asset của release. Máy này dùng bản `2026.10.3`.
+Thư mục `.local-tools` chứa công cụ, PID và log cục bộ, được bỏ qua bởi Git. Không cần token Cloudflare cho link demo.
+
+Khi đã có tên miền HTTPS cố định, tạo lại QR bằng:
+
+```powershell
+python .\web-user\scripts\make-qr.py https://ten-mien-cua-ban.example
+```
+
+Kiểm tra cổng và link public:
+
+```powershell
+cd web-user
+npm run test:gateway
+node scripts/phone-share.smoke.mjs
+```
+
+Smoke test dùng Chrome với kích thước/user-agent Android và iPhone, GPS giả lập; đây không phải bằng chứng
+chạy trên Safari/iOS vật lý. Không tự phát audio hoặc ghi lượt nghe khi chạy test này.
+
 React + Vite + TypeScript + Tailwind; cùng locationId, guide và gói nội dung với Android.
 Hợp đồng: [GUIDE_API.md](../backend/GUIDE_API.md) và
 [CONTENT_PACKAGE_API.md](../backend/CONTENT_PACKAGE_API.md).
