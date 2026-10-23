@@ -23,11 +23,16 @@ public class PlaybackRepository {
     public PlaybackRepository(NamedParameterJdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     public boolean insert(UUID eventId, GuideContent guide) {
+        return insert(eventId, guide, Instant.now(), false);
+    }
+
+    public boolean insert(UUID eventId, GuideContent guide, Instant occurredAt, boolean offline) {
         return jdbc.update("""
-                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline)
-                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', FALSE)
+                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline, occurred_at)
+                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', :offline, :occurred)
                 ON CONFLICT (id) DO NOTHING
-                """, Map.of("id", eventId, "content", guide.contentId(), "location", guide.locationId(), "language", guide.languageCode())) == 1;
+                """, Map.of("id", eventId, "content", guide.contentId(), "location", guide.locationId(), "language", guide.languageCode(),
+                        "offline", offline, "occurred", Timestamp.from(occurredAt))) == 1;
     }
 
     public Optional<UUID> contentForEvent(UUID eventId) {

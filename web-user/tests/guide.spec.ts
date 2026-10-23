@@ -24,7 +24,7 @@ test.describe('Guide browser contract — synthetic API', () => {
       Reflect.set(window, 'offlineReads', 0);
       const original = indexedDB.open.bind(indexedDB);
       indexedDB.open = (...args: Parameters<IDBFactory['open']>) => {
-        Reflect.set(window, 'offlineReads', Number(Reflect.get(window, 'offlineReads')) + 1);
+        if (args[0] === 'travelvoice-content-v1') Reflect.set(window, 'offlineReads', Number(Reflect.get(window, 'offlineReads')) + 1);
         return original(...args);
       };
     });

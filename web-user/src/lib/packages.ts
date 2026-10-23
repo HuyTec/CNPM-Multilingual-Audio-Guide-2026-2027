@@ -1,5 +1,6 @@
 import type { Guide, Selection, TourLocation } from './guide';
 import { parseGuide, uuidPattern } from './guide';
+import type { GeofencingMetadata } from './geofence';
 
 export type PackageAsset = { url: string; sizeBytes: number; sha256: string };
 export type PackageManifest = {
@@ -7,7 +8,7 @@ export type PackageManifest = {
   sizeBytes: number; sha256: string; signature: string; keyId: string; downloadUrl: string; assets: PackageAsset[];
 };
 type Payload = { schemaVersion: number; status: string; scope: string; isBase: boolean;
-  locations: TourLocation[]; guides: Guide[]; languages: string[]; assets: PackageAsset[] };
+  locations: TourLocation[]; guides: Guide[]; languages: string[]; assets: PackageAsset[]; geofencing?: GeofencingMetadata };
 type StoredPackage = { scope: string; manifest: PackageManifest; bytes: ArrayBuffer; key: string;
   assets: { url: string; bytes: ArrayBuffer }[]; installedAt: string };
 const base64 = (value: string) => Uint8Array.from(atob(value), char => char.charCodeAt(0));
@@ -97,7 +98,7 @@ export async function downloadPackage(manifest: PackageManifest, signal: AbortSi
     tx.objectStore('packages').put({ scope: manifest.scope, manifest, bytes, key: keyData.spki, assets, installedAt: new Date().toISOString() } satisfies StoredPackage);
     const abort = () => { try { tx.abort(); } catch { /* Already committed. */ } };
     signal.addEventListener('abort', abort, { once: true });
-    tx.oncomplete = () => { signal.removeEventListener('abort', abort); db.close(); resolve(); };
+    tx.oncomplete = () => { signal.removeEventListener('abort', abort); db.close(); window.dispatchEvent(new Event('travelvoice-content-changed')); resolve(); };
     tx.onabort = tx.onerror = () => { signal.removeEventListener('abort', abort); db.close(); reject(new Error('Chưa cài được gói; phiên bản cũ vẫn giữ nguyên.')); };
   });
 }
@@ -106,7 +107,7 @@ export async function deleteOptionalPackage(scope: string) {
   const db = await database();
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction('packages', 'readwrite'); tx.objectStore('packages').delete(scope);
-    tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => { db.close(); reject(tx.error); };
+    tx.oncomplete = () => { db.close(); window.dispatchEvent(new Event('travelvoice-content-changed')); resolve(); }; tx.onerror = () => { db.close(); reject(tx.error); };
   });
 }
 export async function offlineGuide(selection: Selection): Promise<Guide | undefined> {

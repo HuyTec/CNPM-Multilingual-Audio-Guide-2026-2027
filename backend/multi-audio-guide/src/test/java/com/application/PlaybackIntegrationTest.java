@@ -68,6 +68,20 @@ class PlaybackIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT language_code FROM analytics_events WHERE id=?", String.class, event)).isEqualTo("VI");
     }
 
+    @Test void offlineSyncPreservesOriginalReportingDayAndDeduplicates() throws Exception {
+        UUID event = UUID.randomUUID();
+        String time = "2026-01-01T10:00:00Z";
+        String json = body(event, CONTENT).replace("}", ",\"occurredAt\":\"" + time + "\",\"offline\":true}");
+        mvc.perform(post("/api/playbacks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(true));
+        mvc.perform(post("/api/playbacks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(false));
+        assertThat(jdbc.queryForObject("SELECT occurred_at FROM analytics_events WHERE id=?", Timestamp.class, event).toInstant()).isEqualTo(Instant.parse(time));
+        assertThat(jdbc.queryForObject("SELECT is_offline FROM analytics_events WHERE id=?", Boolean.class, event)).isTrue();
+        mvc.perform(get("/api/admin/analytics").header(HttpHeaders.AUTHORIZATION, AUTH).param("from", "2026-01-01").param("to", "2026-01-01"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.offlinePlaybacks").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+    }
+
     @Test void replayIsANewEventButReusingIdForOtherContentIsAConflict() throws Exception {
         UUID event = UUID.randomUUID();
         record(event, CONTENT, 200);

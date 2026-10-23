@@ -52,7 +52,7 @@ export function LocationCatalog() {
     </Suspense>
     <details className="map-data-note"><summary>Thông tin bản đồ và dữ liệu demo</summary>
       <p>Nội dung và tọa độ demo đang được rà soát. Khoảng cách hiển thị là đường chim bay theo tọa độ hiện có, không phải quãng đường đi bộ.</p>
-      <p>Khung ban đầu bao phủ khu vực Quận 1 và Quận 3. GPS chỉ được hỏi khi bạn bấm nút, không gửi lên backend. Bản đồ nền cần Internet; không tải tile vào gói offline.</p>
+      <p>Khung ban đầu bao phủ khu vực Quận 1 và Quận 3. Web tự tìm GPS khi mở và luôn cần quyền vị trí của trình duyệt; không gửi tọa độ lên backend. Bản đồ nền cần Internet; không tải tile vào gói offline.</p>
     </details>
   </section>;
 }

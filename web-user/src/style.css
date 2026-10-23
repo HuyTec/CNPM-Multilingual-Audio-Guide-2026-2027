@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @theme { --font-sans: Arial, sans-serif; }
+.geofence-notices, .playback-sync { min-width: 0; font-variant-numeric: tabular-nums; }
+.geofence-notices { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--reading-rule); }
+.geofence-notices > p { margin-top: 12px; }
+.geofence-banner { margin-top: 12px; padding: 16px; background: var(--trail-wash); border: 1px solid var(--reading-rule); border-radius: 6px; overflow-wrap: anywhere; content-visibility: auto; contain-intrinsic-size: auto 180px; }
+.geofence-banner .player-actions > * { min-width: 0; }
+.playback-sync:not(:empty) { margin-top: 24px; }
 :root {
   font-family: Arial, sans-serif;
   color: var(--story-ink);

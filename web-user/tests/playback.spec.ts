@@ -36,7 +36,7 @@ async function setup(page: Page, options: { language?: string; missingVoice?: bo
   }, { options });
   const receipts: string[] = [];
   await page.route('**/api/**', async route => {
-    if (route.request().method() === 'POST') { receipts.push(route.request().postData()!); return route.fulfill({ json: { created: true } }); }
+    if (route.request().method() === 'POST') { receipts.push(route.request().postData()!); return route.fulfill({ json: { eventId: route.request().postDataJSON().eventId, created: true } }); }
     const query = new URL(route.request().url()).searchParams;
     await route.fulfill({ json: { contentId: '31000000-0000-0000-0000-000000000001', locationId: location,
       locationName: 'Dinh Độc Lập', languageCode: options.language || query.get('language'), scriptType: query.get('scriptType'),
@@ -53,7 +53,7 @@ test('failed playback receipt retries the same eventId without restarting media'
   const receipts: string[] = [];
   await page.route('**/api/playbacks', route => {
     receipts.push(route.request().postData()!);
-    return receipts.length === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ json: { created: false } });
+    return receipts.length === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ json: { eventId: route.request().postDataJSON().eventId, created: false } });
   });
   await page.goto(`/locations/${location}`);
   await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();

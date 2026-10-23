@@ -73,6 +73,24 @@ class TourPackageIntegrationTest {
         assertThat(packages.build("BASE").manifest().version()).isNotEqualTo(old);
         assertThat(new String(packages.build("BASE").bytes(), java.nio.charset.StandardCharsets.UTF_8)).doesNotContain("\"contentId\":\"31000000-0000-0000-0000-000000000001\"");
     }
+    @Test void geofencePublicationRequiresSurveyAndPolicyAndMatchingCoordinates() {
+        jdbc.update("DELETE FROM location_geofence_surveys"); jdbc.update("DELETE FROM geofence_configuration");
+        assertThat(mapper.readTree(packages.build("BASE").bytes()).has("geofencing")).isFalse();
+        jdbc.update("INSERT INTO geofence_configuration(cooldown_seconds) VALUES (3600)");
+        assertThat(mapper.readTree(packages.build("BASE").bytes()).has("geofencing")).isFalse();
+        jdbc.update("""
+                INSERT INTO location_geofence_surveys(location_id,latitude,longitude,radius_m,surveyed_at,source_reference,localized_names)
+                SELECT id,ST_Y(coordinates::geometry),ST_X(coordinates::geometry),geofence_radius_m,'2026-01-01T00:00:00Z',
+                'TEST FIXTURE ONLY','{"VI":"Test VI","EN":"Test EN","FR":"Test FR","JA":"Test JA","ZH":"Test ZH","RU":"Test RU"}'::jsonb
+                FROM locations WHERE id='20000000-0000-0000-0000-000000000101'
+                """);
+        var metadata = mapper.readTree(packages.build("BASE").bytes()).get("geofencing");
+        assertThat(metadata.get("cooldownSeconds").asInt()).isEqualTo(3600);
+        assertThat(metadata.get("localizedNames").size()).isEqualTo(1);
+        jdbc.update("UPDATE location_geofence_surveys SET radius_m=radius_m+1");
+        assertThat(mapper.readTree(packages.build("BASE").bytes()).has("geofencing")).isFalse();
+    }
+
     @Test void optionalPackageContainsMatchingChecksummedAudioAndWrongVersionIs404() throws Exception {
         var optional = packages.build("OPTIONAL").manifest();
         assertThat(optional.isBase()).isFalse(); assertThat(optional.assets()).hasSize(3);

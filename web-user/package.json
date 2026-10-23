@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint src vite.config.ts tests playwright.config.ts",
     "preview": "vite preview",
+    "serve:public": "node scripts/public-server.mjs",
+    "test:gateway": "node --test scripts/public-server.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

@@ -38,6 +38,32 @@ Public, no login, available in default and demo profiles. `locationId` is a UUID
   Cross-origin CORS is not configured by this change. Reading never starts
   playback or records an event.
 
+## Playback receipts
+
+`POST /api/playbacks` remains available in profile `demo`. Body:
+
+```json
+{
+  "eventId": "41000000-0000-0000-0000-000000000001",
+  "contentId": "30000000-0000-0000-0000-000000000001",
+  "occurredAt": "2026-01-01T10:00:00Z",
+  "offline": true
+}
+```
+
+Create the event only on the media/TTS start callback. Persist it locally before delivery;
+retry the exact body/eventId after reload or reconnection. A successful response contains
+the matching `eventId` and `created:true|false`. A repeated event for the same content
+does not change its original timestamp/offline metadata; another contentId returns 409.
+The first request still requires a currently public content revision. A permanent 4xx
+must remain visible to the client rather than being silently dropped or retried forever.
+
+`occurredAt` and `offline` are optional for existing Android/legacy clients: omitted values
+use server time and online. New clients send the actual start time and mark offline when
+using a verified offline guide or disconnected at start. Reports use that timestamp,
+not the later synchronization date. Timestamps more than five minutes in the future
+return 400. Client clock/offline values are client-reported, not trusted measurements.
+
 ## Dedicated demo database fixture
 
 Start backend with profile `demo` and its existing datasource settings. Flyway

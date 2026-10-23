@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests',
   // Offline tests require the production preview and have their own configuration.
-  testIgnore: ['**/maps.spec.ts', '**/offline.live.spec.ts'],
+  testIgnore: ['**/maps.spec.ts', '**/gps.spec.ts', '**/offline.live.spec.ts', '**/background.spec.ts'],
   timeout: 60_000,
   workers: 1,
   use: {

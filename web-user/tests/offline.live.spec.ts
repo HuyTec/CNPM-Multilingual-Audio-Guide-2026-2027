@@ -62,24 +62,59 @@ test.describe('Real signed package / production service worker', () => {
     await context.setOffline(false);
   });
 
-  test('tampered signed bytes rejected without installation; optional audio verified and removable', async ({ page }) => {
+  test('real cached WAV creates durable offline receipt and syncs after reload/reconnection', async ({ page, context, request }) => {
     await page.goto('/offline');
+    await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+    await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
-    await page.route('**/api/content-packages/BASE/base-*', async route => {
-      const response = await route.fetch(); const bytes = Buffer.from(await response.body());
-      bytes[bytes.length - 2] ^= 1;
-      await route.fulfill({ response, body: bytes });
-    });
-    await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
-    await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('Checksum');
-    await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
-    await page.unroute('**/api/content-packages/BASE/base-*');
     await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
-    page.once('dialog', dialog => dialog.accept());
-    await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
-    await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
+    await context.setOffline(true);
+    await page.goto('/locations/20000000-0000-0000-0000-000000000001?language=VI&scriptType=SHORT');
+    await expect(page.getByText('Đang đọc từ gói offline đã xác minh.', { exact: false })).toBeVisible();
+    await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
+    await expect(page.locator('.guide-player')).toContainText('Đang phát · Audio thu sẵn');
+    await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('1 lượt nghe đã lưu');
+    const queued = await page.evaluate(async () => (await (await import('/playback-outbox.js' as string)).listReceipts())[0]);
+    expect(queued.offline).toBe(true);
+    expect(queued.contentId).toBe('30000000-0000-0000-0000-000000000001');
+    await page.reload();
+    await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('1 lượt nghe đã lưu');
+    await context.setOffline(false);
+    await expect.poll(() => page.evaluate(async () => (await (await import('/playback-outbox.js' as string)).listReceipts()).length)).toBe(0);
+    const duplicate = await request.post('/api/playbacks', { data: { eventId: queued.eventId, contentId: queued.contentId, occurredAt: queued.occurredAt, offline: queued.offline } });
+    expect(duplicate.ok()).toBe(true); expect((await duplicate.json()).created).toBe(false);
+    await expect(page.locator('.guide-player')).toContainText('Sẵn sàng nghe');
+  });
+
+  test.describe('Intercepted transfer verification', () => {
+    // Chromium may bypass request interception for fetches delegated to a controlling worker.
+    // The separate reopen test above exercises the actual production worker.
+    test.use({ serviceWorkers: 'block' });
+    test('tampered signed bytes rejected without installation; optional audio verified and removable', async ({ page, context }) => {
+      await page.goto('/offline');
+      await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
+      let tampered = 0;
+      const packageUrl = (url: URL) => url.pathname.startsWith('/api/content-packages/BASE/');
+      await context.route(packageUrl, async route => {
+        const response = await route.fetch(); const bytes = Buffer.from(await response.body());
+        bytes[bytes.length - 2] ^= 1;
+        tampered++;
+        await route.fulfill({ response, body: bytes });
+      });
+      await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+      await expect.poll(() => tampered).toBe(1);
+      await expect(page.getByRole('status')).toContainText('Checksum');
+      await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
+      await context.unroute(packageUrl);
+      await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
+      await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
+      page.once('dialog', dialog => dialog.accept());
+      await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
+      await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
+    });
   });
 });

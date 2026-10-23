@@ -51,7 +51,7 @@ class LocationDiscoveryIntegrationTest {
     @Test
     void migrationsValidateAndDoNotRunTwice() {
         flyway.validate();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3.4");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("4");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
 

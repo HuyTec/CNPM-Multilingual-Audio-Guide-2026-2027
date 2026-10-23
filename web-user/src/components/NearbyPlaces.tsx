@@ -7,9 +7,9 @@ import { LocationResults } from './LocationResults';
 
 const number = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
-export function NearbyPlaces({ items, language, scriptType, radius, onRadius, position, gpsStatus, gpsError, locate, loading, error, errorMessage, retry }: {
+export function NearbyPlaces({ items, language, scriptType, radius, onRadius, position, gpsStatus, gpsError, refining, locate, loading, error, errorMessage, retry }: {
   items: TourLocation[]; language: string; scriptType: string; radius: number; onRadius: (radius: number) => void;
-  position: DevicePosition | null; gpsStatus: string; gpsError: string; locate: () => void;
+  position: DevicePosition | null; gpsStatus: string; gpsError: string; refining: boolean; locate: () => void;
   loading: boolean; error: boolean; errorMessage?: string; retry: () => void;
 }) {
   const [params, setParams] = useSearchParams();
@@ -27,6 +27,8 @@ export function NearbyPlaces({ items, language, scriptType, radius, onRadius, po
       <div className="scan-limits" aria-hidden="true"><span>50 m</span><span>500 m</span></div>
     </div>
     <p id="scan-help" className="player-hint">Kéo hoặc dùng phím mũi tên để đổi phạm vi. Khoảng cách đường chim bay được sắp từ gần nhất đến xa dần trong kết quả tìm kiếm.</p>
+    <p className="player-hint">Web tự tìm vị trí khi mở trang; điện thoại vẫn cần cấp quyền vị trí cho trình duyệt. Bấm Cập nhật vị trí khi di chuyển.</p>
+    {refining && <p role="status">Đang thử lấy GPS chính xác hơn…{position && ' Bạn có thể dùng vị trí gần đúng trong lúc chờ.'}</p>}
     {gpsError && <p className="field-error" role="alert">{gpsError}{position && ' Đang giữ kết quả theo vị trí lấy thành công lần trước.'}</p>}
     {position && <p className="gps-accuracy">Độ chính xác vị trí: khoảng ±{number.format(position.accuracy)} m.{position.accuracy > radius && ' Độ chính xác GPS lớn hơn phạm vi quét; kết quả có thể sai lệch. Hãy thử cập nhật vị trí ở nơi thoáng.'}</p>}
     <div role="status" aria-live="polite">

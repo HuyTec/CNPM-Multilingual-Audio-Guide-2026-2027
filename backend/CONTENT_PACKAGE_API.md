@@ -45,3 +45,34 @@ Fixture source: docs/en/multilingual_tour_content.md. Check exact generated SQL 
 `node scripts/generate-tour-fixture.mjs --check` in backend/multi-audio-guide.
 Do not regenerate/modify an already applied migration. Coordinates are approximate
 demo markers; content and translations still need editorial review.
+
+## Survey metadata for Web UC-05
+
+Migration V4 adds `geofence_configuration` and `location_geofence_surveys`. Both start
+empty; no fixture is certified as surveyed. The external survey/publication workflow
+must supply the approved cooldown in seconds and, for each surveyed location, the
+exact latitude/longitude/radius, survey timestamp, source reference, and nonblank
+localized names for VI/EN/FR/JA/ZH/RU. These records are publication inputs; saving an
+Admin draft does not certify a survey. Do not populate them with approximate demo data.
+
+When a policy and at least one matching survey exist, the signed payload includes:
+
+```text
+geofencing: {
+  surveyedAt: ISO-8601 timestamp,
+  cooldownSeconds: integer from 1 to 2147483,
+  localizedNames: { [locationId]: { VI, EN, FR, JA, ZH, RU } }
+}
+```
+
+`surveyedAt` is the latest included survey timestamp. Only IDs present in the signed
+location list and localizedNames are monitored. The publisher excludes a survey if
+the current approved coordinates/radius differ from the surveyed snapshot or its
+timestamp is in the future. A new survey is needed after changing those fields.
+Policy changes or survey/name changes change the package checksum/version; clients
+must download and verify the replacement. Missing metadata disables geofencing while
+guide reading, manual discovery and offline audio remain available.
+
+The signature proves package integrity against the stored key. It does not independently
+prove field surveying or editorial approval; the external publication process owns that
+evidence. The demo's same-origin ephemeral key retains the trust limitations above.

@@ -81,6 +81,8 @@ public class ContentPackageService {
         payload.put("schemaVersion", 1); payload.put("status", "APPROVED"); payload.put("scope", scope); payload.put("isBase", base);
         payload.put("locations", locations); payload.put("guides", guides);
         payload.put("languages", guides.stream().map(GuideContent::languageCode).distinct().sorted().toList()); payload.put("assets", assets);
+        var geofencing = geofencing(locations);
+        if (!geofencing.isEmpty()) payload.put("geofencing", geofencing);
         byte[] bytes = mapper.writeValueAsBytes(payload);
         String checksum = sha(bytes); String version = scope.toLowerCase() + "-" + checksum;
         try {
@@ -90,6 +92,28 @@ public class ContentPackageService {
                     "/api/content-packages/" + scope + "/" + version, assets);
             return new Bundle(manifest, bytes);
         } catch (Exception exception) { throw new IllegalStateException("Cannot sign content package", exception); }
+    }
+
+    private Map<String, Object> geofencing(List<Map<String, Object>> locations) {
+        var cooldown = jdbc.queryForList("SELECT cooldown_seconds FROM geofence_configuration WHERE singleton", Integer.class);
+        if (cooldown.isEmpty()) return Map.of();
+        Map<String, Object> names = new LinkedHashMap<>();
+        java.time.Instant latest = java.time.Instant.EPOCH;
+        for (var location : locations) {
+            var surveys = jdbc.query("""
+                    SELECT s.surveyed_at,s.localized_names::text AS names
+                    FROM location_geofence_surveys s
+                    WHERE s.location_id=?::uuid AND s.latitude=? AND s.longitude=? AND s.radius_m=?
+                      AND s.surveyed_at <= CURRENT_TIMESTAMP
+                    """, (rs, row) -> Map.of("at", rs.getTimestamp("surveyed_at").toInstant(), "names", rs.getString("names")),
+                    location.get("locationId"), location.get("latitude"), location.get("longitude"), location.get("geofenceRadiusM"));
+            if (surveys.isEmpty()) continue;
+            var survey = surveys.getFirst();
+            var at = (java.time.Instant) survey.get("at");
+            if (at.isAfter(latest)) latest = at;
+            names.put((String) location.get("locationId"), mapper.readTree((String) survey.get("names")));
+        }
+        return names.isEmpty() ? Map.of() : Map.of("cooldownSeconds", cooldown.getFirst(), "surveyedAt", latest.toString(), "localizedNames", names);
     }
 
     private Asset asset(String url) {

@@ -118,6 +118,6 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
     {state === 'error' && <button className="secondary-button" onClick={() => { setState('loading'); setAttempt(value => value + 1); }}>Tải lại bản đồ</button>}
     <NearbyPlaces items={items} language={language} scriptType={scriptType} radius={radius}
       onRadius={value => { const next = new URLSearchParams(params); next.set('radius', String(value)); next.delete('nearbyPage'); setParams(next, { replace: true }); }}
-      position={gps.position} gpsStatus={gps.status} gpsError={gps.error} locate={gps.locate} loading={loading} error={error} errorMessage={errorMessage} retry={retry} />
+      position={gps.position} gpsStatus={gps.status} gpsError={gps.error} refining={gps.refining} locate={gps.locate} loading={loading} error={error} errorMessage={errorMessage} retry={retry} />
   </section>;
 }

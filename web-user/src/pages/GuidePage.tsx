@@ -35,7 +35,7 @@ function GuideReader({ selection, retry }: { selection: Selection; retry: () => 
     <p role="status" className={fallback ? 'fallback-note' : 'sr-only'}>{fallback
       ? `Chưa có bản ${languageName(selection.language)} cho lựa chọn này. Đang hiển thị bản ${languageName(guide.languageCode)}; giữ nguyên ${guide.scriptType === 'FULL' ? 'bài đầy đủ' : 'bài ngắn gọn'}.`
       : 'Đã tải bài thuyết minh.'}</p>
-    <GuidePlayer key={guide.contentId} guide={guide} />
+    <GuidePlayer key={guide.contentId} guide={guide} offline={state.offline} />
     <div className="script-text" lang={guide.languageCode.toLowerCase()}>{guide.scriptText}</div>
     <p className="reader-end" aria-hidden="true">— Hết bài thuyết minh —</p>
   </article>;

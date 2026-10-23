@@ -11,7 +11,9 @@ const locations = [
   { locationId: '20000000-0000-0000-0000-000000000107', name: 'Tòa nhà Bitexco Financial Tower', latitude: 10.7716, longitude: 106.7044 },
 ].map(item => ({ ...item, categoryId: '10000000-0000-0000-0000-000000000101', categoryName: 'Tuyến Quận 1 (demo)', geofenceRadiusM: 100 }));
 
-test.beforeEach(async ({ page }) => {
+test.beforeEach(async ({ page, context }) => {
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 10.7823, longitude: 106.6842, accuracy: 5 });
   await page.route('**/api/categories', route => route.fulfill({ json: [
     { categoryId: locations[0].categoryId, name: 'Tuyến Quận 1 (demo)', locationCount: 7 },
     { categoryId: '10000000-0000-0000-0000-000000000102', name: 'Danh mục rỗng', locationCount: 0 },
@@ -52,7 +54,6 @@ test('nearby shortlist starts with five nearest and expands without removing map
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 10.777, longitude: 106.6953, accuracy: 5 });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Lấy vị trí hiện tại', exact: true }).click();
   const list = page.getByRole('list', { name: 'Địa điểm gần bạn', exact: true });
   await expect(list.getByRole('listitem')).toHaveCount(5);
   await page.getByRole('button', { name: 'Xem tất cả địa điểm trong phạm vi' }).click();
@@ -61,10 +62,13 @@ test('nearby shortlist starts with five nearest and expands without removing map
 });
 
 test('OSM map shows all seven tour markers with guide and OsmAnd links', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition: (_ok: unknown, fail: (value: { code: number }) => void) => fail({ code: 1 }) } });
+  });
   await page.goto('/?view=map&language=JA&scriptType=SHORT');
   await expect(page.getByRole('heading', { name: 'Bản đồ OpenStreetMap · Quận 1 & Quận 3' })).toBeVisible();
   await expect(page.getByText(/Bản đồ đã sẵn sàng/)).toBeVisible();
-  await expect(page.locator('.leaflet-marker-icon')).toHaveCount(7);
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
   await page.locator('.leaflet-marker-icon').first().click();
   const mapRegion = page.getByRole('region', { name: 'Bản đồ OpenStreetMap bao phủ Quận 1 và Quận 3' });
   await expect(mapRegion.getByText('Dinh Độc Lập', { exact: true })).toBeVisible();
@@ -79,7 +83,7 @@ test('OSM map shows all seven tour markers with guide and OsmAnd links', async (
   }
 });
 
-test('GPS is requested only after clicking and displays a local position marker', async ({ page, context }) => {
+test('GPS starts automatically on entry and the button can refresh it', async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 10.7823, longitude: 106.6842 });
   await page.addInitScript(() => {
@@ -92,11 +96,12 @@ test('GPS is requested only after clicking and displays a local position marker'
   });
   await page.goto('/?view=map');
   await expect(page.locator('.guide-map-icon')).toHaveCount(7);
-  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(0);
+  await expect(page.locator('.user-location-icon')).toBeVisible();
+  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(1);
   await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
   await expect(page.getByText('Đã hiển thị vị trí của bạn trên bản đồ.')).toBeVisible();
   await expect(page.locator('.user-location-icon')).toBeVisible();
-  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(1);
+  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(2);
 });
 
 test('search filters both map and drawer without hiding the map', async ({ page }) => {
@@ -128,8 +133,7 @@ test('nearby results include later API pages, sort by distance and respond to ke
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 10.777, longitude: 106.6953, accuracy: 5 });
   await page.goto('/');
-  await expect(page.locator('.user-location-icon')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
+  await expect(page.locator('.user-location-icon')).toHaveCount(1);
   const nearby = page.getByRole('list', { name: 'Địa điểm gần bạn', exact: true });
   await expect(nearby.getByRole('listitem')).toHaveCount(2);
   await expect(nearby.getByRole('heading')).toHaveText(['Điểm khoảng 22 mét', 'Điểm khoảng 78 mét']);
@@ -161,7 +165,7 @@ test('denied GPS keeps manual discovery usable', async ({ page, context }) => {
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Lấy vị trí hiện tại', exact: true }).click();
-  await expect(page.getByRole('alert')).toContainText('Bạn chưa cấp quyền vị trí');
+  await expect(page.getByRole('alert')).toContainText('Trình duyệt chưa được cấp quyền vị trí');
   await expect(page.locator('.user-location-icon')).toHaveCount(0);
   await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Danh sách địa điểm', exact: true }).getByRole('listitem')).toHaveCount(7);

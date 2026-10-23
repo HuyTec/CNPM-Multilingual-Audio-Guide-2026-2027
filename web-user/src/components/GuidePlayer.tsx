@@ -4,11 +4,11 @@ import { GuidePlayback } from '../lib/playback';
 import { usePlaybackReceipt } from '../lib/usePlaybackReceipt';
 
 const number = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-export function GuidePlayer({ guide }: { guide: Guide }) {
+export function GuidePlayer({ guide, offline = false }: { guide: Guide; offline?: boolean }) {
   const receipt = usePlaybackReceipt();
   const [controller] = useState(() => new GuidePlayback(guide, () => {
     // A playback receipt is sent only after the real media/TTS start callback.
-    receipt.record(guide.contentId);
+    receipt.record(guide.contentId, offline || !navigator.onLine);
   }));
   const state = useSyncExternalStore(controller.subscribe, controller.snapshot);
   useEffect(() => {
