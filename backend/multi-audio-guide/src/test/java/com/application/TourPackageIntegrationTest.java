@@ -45,10 +45,20 @@ class TourPackageIntegrationTest {
         for (int index=101; index<=107; index++) for (String language : new String[]{"VI","EN","FR","JA","ZH","RU"}) for (String type : new String[]{"FULL","SHORT"}) {
             String id = "20000000-0000-0000-0000-" + String.format("%012d", index);
             String text = jdbc.queryForObject("SELECT script_text FROM guide_content_revisions WHERE location_id=?::uuid AND language_code=? AND script_type=?", String.class, id, language, type);
-            mvc.perform(get("/api/locations/{id}/guide", id).param("language", language).param("scriptType", type))
+            var response = mvc.perform(get("/api/locations/{id}/guide", id).param("language", language).param("scriptType", type))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.languageCode").value(language))
-                    .andExpect(jsonPath("$.scriptType").value(type)).andExpect(jsonPath("$.scriptText").value(text))
-                    .andExpect(jsonPath("$.audioUrl").isEmpty());
+                    .andExpect(jsonPath("$.scriptType").value(type)).andExpect(jsonPath("$.scriptText").value(text));
+            if (language.equals("VI")) {
+                String url = mapper.readTree(response.andReturn().getResponse().getContentAsString()).get("audioUrl").asString();
+                assertThat(url).matches("/api/content-audio/[0-9a-f-]{36}\\.mp3");
+                byte[] audio = mvc.perform(get(url)).andExpect(status().isOk()).andExpect(content().contentType("audio/mpeg")).andReturn().getResponse().getContentAsByteArray();
+                assertThat(audio.length).isGreaterThan(1024);
+                var bundle = packages.build("BASE");
+                assertThat(bundle.manifest().assets()).anySatisfy(asset -> {
+                    assertThat(asset.url()).isEqualTo(url);
+                    assertThat(asset.sha256()).isEqualTo(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(audio)));
+                });
+            } else response.andExpect(jsonPath("$.audioUrl").isEmpty());
         }
     }
     @Test void signedSnapshotMatchesPublicContentAndIsStable() throws Exception {
@@ -61,7 +71,7 @@ class TourPackageIntegrationTest {
         var payload = mapper.readTree(bundle.bytes());
         assertThat(payload.get("locations").size()).isEqualTo(7);
         assertThat(payload.get("guides").size()).isEqualTo(84);
-        assertThat(payload.get("assets").size()).isZero();
+        assertThat(payload.get("assets").size()).isEqualTo(14);
         mvc.perform(get(manifest.downloadUrl())).andExpect(status().isOk()).andExpect(content().bytes(bundle.bytes()));
         byte[] tampered = bundle.bytes().clone(); tampered[tampered.length-2] ^= 1;
         verifier.initVerify(key); verifier.update(tampered);
@@ -72,6 +82,22 @@ class TourPackageIntegrationTest {
         jdbc.update("UPDATE guide_content_revisions SET status='DRAFT' WHERE id='31000000-0000-0000-0000-000000000001'");
         assertThat(packages.build("BASE").manifest().version()).isNotEqualTo(old);
         assertThat(new String(packages.build("BASE").bytes(), java.nio.charset.StandardCharsets.UTF_8)).doesNotContain("\"contentId\":\"31000000-0000-0000-0000-000000000001\"");
+    }
+    @Test void narrationMigrationCannotAttachSpeechToChangedTextOrReplaceExistingAudio() throws Exception {
+        var connection = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(jdbc.getDataSource());
+        var migration = new db.demo.V3_5__vietnamese_female_narration();
+        var context = new org.flywaydb.core.api.migration.Context() {
+            public java.sql.Connection getConnection() { return connection; }
+            public org.flywaydb.core.api.configuration.Configuration getConfiguration() { return null; }
+        };
+        String id = "31000000-0000-0000-0000-000000000001";
+        String original = jdbc.queryForObject("SELECT storage_key FROM audio_assets WHERE content_id=?::uuid",String.class,id);
+        migration.migrate(context);
+        assertThat(jdbc.queryForObject("SELECT storage_key FROM audio_assets WHERE content_id=?::uuid",String.class,id)).isEqualTo(original);
+        jdbc.update("DELETE FROM audio_assets WHERE content_id=?::uuid",id);
+        jdbc.update("UPDATE guide_content_revisions SET script_text='Bài đã sửa, chưa tạo audio mới' WHERE id=?::uuid",id);
+        migration.migrate(context);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM audio_assets WHERE content_id=?::uuid",Integer.class,id)).isZero();
     }
     @Test void geofencePublicationRequiresSurveyAndPolicyAndMatchingCoordinates() {
         jdbc.update("DELETE FROM location_geofence_surveys"); jdbc.update("DELETE FROM geofence_configuration");

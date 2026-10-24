@@ -22,8 +22,3 @@ export function distanceMeters(from: Pick<DevicePosition, 'latitude' | 'longitud
     * Math.cos(to.latitude * radians) * Math.sin(longitudeDelta / 2) ** 2;
   return 6_371_000 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, a))));
 }
-
-export function osmAndLocationUrl(item: Pick<TourLocation, 'latitude' | 'longitude'>) {
-  const { latitude, longitude } = item;
-  return `https://osmand.net/map/?pin=${latitude},${longitude}#16/${latitude}/${longitude}`;
-}

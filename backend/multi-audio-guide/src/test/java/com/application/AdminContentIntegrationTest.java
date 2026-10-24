@@ -77,13 +77,15 @@ class AdminContentIntegrationTest {
         mvc.perform(put("/api/admin/content/locations/"+ID).header("Authorization",AUTH).contentType("application/json").content(json.writeValueAsString(current))).andExpect(status().isBadRequest());assertThat(detail(ID).get("editVersion")).isEqualTo(1);
     }
     @Test void realAudioUploadIsPersistentPrivateAndChangesOnlyChosenVariant()throws Exception{
+        int existingUploads=jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class);
+        Object originalViAudio=asset(detail(ID),"vi:SHORT").get("audioUrl");
         byte[] wav=new ClassPathResource("static/demo-audio/museum.wav").getContentAsByteArray();
         var response=mvc.perform(multipart("/api/admin/content/audio").file(new MockMultipartFile("file","guide.wav","audio/wav",wav)).param("locationId",ID).param("language","FR").param("scriptType","SHORT").header("Authorization",AUTH)).andExpect(status().isOk()).andReturn().getResponse();
         Map<String,Object> upload=json.readValue(response.getContentAsString(),Map.class);String url=upload.get("audioUrl").toString();
         mvc.perform(get(url)).andExpect(status().isNotFound());mvc.perform(get(url.replace("/api/content-audio/","/api/admin/content/audio/"))).andExpect(status().isUnauthorized());
         mvc.perform(get(url.replace("/api/content-audio/","/api/admin/content/audio/")).header("Authorization",AUTH)).andExpect(status().isOk()).andExpect(content().bytes(wav));
-        var working=detail(ID);working.put("status","DRAFT");asset(working,"fr:SHORT").putAll(upload);var saved=save(working);assertThat(asset(saved,"fr:SHORT").get("audioUrl")).isEqualTo(url);assertThat(asset(saved,"vi:SHORT").get("audioUrl")).isNull();
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class)).isEqualTo(1);assertThat(guide()).doesNotContain(url);
+        var working=detail(ID);working.put("status","DRAFT");asset(working,"fr:SHORT").putAll(upload);var saved=save(working);assertThat(asset(saved,"fr:SHORT").get("audioUrl")).isEqualTo(url);assertThat(asset(saved,"vi:SHORT").get("audioUrl")).isEqualTo(originalViAudio);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class)).isEqualTo(existingUploads+1);assertThat(guide()).doesNotContain(url);
         // Only an external publication makes the stored audio public/packageable.
         UUID revision=UUID.randomUUID();jdbc.update("INSERT INTO guide_content_revisions(id,location_id,language_code,script_type,script_text,status,revision_no) SELECT ?,?::uuid,'FR','SHORT',?,'APPROVED',max(revision_no)+1 FROM guide_content_revisions WHERE location_id=?::uuid AND language_code='FR' AND script_type='SHORT'",revision,ID,asset(saved,"fr:SHORT").get("text"),ID);
         jdbc.update("INSERT INTO audio_assets(content_id,storage_key,format) VALUES (?,?,'wav')",revision,url);
@@ -91,8 +93,9 @@ class AdminContentIntegrationTest {
         assertThat(packages.build("BASE").manifest().assets()).anySatisfy(item->{assertThat(item.url()).isEqualTo(url);assertThat(item.sizeBytes()).isEqualTo(wav.length);});
     }
     @Test void invalidAudioHasNoPartialPersistence()throws Exception{
+        int existingUploads=jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class);
         mvc.perform(multipart("/api/admin/content/audio").file(new MockMultipartFile("file","bad.wav","audio/wav","invalid audio file".getBytes(StandardCharsets.UTF_8))).param("locationId",ID).param("language","VI").param("scriptType","FULL").header("Authorization",AUTH)).andExpect(status().isBadRequest());
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM admin_audio_uploads",Integer.class)).isEqualTo(existingUploads);
     }
     @Test void externalPublicationAloneChangesSharedGuideAndPackage()throws Exception{
         var data=detail(ID);String before=guide(),oldVersion=packages.build("BASE").manifest().version();asset(data,"fr:SHORT").put("text","Nouvelle révision approuvée par le service externe.");data.put("status","PENDING_REVIEW");var pending=save(data);assertThat(guide()).isEqualTo(before);

@@ -50,6 +50,12 @@ test.describe('Real signed package / production service worker', () => {
       return Promise.all(names.map(async name => ({ name, keys: (await (await caches.open(name)).keys()).map(request => request.url) })));
     }));
     await context.setOffline(true);
+    await page.goto('/locations/20000000-0000-0000-0000-000000000101?language=VI&scriptType=SHORT');
+    await expect(page.getByRole('img', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
+    expect(await page.locator('.guide-photo').evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
+    await expect(page.locator('.guide-player')).toContainText('Đang phát · Audio thu sẵn');
+    await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click();
     await page.goto('/locations/20000000-0000-0000-0000-000000000101?language=JA&scriptType=SHORT');
     await expect(page.locator('.script-text')).not.toBeEmpty();
     await expect(page.locator('.script-text')).toHaveAttribute('lang', 'ja');

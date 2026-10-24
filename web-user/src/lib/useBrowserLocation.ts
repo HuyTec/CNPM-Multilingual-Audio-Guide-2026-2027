@@ -10,7 +10,7 @@ export function useBrowserLocation() {
   const [refining, setRefining] = useState(false);
   const request = useRef(0);
 
-  const acquire = useCallback((allowRecentPosition: boolean) => {
+  const acquire = useCallback(() => {
     if (!navigator.geolocation || !window.isSecureContext) {
       setStatus('error');
       setError('Không lấy được vị trí. Hãy mở trang HTTPS bằng Safari/Chrome, thay vì trình duyệt bên trong ứng dụng nhắn tin.');
@@ -51,26 +51,11 @@ export function useBrowserLocation() {
     }, failure => {
       if (id !== request.current) return;
       if (failure.code === 1) fail(failure); else precise();
-    }, { enableHighAccuracy: false, timeout: 12_000, maximumAge: allowRecentPosition ? 30_000 : 0 });
+    }, { enableHighAccuracy: false, timeout: 12_000, maximumAge: 0 });
   }, []);
-  const locate = useCallback(() => acquire(false), [acquire]);
-
-  useEffect(() => {
-    let active = true;
-    // The user requested automatic location on entry. Permission still belongs to the browser.
-    void Promise.resolve().then(async () => {
-      if (!active) return;
-      try {
-        if (navigator.permissions?.query) {
-          const permission = await navigator.permissions.query({ name: 'geolocation' });
-          if (!active) return;
-          if (permission.state === 'denied') { setStatus('error'); setError(denied); return; }
-        }
-      } catch { /* Some Safari versions do not expose geolocation through Permissions API. */ }
-      if (active) acquire(true);
-    });
-    return () => { active = false; request.current += 1; };
-  }, [acquire]);
+  const locate = useCallback(() => acquire(), [acquire]);
+  // Opening the catalogue must not request GPS or move away from the tour.
+  useEffect(() => () => { request.current += 1; }, []);
 
   return { position, status, error, refining, locate };
 }

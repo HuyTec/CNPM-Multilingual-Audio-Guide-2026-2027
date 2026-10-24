@@ -4,6 +4,7 @@ import { languageName, languagePattern, supportedLanguages, uuidPattern } from '
 import { GuidePlayer } from '../components/GuidePlayer';
 import type { Selection } from '../lib/guide';
 import { useGuide } from '../lib/useGuide';
+import { locationPhoto } from '../lib/locationPhotos';
 
 function GuideReader({ selection, retry }: { selection: Selection; retry: () => void }) {
   const state = useGuide(selection);
@@ -25,12 +26,14 @@ function GuideReader({ selection, retry }: { selection: Selection; retry: () => 
     <button className="primary-button" onClick={retry}>Thử lại</button>
   </section>;
   const { guide } = state;
+  const photo = locationPhoto(guide.locationId);
   const fallback = guide.languageCode !== selection.language;
   return <article className="reader" aria-labelledby="location-name">
     <title>{`${guide.locationName} · TravelVoice`}</title>
     <p className="eyebrow">Câu chuyện nơi bạn đến</p>
     <h1 id="location-name">{guide.locationName}</h1>
     <p className="reading-meta">{languageName(guide.languageCode)}<span aria-hidden="true"> / </span>{guide.scriptType === 'FULL' ? 'Bài đầy đủ' : 'Bài ngắn gọn'}</p>
+    {photo && <img className="guide-photo" {...photo} alt={guide.locationName} />}
     {state.offline && <p className="fallback-note" role="status">Đang đọc từ gói offline đã xác minh. Giọng đọc offline còn tùy thiết bị.</p>}
     <p role="status" className={fallback ? 'fallback-note' : 'sr-only'}>{fallback
       ? `Chưa có bản ${languageName(selection.language)} cho lựa chọn này. Đang hiển thị bản ${languageName(guide.languageCode)}; giữ nguyên ${guide.scriptType === 'FULL' ? 'bài đầy đủ' : 'bài ngắn gọn'}.`

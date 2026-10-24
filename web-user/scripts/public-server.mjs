@@ -11,7 +11,7 @@ const audioRoute = new RegExp(`^/api/content-audio/${uuid}\\.(?:mp3|wav|ogg)$`);
 const guidePage = new RegExp(`^/locations/${uuid}/?$`);
 const packageRoute = /^\/api\/content-packages(?:\/key|\/(?:BASE|OPTIONAL)\/(?:base|optional)-[a-f0-9]{64})?$/;
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2' };
+  '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' };
 
 /** Publish the production tourist app and its public APIs, never the dev server or admin API. */
 export function createPublicServer({ dist, backend }) {

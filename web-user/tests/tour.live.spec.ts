@@ -18,7 +18,8 @@ test.describe('District tour — live data', () => {
     await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('10000000-0000-0000-0000-000000000101');
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
     await page.locator('select[name="language"]').selectOption('FR');
-    await page.getByRole('link', { name: /Dinh Độc Lập/ }).click();
+    await page.locator('.place-select').filter({ hasText: 'Dinh Độc Lập' }).click();
+    await page.getByRole('link', { name: 'Mở bài thuyết minh' }).click();
     await expect(page.getByRole('heading', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
     for (const language of ['VI', 'EN', 'FR', 'JA', 'ZH', 'RU']) for (const type of ['FULL', 'SHORT']) {
       await page.getByLabel('Ngôn ngữ yêu cầu').selectOption(language);

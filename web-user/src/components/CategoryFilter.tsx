@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { tourCategoryId, uuidPattern } from '../lib/guide';
 import { offlineLocations } from '../lib/packages';
+import { categoryDisplayName } from '../lib/catalogLabels';
 
 type Category = { categoryId: string; name: string; locationCount: number };
 
@@ -43,11 +44,11 @@ export function CategoryFilter() {
     <label htmlFor="discovery-category">Danh mục</label>
     <select id="discovery-category" name="categoryId" autoComplete="off" value={selected} onChange={event => {
       const next = new URLSearchParams(params); next.set('categoryId', event.target.value);
-      next.delete('page'); next.delete('nearbyPage'); next.delete('nearbyExpanded'); setParams(next);
+      next.delete('page'); next.delete('nearbyPage'); next.delete('nearbyExpanded'); next.delete('keyword'); next.delete('place'); setParams(next);
     }}>
       <option value="">Tất cả địa điểm</option>
       {selected && !categories.some(item => item.categoryId === selected) && <option value={selected}>{selected === tourCategoryId ? 'Tuyến tham quan hiện tại' : 'Danh mục theo đường dẫn'}</option>}
-      {categories.map(item => <option key={item.categoryId} value={item.categoryId}>{item.name} ({new Intl.NumberFormat('vi-VN').format(item.locationCount)})</option>)}
+      {categories.map(item => <option key={item.categoryId} value={item.categoryId}>{categoryDisplayName(item.name)} ({new Intl.NumberFormat('vi-VN').format(item.locationCount)})</option>)}
     </select>
     <p className="player-hint" role="status">{status}</p>
     {status === 'Chưa tải được danh mục.' && <button className="secondary-button" onClick={() => { setStatus('Đang tải danh mục…'); setAttempt(value => value + 1); }}>Thử tải danh mục</button>}

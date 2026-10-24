@@ -58,7 +58,7 @@ export function OfflinePage() {
       const current = installed.find(item => item.stored.scope === manifest.scope);
       const same = current?.stored.manifest.version === manifest.version;
       const size = manifest.sizeBytes + manifest.assets.reduce((sum, item) => sum + item.sizeBytes, 0);
-      return <li key={manifest.scope}><h2>{manifest.isBase ? 'Nội dung cơ bản · tuyến mới' : 'Nội dung bổ sung · bộ demo cũ'}</h2>
+      return <li key={manifest.scope}><h2>{manifest.isBase ? 'Nội dung cơ bản' : 'Nội dung bổ sung'}</h2>
         <p>{new Intl.NumberFormat('vi-VN', { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 1 }).format(size / 1024)} · {same ? 'Đã mới nhất' : current ? 'Có bản cập nhật' : 'Chưa tải'}</p>
         <p className="version-text">Phiên bản: <span translate="no">{manifest.version}</span></p>
         {!same && <button className="secondary-button" disabled={busy} onClick={() => setPending(manifest)}>{current ? 'Cập nhật gói' : 'Tải gói'}</button>}

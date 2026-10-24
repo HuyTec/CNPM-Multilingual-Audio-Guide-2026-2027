@@ -54,6 +54,7 @@ test('nearby shortlist starts with five nearest and expands without removing map
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 10.777, longitude: 106.6953, accuracy: 5 });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
   const list = page.getByRole('list', { name: 'Địa điểm gần bạn', exact: true });
   await expect(list.getByRole('listitem')).toHaveCount(5);
   await page.getByRole('button', { name: 'Xem tất cả địa điểm trong phạm vi' }).click();
@@ -61,7 +62,7 @@ test('nearby shortlist starts with five nearest and expands without removing map
   await expect(page.locator('.guide-map-icon')).toHaveCount(7);
 });
 
-test('OSM map shows all seven tour markers with guide and OsmAnd links', async ({ page }) => {
+test('OSM map shows all seven tour markers with matching photos and guide links', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'geolocation', { value: { getCurrentPosition: (_ok: unknown, fail: (value: { code: number }) => void) => fail({ code: 1 }) } });
   });
@@ -73,19 +74,22 @@ test('OSM map shows all seven tour markers with guide and OsmAnd links', async (
   const mapRegion = page.getByRole('region', { name: 'Bản đồ OpenStreetMap bao phủ Quận 1 và Quận 3' });
   await expect(mapRegion.getByText('Dinh Độc Lập', { exact: true })).toBeVisible();
   await expect(mapRegion.getByRole('link', { name: 'Mở bài thuyết minh' })).toHaveAttribute('href', /language=JA&scriptType=SHORT/);
-  await expect(mapRegion.getByRole('link', { name: 'Mở vị trí trong OsmAnd ↗' }))
-    .toHaveAttribute('href', 'https://osmand.net/map/?pin=10.777,106.6953#16/10.777/106.6953');
+  await expect(mapRegion.getByRole('img', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
+  await expect(mapRegion.getByRole('link', { name: /OsmAnd/ })).toHaveCount(0);
   await expect(page.locator('.leaflet-control-attribution')).toContainText('OpenStreetMap');
-  for (const name of ['Bảo tàng Chứng tích Chiến tranh', 'Trường Đại học Sài Gòn - Cơ sở 2', 'Bảo tàng Bến Nhà Rồng']) {
-    const matchingMarker = page.locator('.guide-map-icon').and(page.getByTitle(name, { exact: true }));
-    await matchingMarker.click();
-    await expect(mapRegion.getByText(name, { exact: true })).toBeVisible();
+  for (const place of locations) {
+    await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
+    await page.locator('.place-select').filter({ hasText: place.name }).click();
+    await expect(mapRegion.getByRole('img', { name: place.name, exact: true })).toBeVisible();
+    await expect(mapRegion.getByRole('link', { name: 'Mở bài thuyết minh' })).toHaveAttribute('href', new RegExp(place.locationId));
+    expect(await mapRegion.getByRole('img', { name: place.name, exact: true }).evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await expect(page).toHaveURL(new RegExp('place=' + place.locationId));
   }
 });
 
-test('GPS starts automatically on entry and the button can refresh it', async ({ page, context }) => {
+test('GPS is requested only by My Location and can center on Binh Duong', async ({ page, context }) => {
   await context.grantPermissions(['geolocation']);
-  await context.setGeolocation({ latitude: 10.7823, longitude: 106.6842 });
+  await context.setGeolocation({ latitude: 11.01, longitude: 106.65, accuracy: 5 });
   await page.addInitScript(() => {
     const original = navigator.geolocation.getCurrentPosition.bind(navigator.geolocation);
     Reflect.set(window, 'gpsRequests', 0);
@@ -96,26 +100,36 @@ test('GPS starts automatically on entry and the button can refresh it', async ({
   });
   await page.goto('/?view=map');
   await expect(page.locator('.guide-map-icon')).toHaveCount(7);
-  await expect(page.locator('.user-location-icon')).toBeVisible();
-  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(1);
+  await expect(page.locator('.user-location-icon')).toHaveCount(0);
+  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(0);
+  const bounds = await page.locator('.tour-map').boundingBox();
+  for (const marker of await page.locator('.guide-map-icon').all()) {
+    const box = await marker.boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(bounds!.x); expect(box!.y).toBeGreaterThanOrEqual(bounds!.y);
+    expect(box!.x + box!.width).toBeLessThan(bounds!.x + bounds!.width);
+    expect(box!.y + box!.height).toBeLessThan(bounds!.y + bounds!.height);
+  }
   await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
   await expect(page.getByText('Đã hiển thị vị trí của bạn trên bản đồ.')).toBeVisible();
   await expect(page.locator('.user-location-icon')).toBeVisible();
-  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(2);
+  expect(await page.evaluate(() => Reflect.get(window, 'gpsRequests'))).toBe(1);
+  await expect(page.locator('.guide-map-icon').first()).not.toBeInViewport();
 });
 
-test('search filters both map and drawer without hiding the map', async ({ page }) => {
+test('search highlights the chosen place while retaining every map marker and list entry', async ({ page }) => {
   await page.goto('/?view=map&keyword=Ch%E1%BB%A9ng%20t%C3%ADch');
-  await expect(page.locator('.guide-map-icon')).toHaveCount(1);
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+  await expect(page.locator('.guide-map-icon.is-selected')).toHaveAttribute('title', 'Bảo tàng Chứng tích Chiến tranh');
   await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
-  await expect(page.getByRole('link', { name: /Bảo tàng Chứng tích Chiến tranh/ })).toBeVisible();
+  await expect(page.locator('.place-select').filter({ hasText: 'Bảo tàng Chứng tích Chiến tranh' })).toBeVisible();
   await page.getByRole('button', { name: 'Đóng danh sách' }).press('Escape');
   await expect(page.getByRole('button', { name: 'Danh sách', exact: true })).toBeFocused();
-  await page.getByRole('searchbox').fill('Không tồn tại');
+  await page.getByRole('combobox', { name: 'Tìm địa điểm' }).fill('Không tồn tại');
   await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
-  await expect(page.locator('.guide-map-icon')).toHaveCount(0);
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+  await expect(page.locator('.guide-map-icon.is-selected')).toHaveCount(0);
   await expect(page.locator('.tour-map')).toBeVisible();
-  await expect(page.locator('.map-status')).toContainText('Chưa tìm thấy địa điểm.');
+  await expect(page.locator('.map-status')).toContainText('Chưa tìm thấy địa điểm phù hợp.');
 });
 
 test('nearby results include later API pages, sort by distance and respond to keyboard radius changes', async ({ page, context }) => {
@@ -133,6 +147,7 @@ test('nearby results include later API pages, sort by distance and respond to ke
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 10.777, longitude: 106.6953, accuracy: 5 });
   await page.goto('/');
+  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
   await expect(page.locator('.user-location-icon')).toHaveCount(1);
   const nearby = page.getByRole('list', { name: 'Địa điểm gần bạn', exact: true });
   await expect(nearby.getByRole('listitem')).toHaveCount(2);
@@ -184,17 +199,53 @@ test('backend error can be retried while map and GPS controls remain available',
 
 test('tile failure retains list access and reload recovers the map', async ({ page }) => {
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ status: 503 }));
-  await page.clock.install();
+  await page.route('https://a.tile.openstreetmap.fr/**', route => route.fulfill({ status: 503 }));
   await page.goto('/');
   await expect(page.locator('.guide-map-icon')).toHaveCount(7);
-  await expect(page.locator('.map-status')).toContainText('Đang tải bản đồ…');
-  await page.clock.fastForward(16_000);
+
   await expect(page.getByRole('button', { name: 'Tải lại bản đồ' })).toBeVisible();
   await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
   await expect(page.getByRole('list', { name: 'Danh sách địa điểm', exact: true }).getByRole('listitem')).toHaveCount(7);
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"></svg>' }));
   await page.getByRole('button', { name: 'Tải lại bản đồ' }).click();
   await expect(page.locator('.map-status')).toContainText('Bản đồ đã sẵn sàng');
+});
+
+test('typing D suggests Dinh, keyboard selection focuses the correct popup and reload restores it', async ({ page }) => {
+  await page.goto('/');
+  const input = page.getByRole('combobox', { name: 'Tìm địa điểm' });
+  await input.fill('D');
+  await expect(page.getByRole('option', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
+  const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+  expect(audit.violations).toEqual([]);
+  await input.press('ArrowDown'); await input.press('Enter');
+  await expect(page.locator('.map-popup strong')).toHaveText('Dinh Độc Lập');
+  await expect(page.locator('.map-popup a')).toHaveAttribute('href', /000000000101\?language=VI/);
+  await expect(page.locator('.map-popup a')).toBeFocused();
+  await page.reload();
+  await expect(page.locator('.map-popup strong')).toHaveText('Dinh Độc Lập');
+  await page.getByRole('combobox', { name: 'Tìm địa điểm' }).fill('dinh doc lap');
+  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.map-popup strong')).toHaveText('Dinh Độc Lập');
+});
+
+test('unreachable primary tiles switch to the visible fallback with attribution', async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.route('https://tile.openstreetmap.org/**', route => route.abort('connectionrefused'));
+  await page.route('https://a.tile.openstreetmap.fr/**', route => route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"></svg>' }));
+  await page.goto('/');
+  await expect(page.locator('.map-status')).toContainText('nguồn nền dự phòng OSM France');
+  await expect(page.locator('.leaflet-control-attribution')).toContainText('OSM France');
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+  await page.getByRole('combobox', { name: 'Tìm địa điểm' }).fill('Dinh');
+  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.map-popup strong')).toHaveText('Dinh Độc Lập');
+  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
+  await expect(page.locator('.user-location-icon')).toBeVisible();
+  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.map-popup a')).toBeFocused();
+  await expect(page.locator('.guide-map-icon.is-selected')).toBeInViewport();
+  expect(errors).toEqual([]);
 });
 
 test('responsive map, long names, keyboard drawer and accessibility', async ({ page }, info) => {
@@ -211,4 +262,69 @@ test('responsive map, long names, keyboard drawer and accessibility', async ({ p
   }
   const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
   expect(audit.violations).toEqual([]);
+});
+
+test('search keeps seven numbered pins, turns only the match red and clearing immediately resets the map', async ({ page, context }) => {
+  await context.setGeolocation({ latitude: 11.01, longitude: 106.65, accuracy: 5 });
+  await page.goto('/');
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+  const numbers = await page.locator('.map-marker').allTextContents();
+  const input = page.getByRole('combobox', { name: 'Tìm địa điểm' });
+  await input.fill('dinh doc lap');
+  await page.getByRole('button', { name: 'Tìm kiếm', exact: true }).click();
+  await expect(page.locator('.guide-map-icon')).toHaveCount(7);
+  await expect(page.locator('.map-marker')).toHaveText(numbers);
+  const selected = page.locator('.guide-map-icon.is-selected');
+  await expect(selected).toHaveCount(1);
+  await expect(selected).toHaveAttribute('aria-label', 'Dinh Độc Lập · Đang chọn');
+  await expect(selected.locator('.map-marker')).toHaveCSS('background-color', 'rgb(180, 35, 50)');
+  await expect(page.locator('.guide-map-icon:not(.is-selected)')).toHaveCount(6);
+  await expect(page.locator('.map-popup strong')).toHaveText('Dinh Độc Lập');
+  await expect(page.locator('.map-popup a')).toHaveAttribute('href', /000000000101\?/);
+  await page.goBack();
+  await expect(input).toHaveValue(''); await expect(selected).toHaveCount(0);
+  await page.goForward();
+  await expect(input).toHaveValue('dinh doc lap'); await expect(selected).toHaveCount(1);
+  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
+  await expect(page.locator('.user-location-icon')).toBeVisible();
+  await input.fill('');
+  await expect(input).toBeFocused();
+  await expect(page).not.toHaveURL(/keyword=|place=/);
+  await expect(selected).toHaveCount(0);
+  await expect(page.locator('.map-popup')).toHaveCount(0);
+  const bounds = (await page.locator('.tour-map').boundingBox())!;
+  for (const marker of await page.locator('.guide-map-icon').all()) {
+    const box = (await marker.boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(bounds.x); expect(box.y).toBeGreaterThanOrEqual(bounds.y);
+    expect(box.x + box.width).toBeLessThan(bounds.x + bounds.width);
+    expect(box.y + box.height).toBeLessThan(bounds.y + bounds.height);
+  }
+  await input.fill('Dinh'); await input.press('Enter');
+  await page.getByRole('button', { name: 'Xóa tìm kiếm', exact: true }).click();
+  await expect(input).toHaveValue(''); await expect(input).toBeFocused();
+  await expect(selected).toHaveCount(0);
+  await expect(page.locator('.map-popup')).toHaveCount(0);
+  await expect(page.locator('main')).not.toContainText(/demo/i);
+});
+
+test('mobile typography stays consistent across map, popup and list without demo labels', async ({ page }, info) => {
+  await page.goto('/');
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    const input = page.getByRole('combobox', { name: 'Tìm địa điểm' });
+    await input.fill('Dinh Độc Lập'); await input.press('Enter');
+    await expect(page.locator('.map-popup')).toBeVisible();
+    const fonts = await page.evaluate(() => [document.body, document.querySelector('.tour-map')!, document.querySelector('.map-popup')!, document.querySelector('#map-search')!].map(element => getComputedStyle(element).fontFamily));
+    expect(new Set(fonts).size).toBe(1);
+    await expect(input).toHaveCSS('font-size', '16px');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(audit.violations).toEqual([]);
+    await page.screenshot({ path: info.outputPath(`selected-mobile-${width}.png`) });
+    await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
+    await expect(page.getByRole('combobox', { name: 'Danh mục', exact: true })).not.toContainText(/demo/i);
+    await expect(page.locator('.location-drawer')).not.toContainText(/demo/i);
+    await page.getByRole('button', { name: 'Đóng danh sách' }).click();
+    await page.getByRole('button', { name: 'Xóa tìm kiếm', exact: true }).click();
+  }
 });

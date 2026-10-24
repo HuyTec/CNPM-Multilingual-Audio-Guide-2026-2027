@@ -29,15 +29,22 @@ try {
     await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
     await expect(list).toBeVisible();
     await page.getByRole('combobox', { name: 'Ngôn ngữ' }).selectOption('EN');
-    await list.getByRole('link').filter({ hasText: 'Dinh Độc Lập' }).click();
+    await list.getByRole('button').filter({ hasText: 'Dinh Độc Lập' }).click();
+    await expect(page.locator('.map-popup img')).toBeVisible();
+    await page.getByRole('link', { name: 'Mở bài thuyết minh' }).click();
     await expect(page.locator('.script-text')).toBeVisible({ timeout: 30_000 });
     await expect(page.locator('.script-text')).toHaveAttribute('lang', 'en');
     expect(receipts).toEqual([]);
+    await page.getByLabel('Ngôn ngữ yêu cầu').selectOption('VI');
+    await expect(page.locator('.script-text')).toHaveAttribute('lang', 'vi');
+    await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
+    await expect(page.locator('.guide-player')).toContainText('Đang phát · Audio thu sẵn', { timeout: 30_000 });
+    await page.getByRole('button', { name: 'Tạm dừng', exact: true }).click();
     for (const blocked of ['/api/admin/analytics', '/actuator/health', '/.env']) {
       expect((await context.request.get(origin + blocked)).status()).toBe(404);
     }
     expect(errors).toEqual([]);
-    console.log(`${name}: HTTPS, 7 places, guide, GPS emulation and private-route blocking passed`);
+    console.log(`${name}: HTTPS, 7 places/photos, VI MP3 playback, GPS emulation and private-route blocking passed`);
     await context.close();
   }
 } finally { await browser.close(); }
