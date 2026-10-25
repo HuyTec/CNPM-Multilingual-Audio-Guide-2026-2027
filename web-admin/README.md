@@ -1,57 +1,17 @@
 # TravelVoice · Web Admin
 
-Danh sách, biên tập, thống kê và quản lý phản hồi mặc định dùng API PostgreSQL qua cùng backend với Web du khách/Android. Hợp đồng: [ADMIN_CONTENT_API.md](../backend/ADMIN_CONTENT_API.md), [hướng dẫn code/demo](../docs/vi/DEMO_CODE_GUIDE.md). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Giao diện phản hồi giả lập chỉ ở `/analytics?source=mock`, không tự fallback khi API lỗi.
-
-## Demo Web Admin UC-06 / UC-07
-
-Giao diện tiếng Việt, React Router, Tailwind. Yêu cầu hiện hành: [PRD](../docs/en/PRD_Report.md), UC-06/UC-07. Mã mock cũ được giữ cho prototype riêng, không thay thế API của danh sách/form chính.
-
-- `/locations`: danh sách, tìm kiếm, trạng thái và phân trang.
-- `/locations/new`, `/locations/:id/edit`: lưu nháp, gửi duyệt, kịch bản ngôn ngữ × FULL/SHORT, audio preview/retry và cảnh báo chưa lưu. Không thay thế bản published.
-- `/analytics`: thống kê lượt nghe Web/Android, kỳ 30 ngày, tự cập nhật 5 giây; phản hồi đọc API, lọc/phân trang/chi tiết/chuyển NEW → IN_REVIEW → RESOLVED. XLSX gồm thống kê và toàn bộ phản hồi đúng kỳ + bộ lọc, không cắt theo trang.
-
-Form hỗ trợ tên theo ngôn ngữ dùng chung selector với kịch bản/audio; danh sách chọn tên VI → EN → ngôn ngữ khác → legacy. REJECTED và nhận xét reviewer chỉ đọc; sửa rồi lưu nháp/gửi lại. Backend cần migration V5/V5_1; editor không tự cập nhật bảng published. Nguồn gửi feedback và quy trình reviewer/publication nằm ngoài UC-06/UC-07.
-
-Test UI mặc định dùng HTTP fixtures rõ ràng trong `tests/admin-fixture.ts`; không dùng kết quả này làm bằng chứng DB tích hợp. ExcelJS đã dynamic import khi xuất, vẫn có cảnh báo chunk ~930 kB. Ngày 25/10/2026: lint/build pass, 16 UI tests pass/5 live tests skip; DB integration chưa chạy vì Docker Desktop lỗi khởi động.
-
-Đăng nhập bằng tài khoản Basic Auth demo cấu hình tại backend. Local hiện lưu cấu hình trong `.env.admin.local` ở root (ignored); không gửi mật khẩu vào chat/commit. Phiên chỉ giữ trong bộ nhớ tab, reload cần đăng nhập lại. Form có sáu ngôn ngữ × FULL/SHORT; text và audio lưu trong DB, tải lại vẫn nghe thử được. Xung đột phiên bản trả 409 và giữ dữ liệu đang nhập. Lưu nháp cho phép thiếu trường; gửi duyệt kiểm tra tên/danh mục/tọa độ/bán kính. Audio MP3/WAV/OGG tối đa 20 MB; upload lỗi giữ text và cho thử lại.
-
-Kiểm thử tích hợp local với backend và Web Admin Docker đang chạy ở cổng 3000:
+React/Vite/TypeScript cho biên tập POI đa ngôn ngữ, duyệt/xuất bản và thống kê/phản hồi từ PostgreSQL.
+Tài liệu: [Admin Guide](../docs/guide/ADMIN_GUIDE.md), [API](../docs/guide/API_list.md), [chạy demo](../docs/guide/DEMO_CODE_GUIDE.md).
 
 ```powershell
-npx.cmd playwright install chromium
-# Đặt DEMO_ADMIN_USERNAME/DEMO_ADMIN_PASSWORD trong môi trường test, không ghi giá trị vào lệnh.
-$env:LIVE_CONTENT_API='1'
-npx.cmd playwright test --config playwright.content-live.config.ts
-Remove-Item Env:LIVE_CONTENT_API
-```
-
-Suite live không giả lập API; tạo bản nháp có tiền tố `Codex UI integration`, ghi ID vào `test-results-content/owned-ids.json` để người chạy dọn đúng dữ liệu test. Không dùng suite prototype cũ làm bằng chứng DB tích hợp. Không chạy hai bộ Playwright đồng thời cùng thư mục output.
-
-## Cài đặt và chạy trên Windows
-
-[Vite 8](https://v8.vite.dev/guide/) cần Node.js 20.19+ hoặc 22.12+; Node.js 24 cũng phù hợp. Nếu chưa có Node.js và máy có `winget`, cài bản LTS rồi mở lại PowerShell:
-
-```powershell
-winget install --id OpenJS.NodeJS.LTS -e
-node --version
-npm.cmd --version
-```
-
-Mở PowerShell tại thư mục gốc repository, rồi chạy:
-
-```powershell
-cd .\web-admin
 npm.cmd ci
-npm.cmd run dev -- --port 5174
-```
-
-Vite cổng 5174 proxy `/api` và `/demo-audio` sang 8080; có thể đổi `API_PROXY_TARGET`. Bản Compose ở http://127.0.0.1:3000/ dùng nginx proxy backend. `npm.cmd ci` cài đúng phiên bản trong `package-lock.json`. Kiểm tra và đóng gói bằng:
-
-```powershell
-npm.cmd run lint
+npm.cmd run dev
 npm.cmd run build
-npm.cmd run preview
+npm.cmd run lint
+npm.cmd run test:e2e -- --workers=1
 ```
 
-Chạy `npm.cmd run preview` sau khi build để xem bản đóng gói. Trên PowerShell dùng `npm.cmd` nếu chính sách thực thi chặn `npm.ps1`.
+Đặt API_PROXY_TARGET trong .env.local nếu backend khác mặc định 8080. Live-demo dùng 8081.
+Tài khoản seed demo: editor / EditorDemo!2026; reviewer / ReviewerDemo!2026 (chỉ seed lần đầu).
+Phiên bearer chỉ ở bộ nhớ tab; reload cần đăng nhập lại. Basic Auth cũ đã bị thay thế.
+HTTP fixture tests không chứng minh kết nối DB; suite publication.live dùng backend/DB riêng có chủ đích.

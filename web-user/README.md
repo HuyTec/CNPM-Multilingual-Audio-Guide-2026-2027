@@ -1,5 +1,8 @@
 # TravelVoice · Web User dành cho du khách
 
+Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/guide/USER_WEB_GUIDE.md). Đã có polling manifest và khối Android/QR. Trước build, chạy `./scripts/prepare-android-download.ps1` từ gốc để đóng APK vào website; output APK không được commit. Các kết quả nghiệm thu có ngày bên dưới là snapshot lịch sử.
+
+
 Tài liệu giúp thành viên nhóm nắm được Web User làm gì, dữ liệu đi qua đâu,
 cách chạy và phần còn cần nghiệm thu. Cập nhật ngày **24/10/2026**.
 

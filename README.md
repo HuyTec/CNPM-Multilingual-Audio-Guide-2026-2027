@@ -20,7 +20,7 @@
 
 Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
-**Hướng sản phẩm đã chốt ngày 19/10/2026:** Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Xem ma trận nền tảng và tiêu chí luồng thật đầu tiên tại [PRD VI §2.4](docs/vi/PRD_Report_vi.md). Đây là phạm vi đích; source hiện vẫn gồm demo Android, Web Admin và các phần mock, chưa có Web du khách hoàn chỉnh. Giữ demo để tham khảo và thay mock theo từng luồng có kiểm chứng.
+**Hướng sản phẩm đã chốt ngày 19/10/2026:** Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Xem ma trận nền tảng và tiêu chí luồng thật đầu tiên tại [PRD VI §2.4](docs/vi/PRD_Report_vi.md). Source hiện có Web du khách, Android và Web Admin dùng API/DB chung; UC-06 bổ sung EDITOR/REVIEWER, dịch, duyệt và xuất bản gói. Xem [hướng dẫn demo hiện hành](docs/guide/DEMO_CODE_GUIDE.md) để chạy và phân biệt phần đã kiểm thử với giới hạn production.
 
 ## Công nghệ sử dụng
 
