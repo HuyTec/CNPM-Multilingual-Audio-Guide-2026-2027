@@ -41,9 +41,7 @@ Chạy toàn bộ backend, PostgreSQL, Web Admin và Web du khách bằng `.\scr
 
 Các mục dưới đây mới là đề xuất, chưa phải quyết định của nhóm:
 
-- Web: Vite, TypeScript
-- Android: Jetpack Compose, Room, Media3, WorkManager
-- Backend: Flyway, PostGIS
+- Android: Room, Media3, WorkManager
 - Lưu trữ file audio và gói nội dung: S3 hoặc MinIO
 
 ## Kiến trúc
@@ -60,7 +58,7 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Business Logic Layer:** xử lý các quy tắc và nghiệp vụ của hệ thống (service).
 - **Data Access Layer:** làm việc với cơ sở dữ liệu (repository).
 
-> Cấu trúc package chi tiết sẽ được xác định sau khi PRD được kiểm chứng.
+> Cấu trúc class và luồng hiện hành nằm trong [Backend Guide](docs/guide/BACKEND_GUIDE.md).
 
 ## Quy trình và công cụ
 
@@ -104,4 +102,4 @@ Thiết kế, backlog nháp và biên bản review được quản lý trực ti
 
 ## Chạy dự án
 
-Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/vi/DOCKER_SETUP.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
+Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/guide/DOCKER_GUIDE.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).

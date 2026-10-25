@@ -13,6 +13,8 @@ flowchart LR
 
 ## Khởi động
 
+Trên Windows, cài [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) và dùng engine Linux/WSL 2. Chạy `docker version` và `docker compose version`; `docker version` phải có cả Client lẫn Server. Nếu gặp lỗi pipe `dockerDesktopLinuxEngine`, mở Docker Desktop và chờ engine sẵn sàng trước khi chạy Compose. Không đổi mật khẩu hoặc xóa volume để xử lý lỗi daemon chưa chạy.
+
 Mở Docker Desktop ở chế độ Linux containers. Từ gốc repo:
 
 ```powershell
@@ -66,6 +68,8 @@ diện mạng của máy; chỉ dùng trên mạng đáng tin cậy. Web du khá
 Tunnel chạy trên host, mặc định trỏ `127.0.0.1:14176`. Nếu tunnel cũ ở cổng này còn chạy thì không cần đổi URL. QR Android tự lấy origin của website; không hard-code tên miền Cloudflare. Khi đổi cổng, gọi `share-docker-web.ps1 -Port <cong-moi>`. Quick Tunnel có thể đổi URL khi khởi động lại; chỉ public gateway du khách.
 
 ## Dữ liệu và thao tác hằng ngày
+
+Mỗi thành viên có database local riêng; chia sẻ schema bằng migration trong Git. Tạo migration mới trong `backend/multi-audio-guide/src/main/resources/db/migration/` theo mẫu `V<version>__<description>.sql` (hai dấu gạch dưới). Thống nhất số phiên bản trước khi merge, không sửa migration đã áp dụng. Profile demo còn nạp `src/main/resources/db/demo/` và Java migration `src/main/java/db/demo/`; không xóa fixture/migration cũ để dọn dữ liệu vì Flyway vẫn đối chiếu lịch sử. Backup bằng `pg_dump` khác với migration và cần kiểm tra khả năng khôi phục.
 
 Volume mặc định là `hvp-live-demo_postgres_data`, giữ nội dung, tài khoản, ảnh/audio upload, gói xuất bản và khóa ký trong PostgreSQL. Không đổi project bằng `-p` nếu muốn tiếp tục dùng dữ liệu demo hiện có. Biến mật khẩu PostgreSQL phải khớp DB đã khởi tạo; sửa env không tự đổi mật khẩu của DB cũ.
 
