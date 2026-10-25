@@ -113,8 +113,14 @@ test("real DB: translate, draft, reviewer publication, reconnect polling, verifi
   const after = (await (
     await request.get(`${process.env.PUBLICATION_API}/api/content-packages`)
   ).json()) as { scope: string; version: string }[];
+  const publishedPoi = await (await request.get(`${process.env.PUBLICATION_API}/api/locations/${id}`)).json() as { categoryId: string; imageUrl: string };
+  expect(publishedPoi.imageUrl).toMatch(/^\/api\/content-images\//);
+  const publishedImage = await request.get(`${process.env.PUBLICATION_API}${publishedPoi.imageUrl}`);
+  expect(publishedImage.status()).toBe(200);
+  expect(publishedImage.headers()["content-type"]).toBe("image/png");
+  const expectedScope = publishedPoi.categoryId === "10000000-0000-0000-0000-000000000101" ? "BASE" : "OPTIONAL";
   const changed = after.find(
-    (m) => before.find((b) => b.scope === m.scope)?.version !== m.version,
+    (m) => m.scope === expectedScope && before.find((b) => b.scope === m.scope)?.version !== m.version,
   )!;
   expect(changed).toBeTruthy();
   const polled = user.waitForResponse(

@@ -39,9 +39,9 @@ test('phone gateway serves only the built app and public backend routes', async 
     assert.match(apk.headers.get('content-disposition'),/attachment/);
     assert.equal(await apk.text(),'PK-test-apk');
     assert.equal((await fetch(origin+'/downloads/private.txt')).status,404);
-    for (const path of ['/api/admin/analytics', '/api/admin/content/locations', '/actuator/health', '/.env', '/src/main.tsx', '/@vite/client', '/assets/%2e%2e/.env'])
+    for (const path of ['/api/admin/content/images/40000000-0000-0000-0000-000000000001.png', '/api/content-images/not-an-image.png', '/api/admin/analytics', '/api/admin/content/locations', '/actuator/health', '/.env', '/src/main.tsx', '/@vite/client', '/assets/%2e%2e/.env'])
       assert.equal((await fetch(origin + path)).status, 404, path);
-    for (const path of ['/api/categories', '/api/locations?size=50', '/api/locations/20000000-0000-0000-0000-000000000101/guide?language=VI', '/api/content-packages/key', '/demo-audio/museum.wav'])
+    for (const path of ['/api/content-images/40000000-0000-0000-0000-000000000001.png', '/api/categories', '/api/locations?size=50', '/api/locations/20000000-0000-0000-0000-000000000101/guide?language=VI', '/api/content-packages/key', '/demo-audio/museum.wav'])
       assert.equal((await fetch(origin + path, { headers: { cookie: 'test=private', authorization: 'Bearer private', range: 'bytes=0-20' } })).status, 200);
     assert.ok(seen.every(item => !item.cookie && !item.auth)); assert.equal(seen[0].range, 'bytes=0-20');
     const receipt = { eventId: '30000000-0000-0000-0000-000000000001', contentId: '31000000-0000-0000-0000-000000000001' };
