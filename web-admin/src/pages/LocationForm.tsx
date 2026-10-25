@@ -7,7 +7,14 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { ArrowLeft, Upload, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  ShieldCheck,
+  PenLine,
+  Languages,
+} from "lucide-react";
+import "./location-editor.css";
 import { type Asset, type Location } from "../mocks/data";
 import {
   adminRequest,
@@ -520,7 +527,7 @@ export default function LocationForm() {
           <Link to="/reviews">Mở hàng đợi duyệt</Link>.
         </p>
       )}
-      <form onSubmit={submit} noValidate>
+      <form className="location-editor" onSubmit={submit} noValidate>
         <fieldset
           disabled={
             busy ||
@@ -532,96 +539,118 @@ export default function LocationForm() {
           }
           className="editor-fields"
         >
-          <section className="card" aria-labelledby="translation-heading">
-            <h2 id="translation-heading">Chọn cách biên tập</h2>
-            <fieldset className="content-entry-options">
-              <legend>Chọn phương án nhập nội dung</legend>
-              <label>
-                <input
-                  type="radio"
-                  name="entryMode"
-                  value="manual"
-                  checked={entryMode === "manual"}
-                  onChange={() => query("mode", "manual")}
-                />{" "}
-                Nhập thủ công
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="entryMode"
-                  value="auto"
-                  checked={entryMode === "auto"}
-                  onChange={() => query("mode", "auto")}
-                />{" "}
-                Dịch tự động từ nội dung nguồn
-              </label>
-            </fieldset>
-            <p>
-              {entryMode === "manual"
-                ? "Chọn từng ngôn ngữ bên dưới và nhập tên, nội dung FULL/SHORT tương ứng. Chuyển phương án vẫn giữ dữ liệu đang nhập."
-                : "Nhập tên và nội dung ở ngôn ngữ nguồn bên dưới, chọn ngôn ngữ đích rồi bấm Dịch tự động. Kết quả có thể chỉnh sửa."}
-            </p>
-            <p>
-              Web/Android đọc nội dung bằng TTS khi không có file audio; không
-              bắt buộc tải audio lên.
-            </p>
-            {entryMode === "auto" && (
-              <>
-                <p className="notice">
-                  Dịch tự động phụ thuộc dịch vụ được cấu hình. Provider demo
-                  chỉ tạo kết quả giả lập, không phải bản dịch thật.
-                </p>
-                <p>
-                  Nguồn tên:{" "}
-                  {form.fieldOrigins?.[`name:${language}`] || "MANUAL"} · Kịch
-                  bản: {form.fieldOrigins?.[`script:${key}`] || "MANUAL"}
-                </p>
-                <fieldset>
-                  <legend>Ngôn ngữ đích</legend>
-                  {languages
-                    .filter((l) => l.code !== language)
-                    .map((l) => (
-                      <label key={l.code}>
-                        <input
-                          type="checkbox"
-                          name="translationTargets"
-                          value={l.code}
-                          checked={targets.includes(l.code)}
-                          onChange={(e) =>
-                            setTargets((old) =>
-                              e.target.checked
-                                ? [...old, l.code]
-                                : old.filter((x) => x !== l.code),
-                            )
-                          }
-                        />{" "}
-                        {l.label}{" "}
-                      </label>
-                    ))}
-                </fieldset>
-                <Button
-                  type="button"
-                  busy={translating}
-                  onClick={() => void translate()}
-                >
-                  Dịch tự động
-                </Button>
-              </>
-            )}
-          </section>
-          <LocationImageField
-            key={form.imageUrl || "no-image"}
-            locationId={form.id}
-            imageUrl={form.imageUrl}
-            authorization={authorization}
-            onBusyChange={setImageBusy}
-            onChange={(imageUrl) => {
-              setForm((old) => ({ ...old, imageUrl }));
-              setDirty(true);
-              setMessage("");
-            }}
-          />
+          <div className="editor-overview">
+            <section
+              className="card editor-method"
+              aria-labelledby="translation-heading"
+            >
+              <p className="editor-kicker">CHUẨN BỊ BẢN THUYẾT MINH</p>
+              <h2 id="translation-heading">Chọn cách biên tập</h2>
+              <fieldset className="content-entry-options">
+                <legend>Chọn phương án nhập nội dung</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="entryMode"
+                    aria-label="Nhập thủ công"
+                    value="manual"
+                    checked={entryMode === "manual"}
+                    onChange={() => query("mode", "manual")}
+                  />{" "}
+                  <PenLine size={19} aria-hidden="true" />
+                  <span>
+                    <strong>Nhập thủ công</strong>
+                    <small>Tự viết nội dung cho từng ngôn ngữ</small>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="entryMode"
+                    aria-label="Dịch tự động từ nội dung nguồn"
+                    value="auto"
+                    checked={entryMode === "auto"}
+                    onChange={() => query("mode", "auto")}
+                  />{" "}
+                  <Languages size={19} aria-hidden="true" />
+                  <span>
+                    <strong>Dịch tự động</strong>
+                    <small>Dịch từ một nội dung nguồn, sau đó chỉnh sửa</small>
+                  </span>
+                </label>
+              </fieldset>
+              <p className="editor-method-help">
+                {entryMode === "manual"
+                  ? "Chọn từng ngôn ngữ bên dưới và nhập tên, nội dung FULL/SHORT tương ứng. Chuyển phương án vẫn giữ dữ liệu đang nhập."
+                  : "Nhập tên và nội dung ở ngôn ngữ nguồn bên dưới, chọn ngôn ngữ đích rồi bấm Dịch tự động. Kết quả có thể chỉnh sửa."}
+              </p>
+              <p className="editor-tts-note">
+                Web/Android đọc nội dung bằng TTS khi không có file audio; không
+                bắt buộc tải audio lên.
+              </p>
+              {entryMode === "auto" && (
+                <>
+                  <p className="editor-translation-warning">
+                    Dịch tự động phụ thuộc dịch vụ được cấu hình. Provider demo
+                    chỉ tạo kết quả giả lập, không phải bản dịch thật.
+                  </p>
+                  <fieldset className="editor-targets">
+                    <legend>
+                      Ngôn ngữ đích <span>Chọn một hoặc nhiều ngôn ngữ</span>
+                    </legend>
+                    <div className="editor-language-grid">
+                      {languages
+                        .filter((l) => l.code !== language)
+                        .map((l) => (
+                          <label key={l.code}>
+                            <input
+                              type="checkbox"
+                              name="translationTargets"
+                              value={l.code}
+                              checked={targets.includes(l.code)}
+                              onChange={(e) =>
+                                setTargets((old) =>
+                                  e.target.checked
+                                    ? [...old, l.code]
+                                    : old.filter((x) => x !== l.code),
+                                )
+                              }
+                            />{" "}
+                            <span>{l.label}</span>
+                            <small aria-hidden="true">
+                              {l.code.toUpperCase()}
+                            </small>
+                          </label>
+                        ))}
+                    </div>
+                  </fieldset>
+                  <div className="editor-translation-action">
+                    <Button
+                      type="button"
+                      busy={translating}
+                      onClick={() => void translate()}
+                    >
+                      <Languages size={16} aria-hidden="true" />
+                      Dịch tự động
+                    </Button>
+                    <span>Có thể sửa lại kết quả trước khi lưu.</span>
+                  </div>
+                </>
+              )}
+            </section>
+            <LocationImageField
+              key={form.imageUrl || "no-image"}
+              locationId={form.id}
+              imageUrl={form.imageUrl}
+              authorization={authorization}
+              onBusyChange={setImageBusy}
+              onChange={(imageUrl) => {
+                setForm((old) => ({ ...old, imageUrl }));
+                setDirty(true);
+                setMessage("");
+              }}
+            />
+          </div>
           {imageBusy && <p role="status">Đang tải ảnh…</p>}
           <div className="form-grid">
             <section className="card">
@@ -771,7 +800,7 @@ export default function LocationForm() {
                   }
                 />
               </Field>
-              <details open>
+              <details>
                 <summary>Audio thu sẵn (tùy chọn)</summary>
                 <div
                   className="upload-box"

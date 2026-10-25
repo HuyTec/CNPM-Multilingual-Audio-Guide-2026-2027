@@ -1,0 +1,322 @@
+.location-editor {
+  --editor-paper: #fff;
+  --editor-ink: #24374a;
+  --editor-rule: #dce4e9;
+  --editor-accent: #087d73;
+  max-width: 1320px;
+  color: var(--editor-ink);
+}
+.location-editor .editor-fields {
+  display: grid;
+  gap: 24px;
+}
+.editor-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.85fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.editor-overview > .card {
+  padding: 24px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.editor-overview h2 {
+  font-size: 19px;
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+.editor-kicker {
+  color: #526a77;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin: 0 0 6px;
+}
+.editor-method .content-entry-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.editor-method .content-entry-options legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.editor-method .content-entry-options label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  padding: 16px 12px;
+  border: 1px solid var(--editor-rule);
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 400;
+  cursor: pointer;
+}
+.editor-method .content-entry-options label:has(:checked) {
+  border-color: var(--editor-accent);
+  background: #f0f8f6;
+  box-shadow: inset 0 0 0 1px var(--editor-accent);
+}
+.editor-method .content-entry-options label:hover {
+  border-color: #70988f;
+}
+.editor-method .content-entry-options label:has(input:focus-visible) {
+  outline: 3px solid #0b8b80;
+  outline-offset: 3px;
+}
+.editor-method .content-entry-options input {
+  flex: 0 0 auto;
+  margin: 3px 0 0;
+}
+.editor-method .content-entry-options svg {
+  flex: 0 0 auto;
+  color: #4a7068;
+  margin-top: 1px;
+}
+.editor-method .content-entry-options span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.editor-method .content-entry-options strong {
+  font-size: 14px;
+  line-height: 1.4;
+}
+.editor-method .content-entry-options small {
+  font-size: 12px;
+  color: #526475;
+  line-height: 1.6;
+}
+.editor-method-help {
+  margin: 16px 0 10px;
+  font-size: 13px;
+  line-height: 1.75;
+}
+.editor-tts-note {
+  color: #536675;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 0;
+}
+.editor-translation-warning {
+  margin: 18px 0;
+  padding: 11px 13px;
+  border-left: 3px solid #b98429;
+  background: #fff8eb;
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: #77531c;
+  line-height: 1.7;
+}
+.editor-targets {
+  border: 0;
+  border-top: 1px solid #e8edef;
+  margin: 20px 0 18px;
+  padding: 16px 0 0;
+  min-width: 0;
+}
+.editor-targets legend {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 8px 0 0;
+}
+.editor-targets legend span {
+  display: block;
+  color: #596d7b;
+  font-size: 12px;
+  font-weight: 400;
+  margin-top: 4px;
+}
+.editor-language-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.editor-language-grid label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 11px 10px;
+  border: 1px solid var(--editor-rule);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 13px;
+  min-width: 0;
+}
+.editor-language-grid label:has(:checked) {
+  border-color: #8ab9ad;
+  background: #f1f8f5;
+}
+.editor-language-grid label:hover {
+  border-color: var(--editor-accent);
+}
+.editor-language-grid input {
+  flex: 0 0 auto;
+  margin: 0;
+}
+.editor-language-grid span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.editor-language-grid small {
+  margin-left: auto;
+  color: #5c707c;
+  font-size: 10px;
+}
+.editor-translation-action {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+.editor-translation-action > span {
+  font-size: 12px;
+  color: #596d7b;
+}
+.editor-image {
+  display: flex;
+  flex-direction: column;
+}
+.editor-image h2 {
+  margin-bottom: 6px;
+}
+.editor-image-help {
+  font-size: 13px;
+  color: #596d7b;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.editor-image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  min-height: 185px;
+  padding: 22px 16px;
+  border: 1px dashed #b9cbc7;
+  border-radius: 8px;
+  background: #f6f9f8;
+  margin-bottom: 16px;
+}
+.editor-image-preview strong {
+  font-size: 14px;
+}
+.editor-image-preview p {
+  max-width: 240px;
+  margin: 0;
+  font-size: 12px;
+  color: #5b6e79;
+  line-height: 1.7;
+}
+.editor-image-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #e7efeb;
+  color: #52776b;
+}
+.editor-image-preview.has-image {
+  padding: 8px;
+  border-style: solid;
+}
+.editor-image-preview img {
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+.editor-image-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.editor-image-controls > span {
+  font-size: 12px;
+  color: #596d7b;
+}
+.editor-image-guidance {
+  color: #596d7b;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 10px 0 0;
+}
+.editor-image-error:empty {
+  display: none;
+}
+.location-editor .form-grid .card {
+  box-shadow: none;
+}
+.location-editor .form-grid .section-heading {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #edf0f2;
+  margin-bottom: 16px;
+}
+.location-editor .form-grid h2 {
+  font-size: 18px;
+}
+.location-editor .form-grid .field-grid {
+  gap: 20px 16px;
+}
+.location-editor .form-grid textarea {
+  line-height: 1.8;
+  min-height: 220px;
+}
+.location-editor .form-grid details > summary {
+  padding: 15px 24px;
+  margin-top: 20px;
+  border-top: 1px solid #e8edef;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.location-editor .form-footer {
+  margin-top: 0;
+  border-radius: 8px;
+  padding: 18px 24px;
+}
+@media (max-width: 1100px) {
+  .editor-overview {
+    grid-template-columns: minmax(0, 1.1fr) minmax(270px, 0.85fr);
+    gap: 18px;
+  }
+  .editor-method .content-entry-options {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .editor-language-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .editor-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .editor-overview > .card {
+    padding: 20px;
+  }
+  .location-editor .editor-fields {
+    gap: 18px;
+  }
+  .location-editor .form-footer {
+    padding: 16px;
+  }
+}

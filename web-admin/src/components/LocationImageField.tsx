@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/Button";
+import { ImagePlus, Upload } from "lucide-react";
 
 type Props = {
   locationId: string;
@@ -86,25 +87,44 @@ export function LocationImageField({
     }
   }
   return (
-    <section className="card" aria-labelledby="poi-image-heading">
+    <section className="card editor-image" aria-labelledby="poi-image-heading">
+      <p className="editor-kicker">HÌNH ẢNH GIỚI THIỆU</p>
       <h2 id="poi-image-heading">Ảnh địa điểm</h2>
-      <p>
-        Ảnh đại diện dùng chung cho các ngôn ngữ. Chọn JPEG/PNG tối đa 5 MB, mỗi
-        chiều tối đa 4096 px và tối đa 12 triệu điểm ảnh.
+      <p className="editor-image-help">
+        Một ảnh đại diện dùng chung cho mọi ngôn ngữ.
       </p>
-      {!imageUrl && <p>Chưa có ảnh. Bạn vẫn có thể lưu bản nháp.</p>}
-      {imageUrl && loading && <p role="status">Đang tải ảnh xem trước…</p>}
-      {imageUrl && preview && (
-        <img
-          src={preview}
-          alt="Ảnh đại diện địa điểm đang biên tập"
-          width={640}
-          height={360}
-          style={{ maxWidth: "100%", height: "auto", objectFit: "contain" }}
-        />
-      )}
-      <label htmlFor="poi-image">Chọn ảnh địa điểm</label>
+      <div className={`editor-image-preview ${preview ? "has-image" : ""}`}>
+        {!imageUrl && (
+          <>
+            <span className="editor-image-icon">
+              <ImagePlus size={28} aria-hidden="true" />
+            </span>
+            <strong>Thêm hình ảnh cho địa điểm</strong>
+            <p>Chưa có ảnh. Bạn vẫn có thể lưu bản nháp.</p>
+          </>
+        )}
+        {imageUrl && loading && <p role="status">Đang tải ảnh xem trước…</p>}
+        {imageUrl && preview && (
+          <img
+            src={preview}
+            alt="Ảnh đại diện địa điểm đang biên tập"
+            width={640}
+            height={360}
+          />
+        )}
+      </div>
+      <div className="editor-image-controls">
+        <Button type="button" secondary onClick={() => input.current?.click()}>
+          <Upload size={16} aria-hidden="true" />
+          {imageUrl ? "Thay ảnh" : "Chọn ảnh"}
+        </Button>
+        <span>JPEG hoặc PNG · Tối đa 5 MB</span>
+      </div>
+      <label className="sr-only" htmlFor="poi-image">
+        Chọn ảnh địa điểm
+      </label>
       <input
+        hidden
         ref={input}
         id="poi-image"
         name="locationImage"
@@ -117,7 +137,11 @@ export function LocationImageField({
           if (file) void upload(file);
         }}
       />
-      <p id="poi-image-error" className="field-error" aria-live="polite">
+      <p
+        id="poi-image-error"
+        className="field-error editor-image-error"
+        aria-live="polite"
+      >
         {error}
       </p>
       {imageUrl && error && (
@@ -133,7 +157,10 @@ export function LocationImageField({
           Thử lại xem ảnh
         </Button>
       )}
-      <p className="muted">
+      <p className="editor-image-guidance">
+        Mỗi chiều tối đa 4096 px, tối đa 12 triệu điểm ảnh.
+      </p>
+      <p className="editor-image-guidance">
         Ảnh chỉ công khai khi nội dung được duyệt và xuất bản. Thay ảnh không
         làm đổi bản đang công khai.
       </p>

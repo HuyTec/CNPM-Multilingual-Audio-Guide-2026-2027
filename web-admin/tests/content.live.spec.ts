@@ -86,6 +86,7 @@ test("save incomplete draft, upload actual WAV, submit and reopen persisted serv
   const script =
     "Texte de test sauvegardé dans la base commune, en attente de validation.";
   await page.locator("#script").fill(script);
+  await page.getByText("Audio thu sẵn (tùy chọn)", { exact: true }).click();
   const upload = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&

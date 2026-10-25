@@ -46,6 +46,7 @@ test("UC-06 valid submission; E1 retry; BR4 and other language remain intact", a
   adminData,
 }) => {
   await page.goto("/locations/loc-1/edit?scenario=upload-error");
+  await page.getByText("Audio thu sẵn (tùy chọn)", { exact: true }).click();
   await expect(page.getByLabel("Tên địa điểm")).toHaveValue(
     "Bưu điện Trung tâm",
   );
