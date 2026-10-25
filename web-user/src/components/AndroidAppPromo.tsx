@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 type Release = {
   url: string;
+  publicUrl?: string;
   version: string;
   sizeBytes: number;
   sha256: string;
@@ -32,7 +33,7 @@ export function AndroidAppPromo() {
         )
           throw new Error("Invalid release");
         const url = new URL(
-          import.meta.env.VITE_ANDROID_APK_URL || release.url,
+          import.meta.env.VITE_ANDROID_APK_URL || release.publicUrl || release.url,
           window.location.origin,
         );
         if (
