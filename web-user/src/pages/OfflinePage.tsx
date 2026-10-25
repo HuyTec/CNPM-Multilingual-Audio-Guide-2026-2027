@@ -1,9 +1,12 @@
+import {usePackageUpdates} from '../lib/packageUpdates';
 import { useEffect, useRef, useState } from 'react';
 import { deleteOptionalPackage, downloadPackage, installedPackages } from '../lib/packages';
 import type { PackageManifest } from '../lib/packages';
 
 export function OfflinePage() {
-  const [available, setAvailable] = useState<PackageManifest[]>([]);
+  const polled=usePackageUpdates();
+  const [checked,setAvailable]=useState<PackageManifest[]|null>(null);
+  const available=checked||polled;
   const [installed, setInstalled] = useState<Awaited<ReturnType<typeof installedPackages>>>([]);
   const [message, setMessage] = useState('Đang kiểm tra nội dung đã lưu…');
   const [busy, setBusy] = useState(false);

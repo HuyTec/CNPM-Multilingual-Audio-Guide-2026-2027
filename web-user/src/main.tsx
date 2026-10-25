@@ -6,6 +6,7 @@ import { GuidePage } from './pages/GuidePage';
 import { OfflinePage } from './pages/OfflinePage';
 import { PlaybackSyncStatus } from './components/PlaybackSyncStatus';
 import { GeofenceNotices } from './components/GeofenceNotices';
+import {PackageUpdateNotice} from './components/PackageUpdateNotice';
 import './style.css';
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) void navigator.serviceWorker.register(`/sw.js?build=${import.meta.env.APP_BUILD}`, { type: 'module', updateViaCache: 'none' }).catch(() => {});
@@ -25,6 +26,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/offline" element={<OfflinePage />} />
           <Route path="*" element={<section className="entry"><title>Không tìm thấy trang · TravelVoice</title><h1>Không tìm thấy trang</h1><p>Hãy kiểm tra lại đường dẫn địa điểm.</p><Link to="/">Mở địa điểm khác</Link></section>} />
         </Routes>
+        <PackageUpdateNotice />
         <PlaybackSyncStatus />
         <GeofenceNotices />
       </main>

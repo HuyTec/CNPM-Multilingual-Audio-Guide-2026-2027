@@ -1248,3 +1248,6 @@ dialog::backdrop {
     gap: 8px 16px;
   }
 }
+
+.editor-fields { border:0; padding:0; min-width:0; }
+.card details { overflow-wrap:anywhere; }

@@ -11,7 +11,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 data class ServerLocation(val id: String, val name: String, val latitude: Double? = null,
-                          val longitude: Double? = null, val category: String = "", val categoryId: String = "")
+                          val longitude: Double? = null, val category: String = "", val categoryId: String = "", val names: Map<String,String> = emptyMap())
 data class ServerGuide(val contentId: String, val locationName: String, val languageCode: String,
                        val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "")
 class GuideApiException(val status: Int, message: String) : IllegalStateException(message)
@@ -32,9 +32,13 @@ object DemoApi {
         val array = json(Request.Builder().url(base + "api/locations?size=50").build()).getJSONArray("items")
         List(array.length()) { i -> array.getJSONObject(i).let { ServerLocation(it.getString("locationId"), it.getString("name"),
             it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
-            it.optString("categoryName"), it.optString("categoryId")) } }
+            it.optString("categoryName"), it.optString("categoryId"), localizedNames(it)) } }
     }
 
+    fun localizedNames(value: JSONObject): Map<String,String> {
+        val names=value.optJSONObject("names") ?: return emptyMap()
+        return names.keys().asSequence().associateWith { names.optString(it) }
+    }
     suspend fun guide(base: String, location: String, language: String = "VI", type: String = "SHORT"): ServerGuide = withContext(Dispatchers.IO) {
         require(language.matches(Regex("[A-Z]{2,3}(-[A-Z]{2})?")) && type in listOf("FULL", "SHORT"))
         val data = json(Request.Builder().url(base + "api/locations/$location/guide?language=$language&scriptType=$type").build())

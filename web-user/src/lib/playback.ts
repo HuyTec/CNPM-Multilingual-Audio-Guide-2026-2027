@@ -1,3 +1,4 @@
+import { playbackActive } from './playbackGate';
 import type { Guide } from './guide';
 
 export type PlaybackState = {
@@ -39,7 +40,7 @@ export class GuidePlayback {
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   snapshot = () => this.state;
   private update(patch: Partial<PlaybackState>) {
-    this.state = { ...this.state, ...patch }; this.listeners.forEach(listener => listener());
+    this.state = { ...this.state, ...patch }; playbackActive(this,["playing","preparing","paused"].includes(this.state.status)); this.listeners.forEach(listener => listener());
   }
   private clearTimer() { clearTimeout(this.timer); this.timer = undefined; }
   private clearVoiceWait() {

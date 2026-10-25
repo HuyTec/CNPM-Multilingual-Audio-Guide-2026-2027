@@ -76,7 +76,7 @@ class SharedTourRepository(private val context: Context, val base: String) {
                 val items = payload.getJSONArray("locations")
                 List(items.length()) { i -> val item = items.getJSONObject(i)
                     ServerLocation(item.getString("locationId"), item.getString("name"), item.optDouble("latitude"),
-                        item.optDouble("longitude"), item.optString("categoryName"), item.optString("categoryId")) }
+                        item.optDouble("longitude"), item.optString("categoryName"), item.optString("categoryId"), DemoApi.localizedNames(item)) }
             }
             require(locations.isNotEmpty()) { "Chưa có gói cơ bản đã xác minh. Cần chuẩn bị nội dung khi có mạng." }
             locations to true
@@ -130,9 +130,19 @@ class SharedTourRepository(private val context: Context, val base: String) {
             }
         })
     }
-    suspend fun available(): List<JSONObject> {
-        val list = JSONArray(get("/api/content-packages").toString(Charsets.UTF_8))
-        return List(list.length()) { list.getJSONObject(it) }
+    private var manifestTag: String? = null
+    private var cachedManifests: List<JSONObject> = emptyList()
+    suspend fun available(): List<JSONObject> = withContext(Dispatchers.IO) {
+        val builder = Request.Builder().url(base.trimEnd('/') + "/api/content-packages")
+        manifestTag?.let { builder.header("If-None-Match", it) }
+        client.newCall(builder.build()).execute().use { response ->
+            if (response.code == 304) return@withContext cachedManifests
+            check(response.isSuccessful) { "Chưa kiểm tra được gói mới" }
+            val list = JSONArray(response.body?.string() ?: "[]")
+            val next = List(list.length()) { list.getJSONObject(it) }
+            require(next.all { it.getString("status") == "APPROVED" })
+            cachedManifests = next; manifestTag = response.header("ETag"); next
+        }
     }
     suspend fun download(manifest: JSONObject, progress: (String) -> Unit) = withContext(Dispatchers.IO) {
         val scope = manifest.getString("scope"); require(scope in listOf("BASE", "OPTIONAL"))
@@ -152,6 +162,9 @@ class SharedTourRepository(private val context: Context, val base: String) {
             downloaded.put(JSONObject().put("url", asset.getString("url")).put("data", Base64.encodeToString(bytes, Base64.NO_WRAP)))
         }
         record.put("downloadedAssets", downloaded); currentCoroutineContext().ensureActive()
+        withContext(Dispatchers.Main) { progress("Đang chờ kết thúc lượt nghe để cài gói…") }
+        vn.hvp.travelvoice.platform.audio.PackagePlaybackGate.awaitIdle()
+        currentCoroutineContext().ensureActive()
         val target = file(scope); val stream = target.startWrite()
         try { stream.write(record.toString().toByteArray(Charsets.UTF_8)); target.finishWrite(stream) }
         catch (error: Exception) { target.failWrite(stream); throw error }

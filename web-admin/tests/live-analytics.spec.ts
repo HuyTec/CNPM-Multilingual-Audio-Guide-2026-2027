@@ -3,17 +3,19 @@ import { randomUUID } from "node:crypto";
 import ExcelJS from "exceljs";
 import AxeBuilder from "@axe-core/playwright";
 
-const password = process.env.DEMO_ADMIN_PASSWORD || "";
-const authorization = `Basic ${Buffer.from(`admin:${password}`).toString("base64")}`;
+const password = process.env.LIVE_ANALYTICS_API === "1" ? (process.env.DEMO_EDITOR_PASSWORD || "EditorDemo!2026") : "";
+
 test.skip(
   !password,
-  "Requires real demo backend on port 8081 and DEMO_ADMIN_PASSWORD.",
+  "Requires real demo backend on port 8081 and LIVE_ANALYTICS_API=1.",
 );
 
 test("real database event reaches authenticated dashboard and XLSX; duplicate delivery is idempotent", async ({
   page,
   request,
 }) => {
+  const login=await request.post("/api/admin/auth/login",{data:{username:"editor",password}});
+  expect(login.ok()).toBeTruthy();const authorization=`Bearer ${(await login.json()).token}`;
   expect((await request.get("/api/admin/analytics")).status()).toBe(401);
   await page.goto("/analytics");
   await expect(page).toHaveURL(/from=.*to=/);

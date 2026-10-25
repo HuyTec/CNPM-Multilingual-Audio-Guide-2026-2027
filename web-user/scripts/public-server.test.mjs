@@ -20,6 +20,10 @@ test('phone gateway serves only the built app and public backend routes', async 
   await mkdir(join(root, 'assets')); await writeFile(join(root, 'index.html'), '<h1>TravelVoice</h1>');
   await writeFile(join(root, 'assets/app.js'), 'console.log(1)');
   await writeFile(join(root, 'playback-outbox.js'), 'export const syncTag = "test";');
+  await mkdir(join(root,'downloads'));
+  await writeFile(join(root,'downloads/android-release.json'),'{"version":"test"}');
+  await writeFile(join(root,'downloads/travelvoice.apk'),Buffer.from('PK-test-apk'));
+  await writeFile(join(root,'downloads/private.txt'),'must not be served');
   const gateway = createPublicServer({ dist: root, backend: `http://127.0.0.1:${backend.address().port}` });
   gateway.listen(0, '127.0.0.1'); await once(gateway, 'listening');
   const origin = `http://127.0.0.1:${gateway.address().port}`;
@@ -29,6 +33,12 @@ test('phone gateway serves only the built app and public backend routes', async 
     }
     assert.equal((await fetch(origin + '/assets/app.js')).status, 200);
     assert.equal((await fetch(origin + '/playback-outbox.js')).status, 200);
+    assert.equal((await fetch(origin+'/downloads/android-release.json')).status,200);
+    const apk=await fetch(origin+'/downloads/travelvoice.apk');assert.equal(apk.status,200);
+    assert.equal(apk.headers.get('content-type'),'application/vnd.android.package-archive');
+    assert.match(apk.headers.get('content-disposition'),/attachment/);
+    assert.equal(await apk.text(),'PK-test-apk');
+    assert.equal((await fetch(origin+'/downloads/private.txt')).status,404);
     for (const path of ['/api/admin/analytics', '/api/admin/content/locations', '/actuator/health', '/.env', '/src/main.tsx', '/@vite/client', '/assets/%2e%2e/.env'])
       assert.equal((await fetch(origin + path)).status, 404, path);
     for (const path of ['/api/categories', '/api/locations?size=50', '/api/locations/20000000-0000-0000-0000-000000000101/guide?language=VI', '/api/content-packages/key', '/demo-audio/museum.wav'])

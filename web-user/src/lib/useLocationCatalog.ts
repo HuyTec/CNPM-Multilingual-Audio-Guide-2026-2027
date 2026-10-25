@@ -16,6 +16,7 @@ export function useLocationCatalog(query: string) {
     async function load() {
       try {
         const items: TourLocation[] = [];
+        const language=(new URLSearchParams(query).get("language")||"vi").toLowerCase();
         const ids = new Set<string>();
         let pages = 1;
         for (let page = 0; page < pages; page++) {
@@ -34,14 +35,15 @@ export function useLocationCatalog(query: string) {
           if (!Array.isArray(data.items) || !Number.isInteger(data.totalPages) || data.totalPages < 0
             || data.items.some(item => !uuidPattern.test(item.locationId) || typeof item.name !== 'string' || ids.has(item.locationId))) throw new Error();
           data.items.forEach(item => ids.add(item.locationId));
-          items.push(...data.items);
+          items.push(...data.items.map(item=>({...item,name:item.names?.[language]||item.names?.vi||item.name})));
           pages = data.totalPages;
         }
         if (active) setSnapshot({ query, items, status: 'ready', offline: false });
       } catch {
         if (!active) return;
         try {
-          const local = await offlineLocations();
+          const requested=(new URLSearchParams(query).get("language")||"vi").toLowerCase();
+          const local = (await offlineLocations()).map(item=>({...item,name:item.names?.[requested]||item.names?.vi||item.name}));
           if (!local.length) throw new Error();
           const parameters = new URLSearchParams(query);
           const keyword = (parameters.get('keyword') || '').toLocaleLowerCase('vi-VN');

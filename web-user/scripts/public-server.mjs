@@ -76,6 +76,7 @@ export function createPublicServer({ dist, backend }) {
     if (path === '/' || path === '/index.html' || path === '/offline' || guidePage.test(path)) file = 'index.html';
     else if (['/sw.js', '/playback-outbox.js', '/asset-manifest.json'].includes(path)) file = path.slice(1);
     else if (/^\/assets\/[a-zA-Z0-9_.-]+$/.test(path)) file = path.slice(1);
+    else if (['/downloads/android-release.json', '/downloads/travelvoice.apk'].includes(path)) file = path.slice(1);
     else { reply(res, 404, 'Not found'); return; }
     try {
       const root = await realpath(dist);
@@ -83,7 +84,8 @@ export function createPublicServer({ dist, backend }) {
       if (!absolute.startsWith(root + sep)) { reply(res, 404, 'Not found'); return; }
       const metadata = await stat(absolute);
       if (!metadata.isFile()) throw new Error();
-      res.writeHead(200, { 'Content-Type': mime[extname(absolute)] || 'application/octet-stream',
+      res.writeHead(200, { 'Content-Type': file.endsWith('.apk') ? 'application/vnd.android.package-archive' : mime[extname(absolute)] || 'application/octet-stream',
+        ...(file.endsWith('.apk') ? { 'Content-Disposition': 'attachment; filename="travelvoice.apk"' } : {}),
         'Content-Length': metadata.size, 'Cache-Control': file.startsWith('assets/') ? 'public, max-age=31536000, immutable' : 'no-cache' });
       if (req.method === 'HEAD') res.end();
       else createReadStream(absolute).on('error', () => res.destroy()).pipe(res);

@@ -51,7 +51,7 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
         while (end != BreakIterator.DONE) { add(text.substring(start, end)); start = end; end = iterator.next() }
         if (isEmpty()) add(text)
     }
-    init { lifecycle.addObserver(observer) }
+    init { lifecycle.addObserver(observer); PackagePlaybackGate.owners[this] = { state in listOf("Đang phát", "Đang chuẩn bị…", "Tạm dừng") } }
     private fun acquire() = manager.requestAudioFocus(focus) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
     private fun begin() { handler.removeCallbacks(timeout); state = "Đang phát"; if (!counted && (ttsSource || position > 0)) { counted = true; started(UUID.randomUUID().toString()) } }
     fun play() {
@@ -142,5 +142,5 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
     }
     fun tick() { if (!ttsSource && state == "Đang phát") runCatching { position = (player?.currentPosition ?: 0) / 1000; if (position > 0) begin() } }
     private fun fail(message: String) { stop(); state = message }
-    fun close() { if (!closed) { stop(); closed = true; engine?.shutdown(); engine = null; lifecycle.removeObserver(observer); handler.removeCallbacksAndMessages(null) } }
+    fun close() { PackagePlaybackGate.owners.remove(this); if (!closed) { stop(); closed = true; engine?.shutdown(); engine = null; lifecycle.removeObserver(observer); handler.removeCallbacksAndMessages(null) } }
 }

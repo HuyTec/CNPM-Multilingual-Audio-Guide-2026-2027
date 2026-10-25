@@ -39,6 +39,9 @@ export const test = base.extend<{ adminData: Data }>({
         url = new URL(request.url());
       const json = (data: unknown, status = 200) =>
         route.fulfill({ status, json: data });
+      if (url.pathname === "/api/admin/auth/login") return json({token:"fixture-session",username:"editor",role:"EDITOR"});
+      if (url.pathname === "/api/admin/auth/me") return json({username:"editor",role:"EDITOR"});
+      if (url.pathname === "/api/admin/auth/logout") return json({username:"editor",role:"EDITOR"});
       if (url.pathname === "/api/admin/content/config")
         return json({
           categories: ["Văn hóa", "Lịch sử", "Ẩm thực"],

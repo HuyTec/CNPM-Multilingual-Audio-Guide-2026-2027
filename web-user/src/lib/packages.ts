@@ -1,3 +1,4 @@
+import {waitForPlayback} from './playbackGate';
 import type { Guide, Selection, TourLocation } from './guide';
 import { parseGuide, uuidPattern } from './guide';
 import type { GeofencingMetadata } from './geofence';
@@ -91,6 +92,8 @@ export async function downloadPackage(manifest: PackageManifest, signal: AbortSi
     assets.push({ url: asset.url, bytes });
   }
   signal.throwIfAborted();
+  progress('Đang chờ kết thúc lượt nghe trước khi cài gói…');
+  await waitForPlayback(signal);
   progress('Đang cài đặt gói đã xác minh…');
   const db = await database();
   await new Promise<void>((resolve, reject) => {

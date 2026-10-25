@@ -37,3 +37,4 @@ android/.cxx/
 *.log
 *.tmp
 .local-tools/
+web-user/public/downloads/

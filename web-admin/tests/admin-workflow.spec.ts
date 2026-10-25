@@ -2,6 +2,34 @@ import { test, expect } from "./admin-fixture";
 import ExcelJS from "exceljs";
 import AxeBuilder from "@axe-core/playwright";
 
+test("translation failure keeps source text and manual editing available", async ({
+  page,
+}) => {
+  await page.route("**/api/admin/content/translate", (route) =>
+    route.fulfill({
+      status: 502,
+      json: { detail: "Dịch tạm lỗi; hãy nhập thủ công." },
+    }),
+  );
+  await page.goto("/locations/new");
+  await page.getByLabel("Tên địa điểm").fill("Nguồn giữ nguyên");
+  await page
+    .getByLabel("Nội dung thuyết minh", { exact: true })
+    .fill("Kịch bản không bị mất khi dịch lỗi.");
+  await page.getByRole("checkbox", { name: "English", exact: true }).check();
+  await page.getByRole("button", { name: "Dịch tự động", exact: true }).click();
+  await expect(
+    page.getByText("Dịch tạm lỗi; hãy nhập thủ công.", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Tên địa điểm")).toHaveValue("Nguồn giữ nguyên");
+  await expect(
+    page.getByLabel("Nội dung thuyết minh", { exact: true }),
+  ).toHaveValue("Kịch bản không bị mất khi dịch lỗi.");
+  await page.getByLabel("Ngôn ngữ", { exact: true }).selectOption("en");
+  await page.getByLabel("Tên địa điểm").fill("Manual English");
+  await expect(page.getByLabel("Tên địa điểm")).toHaveValue("Manual English");
+});
+
 test("localized name selection preserves VI, rejection is read-only and can be resubmitted", async ({
   page,
   adminData,

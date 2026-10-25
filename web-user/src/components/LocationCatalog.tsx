@@ -16,7 +16,7 @@ export function LocationCatalog() {
   const language = supportedLanguages.includes(params.get('language') || '') ? params.get('language')! : 'VI';
   const scriptType = params.get('scriptType') === 'SHORT' ? 'SHORT' : 'FULL';
   const listOpen = params.get('panel') === 'locations' || params.get('view') === 'list';
-  const query = new URLSearchParams(category ? { categoryId: category } : {}).toString();
+  const query = new URLSearchParams(category ? { categoryId: category, language } : { language }).toString();
   const catalog = useLocationCatalog(query);
   const [focusRequest, setFocusRequest] = useState(0);
   const matches = useMemo(() => catalog.items.filter(item => normalizePlaceName(item.name).includes(normalizePlaceName(keyword))), [catalog.items, keyword]);

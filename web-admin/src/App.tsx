@@ -15,6 +15,7 @@ import {
   FlaskConical,
   ChevronRight,
 } from "lucide-react";
+import ReviewQueue from "./pages/ReviewQueue";
 import LocationList from "./pages/LocationList";
 import LocationForm from "./pages/LocationForm";
 import AnalyticsFeedback from "./pages/AnalyticsFeedback";
@@ -23,7 +24,7 @@ import { useAdminSession } from "./lib/admin-content";
 function Layout() {
   const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const { authorization, setAuthorization } = useAdminSession();
+  const { authorization, setAuthorization, identity } = useAdminSession();
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main">
@@ -48,6 +49,9 @@ function Layout() {
             <MapPin size={18} aria-hidden="true" />
             Địa điểm
           </NavLink>
+          {identity?.role === "REVIEWER" && (
+            <NavLink to="/reviews">Duyệt và xuất bản</NavLink>
+          )}
           <NavLink to="/analytics">
             <BarChart3 size={18} aria-hidden="true" />
             Thống kê & phản hồi
@@ -67,7 +71,7 @@ function Layout() {
             <span className="avatar">AD</span>
             <div>
               <strong>Quản trị viên</strong>
-              <small>Quản trị demo có xác thực</small>
+              <small>{identity?.role || "Chưa đăng nhập"}</small>
             </div>
           </div>
         </div>
@@ -94,7 +98,8 @@ function Layout() {
               Đăng xuất quản trị
             </button>
           )}
-          {location.pathname.startsWith("/locations") ? (
+          {location.pathname.startsWith("/locations") ||
+          location.pathname.startsWith("/reviews") ? (
             <AdminContentGate>
               <Outlet />
             </AdminContentGate>
@@ -155,6 +160,7 @@ const router = createBrowserRouter([
       { path: "/locations/new", element: <LocationForm key="new" /> },
       { path: "/locations/:id/edit", element: <ExistingForm /> },
       { path: "/analytics", element: <AnalyticsFeedback /> },
+      { path: "/reviews", element: <ReviewQueue /> },
       {
         path: "*",
         element: (

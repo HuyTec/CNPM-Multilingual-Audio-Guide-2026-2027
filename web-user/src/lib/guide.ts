@@ -3,7 +3,7 @@ export const supportedLanguages = ['VI', 'EN', 'FR', 'JA', 'ZH', 'RU'];
 export const tourCategoryId = '10000000-0000-0000-0000-000000000101';
 export type TourLocation = {
   locationId: string; name: string; categoryId: string; categoryName: string;
-  latitude: number; longitude: number; geofenceRadiusM: number;
+  latitude: number; longitude: number; geofenceRadiusM: number; names?: Record<string,string>;
 };
 export type Selection = { locationId: string; language: string; scriptType: ScriptType };
 export type Guide = {

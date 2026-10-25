@@ -24,7 +24,7 @@ import { number } from "../lib/format";
 export default function LocationList() {
   const [params, setParams] = useSearchParams();
   const scenario = "normal";
-  const { authorization } = useAdminSession();
+  const { authorization, identity } = useAdminSession();
   const [source, setSource] = useState<ContentLocation[]>([]);
   const [load, setLoad] = useState("loading");
   const [revision, setRevision] = useState(0);
@@ -93,10 +93,10 @@ export default function LocationList() {
             Biên tập kịch bản, kiểm tra audio và chuẩn bị nội dung gửi duyệt.
           </p>
         </div>
-        <Link to="/locations/new" className="button">
+        {identity?.role === "EDITOR" && <Link to="/locations/new" className="button">
           <Plus size={18} aria-hidden="true" />
           Thêm địa điểm
-        </Link>
+        </Link>}
       </div>
       <div
         className="location-stats"
@@ -147,7 +147,7 @@ export default function LocationList() {
               onChange={(e) => filter("status", e.target.value)}
             >
               <option value="">Tất cả trạng thái</option>
-              {["DRAFT", "PENDING_REVIEW", "REJECTED", "APPROVED"].map((value) => (
+              {["DRAFT", "PENDING_REVIEW", "REJECTED", "APPROVED", "PUBLISHED"].map((value) => (
                 <option key={value} value={value}>
                   {statusLabels[value]}
                 </option>

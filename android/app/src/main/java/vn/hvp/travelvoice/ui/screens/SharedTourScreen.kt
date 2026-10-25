@@ -77,8 +77,8 @@ fun SharedTourScreen(modifier: Modifier = Modifier, offlinePage: Boolean = false
     var guideError by remember(base, selected, language, mode, revision) { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    LaunchedEffect(repository, revision) {
-        try { val result = repository.locations(); locations = result.first; source = if (result.second) "Chưa kết nối máy chủ · dùng gói offline đã xác minh" else "Nội dung từ máy chủ chung với Web Admin" }
+    LaunchedEffect(repository, revision, language) {
+        try { val result = repository.locations(); locations = result.first.map { it.copy(name = it.names[language.lowercase()] ?: it.names["vi"] ?: it.name) }; source = if (result.second) "Chưa kết nối máy chủ · dùng gói offline đã xác minh" else "Nội dung từ máy chủ chung với Web Admin" }
         catch (cancelled: CancellationException) { throw cancelled }
         catch (error: Exception) { catalogError = error.message ?: "Không tải được địa điểm" }
     }
@@ -88,7 +88,9 @@ fun SharedTourScreen(modifier: Modifier = Modifier, offlinePage: Boolean = false
         catch (cancelled: CancellationException) { throw cancelled }
         catch (error: Exception) { guideError = error.message ?: "Không tải được thuyết minh" }
     }
-    LazyColumn(modifier, contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    Column(modifier) {
+        PackageUpdateNotice(repository)
+        LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text(if (offlinePage) "Nội dung offline" else "Quận 1 & điểm đến lân cận", style = MaterialTheme.typography.headlineSmall)
             Text("Nội dung demo đang rà soát; tọa độ minh họa, không phải khoảng cách đo từ GPS.", style = MaterialTheme.typography.bodySmall)
             Text(source, Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
@@ -146,6 +148,7 @@ fun SharedTourScreen(modifier: Modifier = Modifier, offlinePage: Boolean = false
                 SharedNarration(content, base)
                 Text(content.scriptText)
             } }
+        }
         }
     }
 }
@@ -208,7 +211,7 @@ private fun SharedOfflineContent(repository: SharedTourRepository) {
         available.forEach { manifest ->
             val current = installed.firstOrNull { it.getJSONObject("manifest").getString("scope") == manifest.getString("scope") }
             val same = current?.getJSONObject("manifest")?.getString("version") == manifest.getString("version")
-            Text(if (manifest.getBoolean("isBase")) "Gói cơ bản · 7 điểm / 6 ngôn ngữ" else "Gói bổ sung · bộ cũ có audio")
+            Text(if (manifest.getBoolean("isBase")) "Gói cơ bản" else "Gói bổ sung · bộ cũ có audio")
             Text(manifest.getString("version"), style = MaterialTheme.typography.bodySmall)
             Text(if (same) "Đã mới nhất" else "Có nội dung chưa cài hoặc bản cập nhật")
             if (!same) Button(enabled = !busy, onClick = { confirm = manifest }) { Text("Tải gói") }
