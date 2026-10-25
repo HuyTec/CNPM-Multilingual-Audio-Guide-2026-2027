@@ -55,7 +55,7 @@ Vite dev mặc định 5175; preview 4175. npm run serve:public phục vụ dist
 
 ```powershell
 # Từ gốc repo, đã chuẩn bị APK như phần trên
-.\scripts\start-live-demo.ps1 -TouristWeb
+.\scripts\start-live-demo.ps1
 .\scripts\share-docker-web.ps1
 # Dừng đúng tunnel script tạo; không xóa database/container
 .\scripts\share-docker-web.ps1 -Stop
@@ -63,7 +63,7 @@ Vite dev mặc định 5175; preview 4175. npm run serve:public phục vụ dist
 
 [share-docker-web.ps1](../../scripts/share-docker-web.ps1) tải cloudflared chính thức đã ghim phiên bản/SHA-256 nếu thiếu, chạy tiến trình ẩn và lưu PID/URL/log trong .local-tools. Dùng -Port để trỏ cổng Docker khác; -Restart tạo tunnel mới và có thể đổi URL. Giữ máy, Docker và tunnel hoạt động. URL ngẫu nhiên là tạm thời, không có cam kết uptime. QR Android lấy origin của URL đang mở nên không cần sửa mã QR bằng tay khi đổi tunnel.
 
-Lần kiểm thử hiện hành dùng mạng Docker riêng và cổng 14176, backend/DB demo riêng; không thay stack cũ cổng 8080/3000 hoặc 8081/3001. Khi dùng preview này, gọi script với -Port 14176. Gateway chỉ phục vụ public routes cùng hai file downloads được allowlist; Admin/Actuator không được đưa ra internet. Chuẩn bị lại APK trước Docker build, nếu không khối Android báo chưa sẵn sàng.
+Từ ngày 25/10/2026, Web du khách là service `web-user` trong cùng [compose.yaml](../../compose.yaml) với Admin, backend và PostgreSQL. Cổng host mặc định 14176, target proxy nội bộ `http://backend:8080`; không cần chạy container `hvp-publication-web-user` riêng. Script chia sẻ mặc định 14176, hoặc truyền `-Port` nếu đổi `TOURIST_WEB_PORT`. Xem [DOCKER_GUIDE.md](DOCKER_GUIDE.md). Gateway chỉ phục vụ public routes cùng hai file downloads được allowlist; Admin/Actuator không được đưa ra internet. Chuẩn bị lại APK trước Docker build, nếu không khối Android báo chưa sẵn sàng.
 
 Trên điện thoại thật, sau khi cài APK demo, mở **Kết nối máy chủ** trong ứng dụng và dùng chính URL HTTPS của Web làm địa chỉ đồng bộ. Không dùng 10.0.2.2 (chỉ dành cho emulator). Gateway public hỗ trợ các API du khách mà Android dùng; không cung cấp quyền quản trị.
 

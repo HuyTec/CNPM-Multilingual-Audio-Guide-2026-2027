@@ -1,5 +1,7 @@
 # Thiết lập Docker trên Windows
 
+> Cập nhật 25/10/2026: hướng dẫn chạy hiện hành nằm ở [Docker Guide](../guide/DOCKER_GUIDE.md). `compose.yaml` hiện chạy đủ PostgreSQL, backend, Admin (3001) và Web du khách (14176), backend ở 8081. Những cổng 3000/8080 trong phần bên dưới là cấu hình lịch sử; dùng guide mới khi chạy demo.
+
 Docker Compose đóng gói Spring Boot backend, React web-admin và PostgreSQL 17 kèm PostGIS (`postgis/postgis:17-3.6-alpine`). Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Backend kết nối database `audio_guide` tại `postgres:5432` qua JDBC; Flyway tự chạy `V1__demo.sql` khi khởi động để tạo schema demo.
 
 ```text

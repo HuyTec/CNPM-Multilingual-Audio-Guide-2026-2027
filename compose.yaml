@@ -1,11 +1,14 @@
+name: hvp-live-demo
+
 services:
   backend:
+    restart: unless-stopped
     build:
       context: ./backend/multi-audio-guide
     ports:
-      - "${BACKEND_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-8080}:8080"
+      - "${BACKEND_BIND_ADDRESS:-127.0.0.1}:${BACKEND_PORT:-8081}:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-default}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-demo}
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/audio_guide
       SPRING_DATASOURCE_USERNAME: audio_guide
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD}
@@ -28,10 +31,11 @@ services:
       start_period: 40s
 
   web-admin:
+    restart: unless-stopped
     build:
       context: ./web-admin
     ports:
-      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3000}:80"
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-3001}:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -42,11 +46,12 @@ services:
       retries: 3
 
   web-user:
-    profiles: ["tourist-web"]
+    restart: unless-stopped
+    init: true
     build:
       context: ./web-user
     ports:
-      - "127.0.0.1:${TOURIST_WEB_PORT:-4176}:4176"
+      - "127.0.0.1:${TOURIST_WEB_PORT:-14176}:4176"
     environment:
       API_PROXY_TARGET: http://backend:8080
     depends_on:
@@ -54,6 +59,7 @@ services:
         condition: service_healthy
 
   postgres:
+    restart: unless-stopped
     image: postgis/postgis:17-3.6-alpine
     environment:
       POSTGRES_DB: audio_guide

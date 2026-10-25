@@ -38,10 +38,10 @@ REVIEWER mở Duyệt và xuất bản, chọn bản PENDING_REVIEW. Xem tên đ
 
 ## Trạng thái và kiểm thử
 
-Runtime local ngày 25/10/2026: Admin `3001` dùng stack `hvp-live-demo`. Admin `3000` có thể dùng cùng backend qua [compose.admin-shared.yaml](../../compose.admin-shared.yaml) và [nginx-admin-shared.conf](../../scripts/nginx-admin-shared.conf). Backend ở cổng 8080 cũng dùng DB của live-demo khi áp dụng overlay; `.env.admin.local` cần POSTGRES_PASSWORD đúng với DB live-demo. DB legacy của stack gốc có lịch sử migration khác (V4/V4.1/V4.2); không repair/reset DB đó để ép chạy code nhánh này. Khởi động UI dùng chung sau khi stack live-demo healthy:
+Từ ngày 25/10/2026, [compose.yaml](../../compose.yaml) chạy chung PostgreSQL, backend, Web Admin và Web du khách trong project `hvp-live-demo`. Admin mặc định cổng `3001`, backend `8081`, Web du khách `14176`; không còn cần Admin phụ cổng `3000` hay overlay chia sẻ DB. Xem [DOCKER_GUIDE.md](DOCKER_GUIDE.md). Volume legacy của stack gốc được giữ nguyên; không repair/reset DB đó để ép chạy code nhánh này.
 
 ```powershell
-docker compose --env-file .env.demo.local --env-file .env.admin.local -f compose.yaml -f compose.admin-shared.yaml -p congnghephanmem_2026-2027 up -d --no-deps backend web-admin
+.\scripts\start-live-demo.ps1
 ```
 
 Tài khoản `admin` vai trò EDITOR được cấp trong DB demo đang chạy theo yêu cầu người dùng; mật khẩu lưu trong cấu hình local bị Git bỏ qua, không ghi vào tài liệu. Tài khoản này không tự xuất hiện trên DB mới: seed mặc định của source vẫn là editor/reviewer.

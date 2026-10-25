@@ -24,6 +24,8 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
 ## Công nghệ sử dụng
 
+Chạy toàn bộ backend, PostgreSQL, Web Admin và Web du khách bằng `.\scripts\start-live-demo.ps1` từ gốc repo. Tất cả nằm trong một [compose.yaml](compose.yaml); xem cổng, Cloudflare và cách giữ dữ liệu trong [hướng dẫn Docker](docs/guide/DOCKER_GUIDE.md).
+
 | Thành phần     | Công nghệ               | Ghi chú                                             |
 | -------------- | ----------------------- | --------------------------------------------------- |
 | Web admin      | React.js                | Giao diện quản trị (UC-06, UC-07)                   |

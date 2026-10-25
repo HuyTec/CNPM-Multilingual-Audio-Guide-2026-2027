@@ -1,5 +1,7 @@
 # Demo Android → PostgreSQL → Web Admin
 
+> Cập nhật 25/10/2026: [Docker Guide](../guide/DOCKER_GUIDE.md) là nguồn cấu hình hiện hành. Chạy `scripts/start-live-demo.ps1` sẽ khởi động cả hai web cùng backend/DB; không cần `-TouristWeb` hay container Web du khách riêng.
+
 Demo local/cùng Wi-Fi, không cần thuê server. Audio tiếng Việt phát thật; địa điểm và kịch bản là nội dung minh họa do nhóm chuẩn bị.
 
 ## Khởi động

@@ -14,12 +14,12 @@ Cập nhật 25/10/2026 theo code hiện tại. UC-06 đã bổ sung EDITOR/REVI
 
 ## Khởi động theo thứ tự
 
-1. Mở Docker Desktop, đợi Linux engine hoạt động (`docker version` phải có Client và Server). Từ gốc repo chạy [start-live-demo.ps1](../../scripts/start-live-demo.ps1); script tạo .env.demo.local riêng khi chưa có, khởi động PostgreSQL → backend → Web Admin. Không in/commit password DB. Cổng live-demo: backend 8081, Admin 3001; Compose mặc định dùng 8080/3000 nên không trộn hai bộ dữ liệu.
+1. Mở Docker Desktop, đợi Linux engine hoạt động (`docker version` phải có Client và Server). Từ gốc repo chạy [start-live-demo.ps1](../../scripts/start-live-demo.ps1); script tạo .env.demo.local riêng khi chưa có, khởi động cả PostgreSQL → backend → Web Admin và Web du khách qua một [compose.yaml](../../compose.yaml). Mặc định backend 8081, Admin 3001, Web du khách 14176; tất cả dùng một DB. Xem [DOCKER_GUIDE.md](DOCKER_GUIDE.md). Không in/commit password DB.
 2. Đợi health DB UP; mở Admin. Seed mới: editor / EditorDemo!2026 và reviewer / ReviewerDemo!2026. Có thể override DEMO_EDITOR_PASSWORD/DEMO_REVIEWER_PASSWORD trước lần seed đầu; không reset mật khẩu đã tồn tại. Đăng nhập cũ admin/Basic không còn dùng.
 3. Chuẩn bị Android bằng [prepare-android-download.ps1](../../scripts/prepare-android-download.ps1) để build APK và copy metadata; đặt API_PROXY_TARGET của Web User tới backend phù hợp, rồi npm ci và npm run dev trong web-user (5175). Để kiểm offline shell, chạy build/preview hoặc public server; dev page mở được chưa chứng minh offline reopen.
 4. Muốn người khác tải APK bằng QR, phục vụ Web qua HTTPS/LAN mà điện thoại truy cập được. QR tự theo origin website; localhost của PC không dùng trên điện thoại. Build Web sau khi chuẩn bị APK; xem [USER_WEB_GUIDE.md](USER_WEB_GUIDE.md). APK được gitignore, không tự xuất hiện khi người khác chỉ git clone.
 
-Để public cổng Docker bằng ít thao tác: thêm -TouristWeb khi chạy start-live-demo.ps1 rồi chạy [share-docker-web.ps1](../../scripts/share-docker-web.ps1). Script chọn Cloudflare Quick Tunnel; xem kết quả thử ngrok/LocalTunnel/Cloudflare và lệnh dừng trong User Web Guide. Preview đang thử dùng cổng riêng 14176, không trộn với stack mặc định.
+Để public Web du khách, chạy [share-docker-web.ps1](../../scripts/share-docker-web.ps1) sau khi stack healthy. Script mặc định cổng 14176 và chọn Cloudflare Quick Tunnel; không đưa Admin ra internet. `-TouristWeb` của script khởi động chỉ còn để tương thích lệnh cũ; cả hai web luôn được khởi động. Xem kết quả thử tunnel và lệnh dừng trong User Web Guide.
 
 ## Kịch bản và kết quả mong đợi
 
