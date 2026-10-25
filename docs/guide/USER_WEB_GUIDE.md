@@ -66,3 +66,9 @@ Vite dev mặc định 5175; preview 4175. npm run serve:public phục vụ dist
 Lần kiểm thử hiện hành dùng mạng Docker riêng và cổng 14176, backend/DB demo riêng; không thay stack cũ cổng 8080/3000 hoặc 8081/3001. Khi dùng preview này, gọi script với -Port 14176. Gateway chỉ phục vụ public routes cùng hai file downloads được allowlist; Admin/Actuator không được đưa ra internet. Chuẩn bị lại APK trước Docker build, nếu không khối Android báo chưa sẵn sàng.
 
 Trên điện thoại thật, sau khi cài APK demo, mở **Kết nối máy chủ** trong ứng dụng và dùng chính URL HTTPS của Web làm địa chỉ đồng bộ. Không dùng 10.0.2.2 (chỉ dành cho emulator). Gateway public hỗ trợ các API du khách mà Android dùng; không cung cấp quyền quản trị.
+
+## Cập nhật luồng tải gói và QR
+
+Kiểm tra thủ công và polling dùng chung store phiên bản; kiểm tra thủ công không khóa danh sách ở snapshot cũ. Xác nhận tải dùng dialog modal có focus vào Hủy và hỗ trợ Escape. Sau cài có danh sách liên kết địa điểm trong gói; dữ liệu nằm trong IndexedDB, không phải file Downloads. Catalog mặc định không ép danh mục tuyến demo, cho phép tìm POI mới ngoài tuyến. Tọa độ (1,1) hợp lệ nhưng ở xa vùng bản đồ ban đầu; tìm theo tên hoặc mở từ gói để đọc. QR và nút APK lấy cùng URL, mặc định theo origin hiện tại; dưới QR có tên miền tải và nút lưu mã GIF. Không hard-code link tunnel trong source.
+
+Tải từng tài nguyên có timeout và thử lại tối đa 3 lần khi đường truyền gián đoạn; checksum/chữ ký vẫn được kiểm trước khi lưu. Không coi lỗi mạng là gói đã cài. Gói hỏng vẫn bị từ chối và giữ bản cũ.

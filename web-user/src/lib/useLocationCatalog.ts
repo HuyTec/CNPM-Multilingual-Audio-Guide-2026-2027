@@ -10,6 +10,15 @@ export function useLocationCatalog(query: string) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    const refresh = () => setAttempt(value => value + 1);
+    window.addEventListener('travelvoice-content-changed', refresh);
+    window.addEventListener('online', refresh);
+    return () => {
+      window.removeEventListener('travelvoice-content-changed', refresh);
+      window.removeEventListener('online', refresh);
+    };
+  }, []);
+  useEffect(() => {
     let active = true;
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), 30_000);

@@ -8,7 +8,7 @@ type Category = { categoryId: string; name: string; locationCount: number };
 
 export function CategoryFilter() {
   const [params, setParams] = useSearchParams();
-  const selected = params.get('categoryId') ?? tourCategoryId;
+  const selected = params.get('categoryId') || '';
   const [categories, setCategories] = useState<Category[]>([]);
   const [status, setStatus] = useState('Đang tải danh mục…');
   const [attempt, setAttempt] = useState(0);

@@ -255,3 +255,27 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .map-selected-label { width: fit-content; padding: 2px 8px; color: var(--place-selected); border: 1px solid currentColor; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 .map-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .map-search .map-search-clear { flex-basis: 44px; color: var(--story-muted); }
+
+.package-download-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #d7e2df;
+  border-radius: 14px;
+  padding: 28px;
+  color: #243e38;
+  background: #fff;
+  box-shadow: 0 20px 80px #152a2630;
+}
+.package-download-dialog::backdrop { background: #172e2859; }
+.package-download-dialog h2 { font-size: 24px; line-height: 1.4; }
+.package-download-dialog p { line-height: 1.7; }
+.package-download-dialog .player-actions { margin-top: 24px; justify-content: flex-end; }
+.installed-places { margin-block: 16px; }
+.installed-places summary { cursor: pointer; font-weight: 600; padding-block: 8px; }
+.installed-places ul { max-height: 260px; overflow-y: auto; padding-inline-start: 22px; }
+.installed-places li { padding-block: 7px; overflow-wrap: anywhere; }
+.android-qr-host { font-size: 12px; color: var(--story-muted); overflow-wrap: anywhere; margin-block: 8px; }
+.android-qr-save { display: inline-block; padding: 8px 12px; font-size: 14px; text-underline-offset: 4px; }
+.fallback-note a, .android-qr-save { text-decoration: underline; text-underline-offset: 3px; }

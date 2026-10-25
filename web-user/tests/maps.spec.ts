@@ -31,6 +31,21 @@ test.beforeEach(async ({ page, context }) => {
   }));
 });
 
+test('new place outside the demo category is searchable at its actual coordinates', async ({ page }) => {
+  const extra = { ...locations[0], locationId: '40000000-0000-0000-0000-000000000111', name: 'A', categoryId: '10000000-0000-0000-0000-000000000111', latitude: 1, longitude: 1 };
+  await page.route('**/api/locations?**', route => {
+    expect(new URL(route.request().url()).searchParams.get('categoryId')).toBeNull();
+    return route.fulfill({ json: { items: [...locations, extra], totalPages: 1 } });
+  });
+  await page.goto('/');
+  await expect(page.locator('.guide-map-icon')).toHaveCount(8);
+  const search = page.getByRole('combobox', { name: 'Tìm địa điểm' });
+  await search.fill('A');
+  await search.press('Enter');
+  await expect(page.locator('.map-popup strong')).toHaveText('A');
+  await expect(page.getByRole('link', { name: 'Mở bài thuyết minh', exact: true })).toHaveAttribute('href', new RegExp(extra.locationId));
+});
+
 test('category browsing retains URL state and offers recovery for an empty category', async ({ page }) => {
   await page.route('**/api/locations?**', route => {
     const empty = new URL(route.request().url()).searchParams.get('categoryId')?.endsWith('102');
@@ -304,7 +319,7 @@ test('search keeps seven numbered pins, turns only the match red and clearing im
   await expect(input).toHaveValue(''); await expect(input).toBeFocused();
   await expect(selected).toHaveCount(0);
   await expect(page.locator('.map-popup')).toHaveCount(0);
-  await expect(page.locator('main')).not.toContainText(/demo/i);
+  await expect(page.locator('.map-catalog')).not.toContainText(/demo/i);
 });
 
 test('mobile typography stays consistent across map, popup and list without demo labels', async ({ page }, info) => {

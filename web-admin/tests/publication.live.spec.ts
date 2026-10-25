@@ -163,6 +163,7 @@ test("Android promotion serves the current APK and its QR decodes to the same UR
   page,
   request,
 }) => {
+  test.setTimeout(300000);
   const origin = process.env.PUBLIC_DEMO_URL || "http://127.0.0.1:15175";
   await page.goto(origin + "/");
   const promo = page.getByRole("region", {

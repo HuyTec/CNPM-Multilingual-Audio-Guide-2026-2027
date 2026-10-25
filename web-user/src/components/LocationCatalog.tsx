@@ -1,6 +1,6 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { languageName, supportedLanguages, tourCategoryId } from '../lib/guide';
+import { languageName, supportedLanguages } from '../lib/guide';
 import { useLocationCatalog } from '../lib/useLocationCatalog';
 import type { TourLocation } from '../lib/guide';
 import { normalizePlaceName } from '../lib/locationPhotos';
@@ -12,7 +12,7 @@ export function LocationCatalog() {
   const [params, setParams] = useSearchParams();
   const listButton = useRef<HTMLButtonElement>(null);
   const keyword = params.get('keyword') || '';
-  const category = params.get('categoryId') ?? tourCategoryId;
+  const category = params.get('categoryId') || '';
   const language = supportedLanguages.includes(params.get('language') || '') ? params.get('language')! : 'VI';
   const scriptType = params.get('scriptType') === 'SHORT' ? 'SHORT' : 'FULL';
   const listOpen = params.get('panel') === 'locations' || params.get('view') === 'list';

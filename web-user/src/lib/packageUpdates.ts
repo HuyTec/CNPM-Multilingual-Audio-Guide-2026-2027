@@ -10,11 +10,11 @@ const subscribe = (callback: () => void) => {
     listeners.delete(callback);
   };
 };
-export async function checkPackageUpdates() {
+export async function checkPackageUpdates({ force = false }: { force?: boolean } = {}) {
   if (loading) return loading;
   loading = (async () => {
     const response = await fetch("/api/content-packages", {
-      headers: etag ? { "If-None-Match": etag } : {},
+      headers: etag && !force ? { "If-None-Match": etag } : {},
       cache: "no-cache",
       signal: AbortSignal.timeout(15000),
     });

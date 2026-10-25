@@ -44,6 +44,11 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
   const radius = Number.isFinite(rawRadius) ? Math.min(500, Math.max(50, Math.round(rawRadius))) : 100;
   const gps = useBrowserLocation();
   const stops = useMemo(() => items.filter(hasMapCoordinates), [items]);
+  const viewportStops = useMemo(() => {
+    const local = stops.filter(item => item.latitude >= mapArea.bounds.south && item.latitude <= mapArea.bounds.north
+      && item.longitude >= mapArea.bounds.west && item.longitude <= mapArea.bounds.east);
+    return local.length ? local : stops;
+  }, [stops]);
   const markers = useRef(new Map<string, L.Marker>());
   const previousSelection = useRef({ selected, focusRequest });
   function selectPlace(item: TourLocation) {
@@ -100,11 +105,11 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !stops.length) return;
-    map.fitBounds(L.latLngBounds(stops.map(item => [item.latitude, item.longitude] as [number, number])), {
+    if (!map || !viewportStops.length) return;
+    map.fitBounds(L.latLngBounds(viewportStops.map(item => [item.latitude, item.longitude] as [number, number])), {
       paddingTopLeft: [48, 144], paddingBottomRight: [64, 48], maxZoom: 15, animate: false,
     });
-  }, [stops, attempt]);
+  }, [viewportStops, attempt]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -124,7 +129,7 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
     if (!marker) {
       map.closePopup();
       if (stops.length && (previous.selected || previous.focusRequest !== focusRequest)) {
-        map.fitBounds(L.latLngBounds(stops.map(item => [item.latitude, item.longitude] as [number, number])), {
+        map.fitBounds(L.latLngBounds(viewportStops.map(item => [item.latitude, item.longitude] as [number, number])), {
           paddingTopLeft: [48, 144], paddingBottomRight: [64, 48], maxZoom: 15, animate: false,
         });
       }
@@ -133,7 +138,7 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
     map.setView(marker.getLatLng(), 16, { animate: false });
     marker.openPopup();
     marker.getPopup()?.getElement()?.querySelector<HTMLAnchorElement>('.map-popup a')?.focus({ preventScroll: true });
-  }, [selected, stops, language, scriptType, attempt, focusRequest]);
+  }, [selected, stops, viewportStops, language, scriptType, attempt, focusRequest]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -120,7 +120,7 @@ export function AndroidAppPromo() {
       </div>
       {state.status === "ready" && (
         <figure className="android-promo-qr">
-          <img
+            <img
             src={state.qr}
             width="208"
             height="208"
@@ -128,6 +128,8 @@ export function AndroidAppPromo() {
             alt="Mã QR tải ứng dụng TravelVoice cho Android"
           />
           <figcaption>Quét để tải trên điện thoại Android</figcaption>
+          <p className="android-qr-host">{new URL(state.url).host}</p>
+          <a className="android-qr-save" href={state.qr} download="travelvoice-android-qr.gif">Lưu mã QR</a>
         </figure>
       )}
     </section>
