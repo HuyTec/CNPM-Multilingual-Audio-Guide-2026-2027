@@ -24,6 +24,7 @@ function blankLocation(): ContentLocation {
   return {
     id: crypto.randomUUID(),
     name: "",
+    names: {},
     category: "",
     latitude: "",
     longitude: "",
@@ -156,7 +157,13 @@ export default function LocationForm() {
     [],
   );
   function change(field: keyof Location, value: string) {
-    setForm((old) => ({ ...old, [field]: value }));
+    setForm((old) => {
+      if (field !== "name") return { ...old, [field]: value };
+      const names = { ...(old.names || { vi: old.name }), [language]: value };
+      const name = names.vi?.trim() || names.en?.trim() ||
+        Object.keys(names).sort().map((key) => names[key].trim()).find(Boolean) || "";
+      return { ...old, name, names };
+    });
     setDirty(true);
     setMessage("");
     setErrors((old) => ({ ...old, [field]: "" }));
@@ -370,6 +377,15 @@ export default function LocationForm() {
             : "Lưu nháp hoặc gửi duyệt không xuất bản nội dung lên ứng dụng du khách."}
         </p>
       </div>
+      {(form.status === "REJECTED" || form.reviewerComment) && (
+        <section className="notice" aria-label="Kết quả xét duyệt">
+          <div className="min-w-0">
+            <h2>{form.status === "REJECTED" ? "Nội dung bị từ chối" : "Nhận xét của người duyệt"}</h2>
+            <p className="pre-wrap">{form.reviewerComment || "Chưa có nhận xét từ người duyệt."}</p>
+            <p>Sửa nội dung theo nhận xét, sau đó lưu nháp hoặc gửi duyệt lại. Việc duyệt và xuất bản do quy trình bên ngoài thực hiện.</p>
+          </div>
+        </section>
+      )}
       <form onSubmit={submit} noValidate>
         <div className="form-grid">
           <section className="card">
@@ -390,7 +406,7 @@ export default function LocationForm() {
                   id={field}
                   label={
                     {
-                      name: "Tên địa điểm",
+                      name: `Tên địa điểm · ${languages.find((item) => item.code === language)?.label || language}`,
                       category: "Danh mục",
                       latitude: "Vĩ độ",
                       longitude: "Kinh độ",
@@ -419,7 +435,7 @@ export default function LocationForm() {
                       id={field}
                       name={field}
                       disabled={busy}
-                      value={form[field]}
+                      value={field === "name" ? (form.names?.[language] ?? (language === "vi" ? form.name : "")) : form[field]}
                       type={field === "radius" ? "number" : "text"}
                       inputMode={field === "name" ? "text" : "decimal"}
                       min={field === "radius" ? 1 : undefined}

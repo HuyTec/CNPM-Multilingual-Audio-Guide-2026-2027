@@ -25,12 +25,25 @@ public final class AdminContentDto {
                               @Size(max = 255) String category, @Size(max = 255) String latitude,
                               @Size(max = 255) String longitude, @Size(max = 255) String radius,
                               @NotNull String status, @NotNull @Size(max = 100) Map<String, @Valid Asset> assets,
-                              Integer editVersion) { }
+                              Integer editVersion, @Size(max = 20) Map<String, @Size(max = 255) String> names) {
+        public SaveRequest(UUID id, String name, String category, String latitude, String longitude, String radius,
+                           String status, Map<String, Asset> assets, Integer editVersion) {
+            this(id, name, category, latitude, longitude, radius, status, assets, editVersion, null);
+        }
+    }
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record LocationDetail(UUID id, String name, String category, String latitude, String longitude,
                                  String radius, String status, String packageVersion, Map<String, Asset> assets,
-                                 int editVersion, String updatedBy, Instant updatedAt, Published published) { }
+                                 int editVersion, String updatedBy, Instant updatedAt, Published published,
+                                 Map<String, String> names, String reviewerComment) {
+        public LocationDetail(UUID id, String name, String category, String latitude, String longitude, String radius,
+                              String status, String packageVersion, Map<String, Asset> assets, int editVersion,
+                              String updatedBy, Instant updatedAt, Published published) {
+            this(id, name, category, latitude, longitude, radius, status, packageVersion, assets, editVersion,
+                    updatedBy, updatedAt, published, Map.of("vi", name == null ? "" : name), null);
+        }
+    }
     public record UploadResponse(String audioUrl, String audioName, String audioStatus) { }
     public record Audio(byte[] bytes, String format) { }
     public record Workspace(LocationDetail original, LocationDetail draft) { }

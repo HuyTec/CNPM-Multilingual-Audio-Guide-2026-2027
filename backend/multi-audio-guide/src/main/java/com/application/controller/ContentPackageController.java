@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import com.application.dto.ContentPackageDto.PublicKey;
+import com.application.dto.ContentPackageDto.Manifest;
 
 @RestController
 @Profile("demo")
@@ -22,7 +23,7 @@ public class ContentPackageController {
     public PublicKey key() { return service.publicKey(); }
 
     @GetMapping("/api/content-packages")
-    public List<ContentPackageService.Manifest> packages() {
+    public List<Manifest> packages() {
         return service.manifests();
     }
 

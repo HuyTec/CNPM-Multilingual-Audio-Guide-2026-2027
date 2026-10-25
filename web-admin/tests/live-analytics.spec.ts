@@ -18,13 +18,13 @@ test("real database event reaches authenticated dashboard and XLSX; duplicate de
   await page.goto("/analytics");
   await expect(page).toHaveURL(/from=.*to=/);
   await page.getByLabel("Mật khẩu", { exact: true }).fill("incorrect-password");
-  await page.getByRole("button", { name: "Xem số liệu database" }).click();
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
   await expect(
     page.getByText("Tên đăng nhập hoặc mật khẩu chưa đúng."),
   ).toBeVisible();
   await expect(page.getByLabel("Mật khẩu", { exact: true })).toBeFocused();
   await page.getByLabel("Mật khẩu", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Xem số liệu database" }).click();
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
   await expect(page.getByText(/Cập nhật:/)).toBeVisible();
   const before = await (
     await request.get("/api/admin/analytics", {
@@ -52,7 +52,7 @@ test("real database event reaches authenticated dashboard and XLSX; duplicate de
     })
     .toBeGreaterThanOrEqual(before.totalPlaybacks + 1);
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Xuất lượt nghe .xlsx" }).click();
+  await page.getByRole("button", { name: "Xuất báo cáo .xlsx" }).click();
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.readFile((await (await downloadPromise).path())!);
   expect(
@@ -83,10 +83,11 @@ test("real empty period has no synthetic events and date changes preserve URL st
 }) => {
   await page.goto("/analytics?from=1900-01-01&to=1900-01-02");
   await page.getByLabel("Mật khẩu", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Xem số liệu database" }).click();
+  await page.getByRole("button", { name: "Đăng nhập" }).click();
   await expect(
     page.getByRole("heading", { name: "Chưa có lượt nghe trong kỳ" }),
   ).toBeVisible();
   await page.getByLabel("Từ ngày", { exact: true }).fill("2026-10-20");
   await expect(page.getByText(/Chọn kỳ báo cáo hợp lệ/)).toBeVisible();
 });
+

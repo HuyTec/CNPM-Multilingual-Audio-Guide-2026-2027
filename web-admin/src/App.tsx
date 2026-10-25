@@ -61,7 +61,7 @@ function Layout() {
           <p>
             Thống kê lấy từ database.
             <br />
-            Biên tập lưu vào DB chung; phản hồi còn giả lập.
+            Biên tập và phản hồi lưu vào DB chung.
           </p>
           <div className="profile">
             <span className="avatar">AD</span>

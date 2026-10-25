@@ -36,15 +36,23 @@ public class AdminContentService {
         LocationDetail original = workspace.original(), current = workspace.draft() == null ? original : workspace.draft();
         Published published = original != null && "APPROVED".equals(original.status())
                 ? new Published("APPROVED", original.name(), original.assets()) : null;
-        return new LocationDetail(current.id(), current.name(), current.category(), current.latitude(), current.longitude(),
+        return new LocationDetail(current.id(), displayName(current.names(), current.name()), current.category(), current.latitude(), current.longitude(),
                 current.radius(), current.status(), current.packageVersion(), current.assets(), current.editVersion(),
-                current.updatedBy(), current.updatedAt(), published);
+                current.updatedBy(), current.updatedAt(), published, current.names(), current.reviewerComment());
     }
     @Transactional
     public LocationDetail save(UUID id, SaveRequest body) {
         if (!id.equals(body.id())) bad("ID địa điểm không khớp.");
         if (!List.of("DRAFT", "PENDING_REVIEW").contains(value(body.status()))) bad("Chỉ được lưu nháp hoặc gửi duyệt; không tự xuất bản.");
-        String name = value(body.name()), category = value(body.category());
+        Map<String, String> names = new LinkedHashMap<>();
+        if (body.names() != null) body.names().forEach((language, text) -> {
+            if (!language.matches("[a-z]{2,3}") || !repository.languageActive(language.toUpperCase(Locale.ROOT))) bad("Ngôn ngữ tên địa điểm không hoạt động.");
+            if (value(text).length() > 255) bad("Tên địa điểm quá dài.");
+            names.put(language, value(text).trim());
+        });
+        // Legacy clients still edit the single name field. New clients send the matching default name.
+        if (!value(body.name()).isBlank() && (body.names() == null || !body.name().equals(displayName(names, "")))) names.put("vi", body.name().trim());
+        String name = displayName(names, value(body.name())), category = value(body.category());
         for (String field : List.of(name, category, value(body.latitude()), value(body.longitude()), value(body.radius()))) {
             if (field.length() > 255) bad("Trường quá dài.");
         }
@@ -70,7 +78,7 @@ public class AdminContentService {
                     audio.isBlank() ? null : value(source.audioName()), audio.isBlank() ? null : "ready"));
         }
         var payload = new LocationDetail(id, name, category, value(body.latitude()), value(body.longitude()), value(body.radius()),
-                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null);
+                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null, names, null);
         if (!repository.save(payload, body.editVersion() == null ? 0 : body.editVersion(), editor))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bản làm việc đã đổi. Hãy mở lại địa điểm; nội dung đang nhập vẫn được giữ.");
         return detail(id);
@@ -95,6 +103,12 @@ public class AdminContentService {
         return repository.audio(id, format, preview).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có audio công khai hoặc tệp không tồn tại."));
     }
     private static String value(String value) { return value == null ? "" : value; }
+    private static String displayName(Map<String, String> names, String legacy) {
+        if (names == null) return value(legacy);
+        for (String language : List.of("vi", "en")) if (!value(names.get(language)).isBlank()) return names.get(language);
+        return names.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(Map.Entry::getValue)
+                .filter(name -> !value(name).isBlank()).findFirst().orElse(value(legacy));
+    }
     private static double number(String input, double min, double max) {
         try {
             double n = Double.parseDouble(value(input).replace(',', '.'));

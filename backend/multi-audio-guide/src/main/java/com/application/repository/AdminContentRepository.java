@@ -34,7 +34,9 @@ public class AdminContentRepository {
                 SELECT ids.id,l.id AS original_id,l.name,c.name AS category,l.status,
                     ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,
                     l.geofence_radius_m AS radius,d.payload::text,d.status AS draft_status,
-                    d.edit_version,d.updated_by,d.updated_at
+                    d.edit_version,d.updated_by,d.updated_at,d.reviewer_comment,
+                    COALESCE((SELECT jsonb_object_agg(lower(t.language_code),t.name) FROM location_translations t
+                        WHERE t.location_id=ids.id),'{}'::jsonb)::text AS names
                 FROM ids LEFT JOIN locations l ON l.id=ids.id
                 LEFT JOIN categories c ON c.id=l.category_id
                 LEFT JOIN admin_content_drafts d ON d.location_id=ids.id
@@ -44,14 +46,16 @@ public class AdminContentRepository {
             LocationDetail original = rs.getObject("original_id") == null ? null : new LocationDetail(location,
                     value(rs.getString("name")), value(rs.getString("category")), value(rs.getString("lat")),
                     value(rs.getString("lng")), value(rs.getString("radius")),
-                    "APPROVED".equals(rs.getString("status")) ? "APPROVED" : "DRAFT",
-                    "Chưa gán phiên bản làm việc", new LinkedHashMap<>(), 0, null, null, null);
+                    "REJECTED".equals(rs.getString("status")) ? "REJECTED" : "APPROVED".equals(rs.getString("status")) ? "APPROVED" : "DRAFT",
+                    "Chưa gán phiên bản làm việc", new LinkedHashMap<>(), 0, null, null, null,
+                    names(rs.getString("names"), value(rs.getString("name"))), null);
             LocationDetail draft = null;
             if (rs.getString("payload") != null) {
                 LocationDetail p = json.readValue(rs.getString("payload"), LocationDetail.class);
                 draft = new LocationDetail(location, p.name(), p.category(), p.latitude(), p.longitude(), p.radius(),
                         rs.getString("draft_status"), p.packageVersion(), p.assets(), rs.getInt("edit_version"),
-                        rs.getString("updated_by"), rs.getTimestamp("updated_at").toInstant(), null);
+                        rs.getString("updated_by"), rs.getTimestamp("updated_at").toInstant(), null,
+                        p.names() == null ? Map.of("vi", value(p.name())) : p.names(), rs.getString("reviewer_comment"));
             }
             return new Row(location, original, draft);
         });
@@ -123,4 +127,10 @@ public class AdminContentRepository {
                 (rs, row) -> new Audio(rs.getBytes(1), rs.getString(2))).stream().findFirst();
     }
     private static String value(String value) { return value == null ? "" : value; }
+    private Map<String, String> names(String text, String legacy) {
+        Map<String, String> result = new LinkedHashMap<>();
+        json.readTree(text).properties().forEach(e -> result.put(e.getKey(), e.getValue().asString()));
+        if (result.isEmpty() && !legacy.isBlank()) result.put("vi", legacy);
+        return result;
+    }
 }

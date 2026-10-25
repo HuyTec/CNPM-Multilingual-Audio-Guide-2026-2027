@@ -147,7 +147,7 @@ export default function LocationList() {
               onChange={(e) => filter("status", e.target.value)}
             >
               <option value="">Tất cả trạng thái</option>
-              {["DRAFT", "PENDING_REVIEW", "APPROVED"].map((value) => (
+              {["DRAFT", "PENDING_REVIEW", "REJECTED", "APPROVED"].map((value) => (
                 <option key={value} value={value}>
                   {statusLabels[value]}
                 </option>

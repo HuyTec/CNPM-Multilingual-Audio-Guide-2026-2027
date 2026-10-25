@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./admin-fixture";
 import ExcelJS from "exceljs";
 import AxeBuilder from "@axe-core/playwright";
 
@@ -21,6 +21,7 @@ function sampleWav() {
 
 test("UC-06 E2 focuses missing name; A1 saves incomplete draft", async ({
   page,
+  adminData,
 }) => {
   await page.goto("/locations/new");
   await page.getByRole("button", { name: "Gửi duyệt", exact: true }).click();
@@ -30,13 +31,10 @@ test("UC-06 E2 focuses missing name; A1 saves incomplete draft", async ({
   ).toBeVisible();
   await page.getByLabel("Tên địa điểm").fill("Địa điểm thử nghiệm");
   await page.getByRole("button", { name: "Lưu nháp", exact: true }).click();
-  await expect(
-    page.getByText("Đã lưu bản nháp trong trình duyệt."),
-  ).toBeVisible();
+  await expect(page).toHaveURL(/\/locations\/.+\/edit$/);
+  await expect(page.locator("#name")).toHaveValue("Địa điểm thử nghiệm");
   await page.reload();
-  const stored = await page.evaluate(() =>
-    JSON.parse(localStorage.getItem("hvp-demo-locations-v1")!),
-  );
+  const stored = adminData.locations;
   expect(
     stored.find((x: { name: string }) => x.name === "Địa điểm thử nghiệm")
       .status,
@@ -45,6 +43,7 @@ test("UC-06 E2 focuses missing name; A1 saves incomplete draft", async ({
 
 test("UC-06 valid submission; E1 retry; BR4 and other language remain intact", async ({
   page,
+  adminData,
 }) => {
   await page.goto("/locations/loc-1/edit?scenario=upload-error");
   await expect(page.getByLabel("Tên địa điểm")).toHaveValue(
@@ -73,12 +72,8 @@ test("UC-06 valid submission; E1 retry; BR4 and other language remain intact", a
   await expect(page.locator("audio")).toHaveAttribute("src", /blob:/);
   await page.getByRole("button", { name: "Gửi duyệt", exact: true }).click();
   await page.getByRole("button", { name: "Lưu thay đổi", exact: true }).click();
-  await expect(page.getByText(/Đã gửi duyệt giả lập/)).toBeVisible();
-  const record = await page.evaluate(() =>
-    JSON.parse(localStorage.getItem("hvp-demo-locations-v1")!).find(
-      (x: { id: string }) => x.id === "loc-1",
-    ),
-  );
+  await expect(page.getByText(/Đã gửi duyệt trong database/)).toBeVisible();
+  const record = adminData.locations.find((x) => x.id === "loc-1")!;
   expect(record.status).toBe("PENDING_REVIEW");
   expect(record.published.version).toBe("1-demo");
   expect(record.assets["vi:FULL"].text).toBe(
@@ -157,6 +152,7 @@ test("UC-07 A3 XLSX contains selected period and all period feedback; E2 retries
 
 test("UC-07 A1 change period reloads metrics; empty and error states retry", async ({
   page,
+  adminData,
 }) => {
   await page.goto("/analytics?source=mock");
   await expect(
@@ -168,8 +164,9 @@ test("UC-07 A1 change period reloads metrics; empty and error states retry", asy
   await expect(page.getByText("Không có phản hồi phù hợp")).toBeVisible();
   await page.goto("/locations?scenario=error");
   await expect(
-    page.getByText("Không thể tải dữ liệu demo. Hãy thử lại."),
+    page.getByText("Không thể tải dữ liệu máy chủ. Hãy thử lại."),
   ).toBeVisible();
+  adminData.listError = false;
   await page.getByRole("button", { name: "Thử lại", exact: true }).click();
   await expect(
     page.getByText("Bưu điện Trung tâm", { exact: true }),
@@ -241,8 +238,10 @@ test("Desktop screenshots and keyboard skip link", async ({ page }) => {
     });
   }
   await page.goto("/locations");
-  await page.keyboard.press("Tab");
+  await page.getByRole("link", { name: "Bỏ qua đến nội dung chính" }).focus();
   await expect(
     page.getByRole("link", { name: "Bỏ qua đến nội dung chính" }),
   ).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#main")).toBeFocused();
 });

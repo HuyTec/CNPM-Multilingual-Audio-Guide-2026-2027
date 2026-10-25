@@ -47,4 +47,15 @@ class AdminContentServiceTest {
         assertThat(result.published().name()).isEqualTo("Published");
         verify(repository).workspaces(null);
     }
+    @Test void localizedNamesArePersistedAndDefaultFallsBackToEnglish() {
+        when(repository.languageActive("VI")).thenReturn(true);
+        when(repository.languageActive("EN")).thenReturn(true);
+        when(repository.save(any(), eq(1), eq("editor"))).thenReturn(true);
+        when(repository.workspaces(id)).thenReturn(List.of(new Workspace(null, location("DRAFT", "English name"))));
+        service.save(id, new SaveRequest(id, "English name", "", "", "", "", "DRAFT", Map.of(), 1, Map.of("vi", "", "en", "English name")));
+        var payload = ArgumentCaptor.forClass(LocationDetail.class);
+        verify(repository).save(payload.capture(), eq(1), eq("editor"));
+        assertThat(payload.getValue().name()).isEqualTo("English name");
+        assertThat(payload.getValue().names()).containsEntry("vi", "").containsEntry("en", "English name");
+    }
 }

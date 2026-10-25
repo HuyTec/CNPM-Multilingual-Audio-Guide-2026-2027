@@ -11,6 +11,10 @@ import java.util.UUID;
 public final class ContentPackageDto {
     private ContentPackageDto() { }
     public record PublicKey(String algorithm, String keyId, String spki) { }
+    public record Asset(String url, long sizeBytes, String sha256) { }
+    public record Manifest(int schemaVersion, String scope, String version, String status, boolean isBase,
+                           long sizeBytes, String sha256, String signature, String keyId, String downloadUrl, List<Asset> assets) { }
+    public record Bundle(Manifest manifest, byte[] bytes) { }
     public record Location(UUID locationId, String name, UUID categoryId, String categoryName,
                            double latitude, double longitude, int geofenceRadiusM) { }
     public record Geofencing(int cooldownSeconds, Instant surveyedAt, Map<String, Map<String, String>> localizedNames) { }
@@ -18,5 +22,5 @@ public final class ContentPackageDto {
     @JsonPropertyOrder({"schemaVersion","status","scope","isBase","locations","guides","languages","assets","geofencing"})
     public record Payload(int schemaVersion, String status, String scope, boolean isBase, List<Location> locations,
                           List<GuideContent> guides, List<String> languages,
-                          List<com.application.service.ContentPackageService.Asset> assets, Geofencing geofencing) { }
+                          List<Asset> assets, Geofencing geofencing) { }
 }

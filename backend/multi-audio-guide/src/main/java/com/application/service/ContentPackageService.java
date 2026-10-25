@@ -19,10 +19,6 @@ import java.util.Locale;
 @Service
 @Profile("demo")
 public class ContentPackageService {
-    public record Asset(String url, long sizeBytes, String sha256) { }
-    public record Manifest(int schemaVersion, String scope, String version, String status, boolean isBase,
-                           long sizeBytes, String sha256, String signature, String keyId, String downloadUrl, List<Asset> assets) { }
-    public record Bundle(Manifest manifest, byte[] bytes) { }
     private final ContentPackageRepository repository;
     private final PackageSigner signer;
     private final AudioFileReader audio;
