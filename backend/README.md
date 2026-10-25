@@ -1,6 +1,6 @@
 # Backend
 
-**Luồng nghe/thống kê thật:** profile `demo` có SHORT guide, WAV tiếng Việt, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. V3/V3.1 bổ sung liên kết revision/sự kiện và seed ba bài ngắn, không seed lượt nghe. Xem [LIVE_DEMO_SETUP](../docs/vi/LIVE_DEMO_SETUP.md).
+**Luồng nghe/thống kê thật:** profile `demo` có API nội dung, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. Dữ liệu fixture chỉ được tạo khi migration demo chạy lần đầu; database đã reset có thể rỗng. Xem luồng và kịch bản hiện hành tại [Demo Code Guide](../docs/guide/DEMO_CODE_GUIDE.md).
 
 Spring Boot API cho nội dung hướng dẫn, quy trình duyệt và quản trị. Mã nguồn ở `multi-audio-guide/`, dùng Java 21, Spring Boot 4.1.1 và Maven Wrapper 3.3.4 (Maven 3.9.9).
 
@@ -29,7 +29,7 @@ cd .\backend\multi-audio-guide
 
 ## Chạy backend với PostgreSQL
 
-Dùng [Docker Compose](../docs/vi/DOCKER_SETUP.md) tại thư mục gốc: sao chép `.env.example` thành `.env`, đặt mật khẩu local, rồi chạy `docker compose up -d --build`. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Xem thêm [quy ước dùng chung](../GUILD.md).
+Dùng [Docker Guide](../docs/guide/DOCKER_GUIDE.md) tại thư mục gốc: chạy `scripts/start-live-demo.ps1` hoặc `docker compose --env-file .env.demo.local up -d --build --wait` khi đã chuẩn bị file cấu hình. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Quy ước migration, backup và reset cũng nằm trong guide này.
 
 Nếu chạy `spring-boot:run` ngoài Docker, phải có database truy cập được từ máy host và tự đặt `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` phù hợp. Tên host `postgres` chỉ dùng trong mạng Compose.
 
@@ -41,12 +41,12 @@ Migration tạo 9 bảng theo trang **Database** của [`SE.drawio (1).xml`](../
 
 `locations.coordinates` dùng PostGIS `GEOGRAPHY(Point,4326)` và GiST index. Compose dùng PostgreSQL 17 kèm PostGIS (`postgis/postgis:17-3.6-alpine`); nếu dùng PostgreSQL ngoài Docker, cần cài PostGIS và cấp quyền tạo extension cho tài khoản chạy migration, hoặc nhờ quản trị viên bật extension trước.
 
-Sau khi chuẩn bị `.env` theo hướng dẫn ở trên, chạy từ thư mục gốc:
+Sau khi chuẩn bị `.env.demo.local` theo hướng dẫn ở trên, chạy từ thư mục gốc:
 
 ```powershell
-docker compose up -d --build
-docker compose logs --tail 100 backend
-docker compose exec postgres psql -U audio_guide -d audio_guide -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
+docker compose --env-file .env.demo.local up -d --build --wait
+docker compose --env-file .env.demo.local logs --tail 100 backend
+docker compose --env-file .env.demo.local exec postgres psql -U audio_guide -d audio_guide -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
 ```
 
 Kết quả mong đợi: có phiên bản `1` (`demo`) và `2` (`location discovery`), `success = t`; profile demo có thêm `2.1` (`seed discovery demo`); luồng lượt nghe bổ sung `3` (`playback content reference`) và demo `3.1` (`seed short guides`). Không sửa migration sau khi đã áp dụng; tạo phiên bản tiếp theo để thay đổi schema. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.

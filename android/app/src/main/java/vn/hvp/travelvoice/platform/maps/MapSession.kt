@@ -21,12 +21,13 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import vn.hvp.travelvoice.R
 import vn.hvp.travelvoice.domain.model.MapCamera
 import vn.hvp.travelvoice.domain.model.MapPoint
+import vn.hvp.travelvoice.domain.model.initialMapViewport
 
-enum class MapLoadState { Loading, Ready, Error }
+enum class MapLoadState { Loading, Ready, Error, MissingKey, PlayServicesUnavailable }
 
 /** Own the Google MapView lifecycle; marker identity remains the shared backend locationId. */
 class MapSession(
-    context: Context, private val lifecycle: Lifecycle, initialCamera: MapCamera, restoreCamera: Boolean,
+    context: Context, private val lifecycle: Lifecycle, private val initialCamera: MapCamera, restoreCamera: Boolean,
     private val onMarker: (String) -> Unit, private val onCamera: (MapCamera) -> Unit,
     private val onState: (MapLoadState) -> Unit,
     private val districtOneOnly: Boolean = false,
@@ -44,6 +45,8 @@ class MapSession(
     private var userMarker: Marker? = null
     private var accuracyCircle: Circle? = null
     private var centerUserWhenReady = false
+    private var selectedId: String? = null
+    private var selectionNeedsFocus = false
     private val userTitle = context.getString(R.string.q1_current_location)
     private val observer: LifecycleEventObserver
 
@@ -92,7 +95,6 @@ class MapSession(
 
     fun setPoints(updated: List<MapPoint>) {
         if (points == updated || closed) return
-        if (points.isNotEmpty()) fitNext = true
         points = updated
         renderPoints()
     }
@@ -112,10 +114,30 @@ class MapSession(
         val current = map ?: return
         if (closed) return
         current.clear()
+        userMarker = null; accuracyCircle = null
         points.forEach { point -> current.addMarker(MarkerOptions().position(LatLng(point.latitude, point.longitude)).title(point.name))?.tag = point.id }
         if (fitNext) { fitToPoints(); fitNext = false }
         renderUserLocation()
         if (centerUserWhenReady) centerOnUser()
+        focusSelection()
+    }
+
+    fun selectPoint(id: String?) {
+        if (selectedId == id) return
+        selectedId = id; selectionNeedsFocus = id != null
+        focusSelection()
+    }
+
+    private fun focusSelection() {
+        if (!selectionNeedsFocus || closed) return
+        val current = map ?: return
+        val point = points.firstOrNull { it.id == selectedId } ?: return
+        view.doOnLayout {
+            if (!closed) {
+                current.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(point.latitude, point.longitude), 15f))
+                selectionNeedsFocus = false
+            }
+        }
     }
 
     /** Display a one-shot fix separately from POIs, and retain it across marker refreshes. */
@@ -158,9 +180,12 @@ class MapSession(
         view.doOnLayout {
             if (closed) return@doOnLayout
             if (districtOneOnly) current.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(10.777, 106.701), 15f))
-            else if (points.size == 1) current.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(points.first().latitude, points.first().longitude), 15f))
-            else current.moveCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.builder()
-                .apply { points.forEach { include(LatLng(it.latitude, it.longitude)) } }.build(), (40 * view.resources.displayMetrics.density).toInt()))
+            else {
+                val framed = initialMapViewport(points, initialCamera)
+                if (framed.size == 1) current.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(framed.first().latitude, framed.first().longitude), 15f))
+                else current.moveCamera(CameraUpdateFactory.newLatLngBounds(LatLngBounds.builder()
+                    .apply { framed.forEach { include(LatLng(it.latitude, it.longitude)) } }.build(), (40 * view.resources.displayMetrics.density).toInt()))
+            }
         }
     }
 

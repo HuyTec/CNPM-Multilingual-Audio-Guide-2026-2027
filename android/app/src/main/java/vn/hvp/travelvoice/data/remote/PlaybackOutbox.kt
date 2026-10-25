@@ -1,54 +1,55 @@
 package vn.hvp.travelvoice.data.remote
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** Persist before sending. A lost response can safely be retried with the original event UUID. */
+/** Automatic, durable listening receipts. UI controls never create or submit a listening count. */
 object PlaybackOutbox {
-    private val mutex = Mutex()
+    private var queue: AutomaticPlaybackQueue? = null
 
+    private fun queue(context: Context): AutomaticPlaybackQueue = synchronized(this) {
+        queue ?: run {
+            val app = context.applicationContext
+            val identity = TouristIdentity(app)
+            val legacy = app.getSharedPreferences("playback-outbox", Context.MODE_PRIVATE)
+            AutomaticPlaybackQueue(
+                read = { JSONArray(identity.read("events") ?: legacy.getString("events", "[]")) },
+                write = { events ->
+                    identity.write("events", events.toString())
+                    check(legacy.edit().remove("events").commit())
+                },
+                send = { event -> DemoApi.playback(event.getString("base"), event.getString("eventId"),
+                    event.getString("contentId"), event.optJSONObject("identity"),
+                    event.optString("occurredAt").takeIf { it.isNotBlank() }, event.optBoolean("offline")) }
+            ).also { queue = it }
+        }
+    }
+
+    fun state(context: Context): StateFlow<PlaybackSyncState> = queue(context).state
+
+    /** Capture the real playback time now; saving/sending continues after the player is stopped. */
+    fun recordAutomatically(context: Context, base: String, eventId: String, contentId: String,
+                            offline: Boolean = !VisitorApi.isOnline(context)) {
+        val event = JSONObject().put("base", base).put("eventId", eventId).put("contentId", contentId)
+            .put("occurredAt", java.time.Instant.now().toString()).put("offline", offline)
+        runCatching { TouristIdentity(context).snapshot() }.getOrNull()?.let { event.put("identity", it) }
+        queue(context).record(event)
+    }
+
+    suspend fun retryAutomatically(context: Context, base: String) { queue(context).retry(base) }
+
+    // Compatibility for the older prototype; the current entry point uses automatic callbacks.
     suspend fun enqueueAndFlush(context: Context, base: String, eventId: String, contentId: String,
                                 offline: Boolean = !VisitorApi.isOnline(context)): Int {
-        val occurredAt = java.time.Instant.now().toString()
-        return withContext(Dispatchers.IO) { mutex.withLock {
-            val preferences = context.applicationContext.getSharedPreferences("playback-outbox", Context.MODE_PRIVATE)
-            val store = TouristIdentity(context)
-            val pending = JSONArray(store.read("events") ?: preferences.getString("events", "[]"))
-            if ((0 until pending.length()).none { pending.getJSONObject(it).getString("eventId") == eventId }) {
-                pending.put(JSONObject().put("base", base).put("eventId", eventId).put("contentId", contentId).put("identity",store.snapshot())
-                    .put("occurredAt",occurredAt).put("offline",offline))
-                store.write("events",pending.toString()); preferences.edit().remove("events").commit()
-            }
-            flushLocked(context, base)
-        } }
+        recordAutomatically(context, base, eventId, contentId, offline)
+        return flush(context, base)
     }
-
-    suspend fun flush(context: Context, base: String): Int = withContext(Dispatchers.IO) {
-        mutex.withLock { flushLocked(context, base) }
-    }
-
-    private suspend fun flushLocked(context: Context, base: String): Int {
-        val preferences = context.applicationContext.getSharedPreferences("playback-outbox", Context.MODE_PRIVATE)
-        val store = TouristIdentity(context)
-        var pending = JSONArray(store.read("events") ?: preferences.getString("events", "[]"))
-        // Commit each acknowledgment, so a later failure cannot lose unsent events.
-        val ids = (0 until pending.length()).map { pending.getJSONObject(it) }
-            .filter { it.getString("base") == base }.map { it.getString("eventId") }
-        for (id in ids) {
-            val event = (0 until pending.length()).map { pending.getJSONObject(it) }.first { it.getString("eventId") == id }
-            val identity = event.optJSONObject("identity")
-            DemoApi.playback(base, id, event.getString("contentId"),identity,
-                event.optString("occurredAt").takeIf { it.isNotBlank() }, event.optBoolean("offline"))
-            val next = JSONArray()
-            (0 until pending.length()).map { pending.getJSONObject(it) }.filter { it.getString("eventId") != id }.forEach(next::put)
-            store.write("events",next.toString()); preferences.edit().remove("events").commit()
-            pending = next
-        }
-        return pending.length()
+    suspend fun flush(context: Context, base: String): Int {
+        retryAutomatically(context, base)
+        val snapshot = state(context).value
+        check(!snapshot.error) { "Lượt nghe được giữ để tự gửi lại." }
+        return snapshot.pending
     }
 }

@@ -51,7 +51,6 @@ export function GuidePlayer({ guide, offline = false }: { guide: Guide; offline?
       </div>
       {isTts && <p className="player-hint">{state.voice}. Vị trí theo đoạn văn; tạm dừng/đổi tốc độ có thể đọc lại từ gần từ cuối cùng trình duyệt báo.</p>}
     </div>}
-    {receipt.failed && <div><p className="player-hint" role="status">Lượt nghe chưa gửi được đến máy chủ. Bạn vẫn có thể tiếp tục nghe.</p>
-      <button className="secondary-button" disabled={receipt.retrying} onClick={() => void receipt.retry()}>{receipt.retrying ? 'Đang gửi lại…' : 'Gửi lại lượt nghe'}</button></div>}
+    {receipt.failed && <p className="player-hint" role="status">Lượt nghe đang chờ tự động gửi lại. Bạn vẫn có thể tiếp tục nghe; không cần bấm đồng bộ.</p>}
   </section>;
 }

@@ -13,6 +13,8 @@ flowchart LR
 
 ## Khởi động
 
+Trên Windows, cài [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) và dùng engine Linux/WSL 2. Chạy `docker version` và `docker compose version`; `docker version` phải có cả Client lẫn Server. Nếu gặp lỗi pipe `dockerDesktopLinuxEngine`, mở Docker Desktop và chờ engine sẵn sàng trước khi chạy Compose. Không đổi mật khẩu hoặc xóa volume để xử lý lỗi daemon chưa chạy.
+
 Mở Docker Desktop ở chế độ Linux containers. Từ gốc repo:
 
 ```powershell
@@ -67,6 +69,8 @@ Tunnel chạy trên host, mặc định trỏ `127.0.0.1:14176`. Nếu tunnel c�
 
 ## Dữ liệu và thao tác hằng ngày
 
+Mỗi thành viên có database local riêng; chia sẻ schema bằng migration trong Git. Tạo migration mới trong `backend/multi-audio-guide/src/main/resources/db/migration/` theo mẫu `V<version>__<description>.sql` (hai dấu gạch dưới). Thống nhất số phiên bản trước khi merge, không sửa migration đã áp dụng. Profile demo còn nạp `src/main/resources/db/demo/` và Java migration `src/main/java/db/demo/`; không xóa fixture/migration cũ để dọn dữ liệu vì Flyway vẫn đối chiếu lịch sử. Backup bằng `pg_dump` khác với migration và cần kiểm tra khả năng khôi phục.
+
 Volume mặc định là `hvp-live-demo_postgres_data`, giữ nội dung, tài khoản, ảnh/audio upload, gói xuất bản và khóa ký trong PostgreSQL. Không đổi project bằng `-p` nếu muốn tiếp tục dùng dữ liệu demo hiện có. Biến mật khẩu PostgreSQL phải khớp DB đã khởi tạo; sửa env không tự đổi mật khẩu của DB cũ.
 
 ```powershell
@@ -81,6 +85,10 @@ docker compose --env-file .env.demo.local stop
 ```
 
 `docker compose down` giữ named volume; **`down -v` xóa DB**. Không chạy lệnh đó để cập nhật giao diện. `.env.demo.local`, APK và backup chỉ lưu local, không commit.
+
+Khi cần thử nhập nội dung từ đầu, sao lưu `audio_guide` bằng `pg_dump -Fc` trước, dừng backend trong lúc dọn các bảng nội dung/gói/thống kê và giữ tài khoản, danh mục, ngôn ngữ, khóa ký cùng Flyway history. Bản sao lưu của lần reset gần nhất được ghi ở `.local-tools/last-content-reset-backup.txt` (chỉ local; có dữ liệu nhạy cảm, không chia sẻ hoặc commit). Giữ Flyway history để dữ liệu mẫu không được seed lại khi khởi động. Gói `BASE`/`OPTIONAL` rỗng vẫn có checksum/chữ ký hợp lệ, cho phép thay gói cũ trên thiết bị và xuất bản khi mới có nội dung ở một nhóm.
+
+Xóa dữ liệu server không tự xóa gói đã tải trong trình duyệt/Android. Để kiểm tra sạch, mở Web User trong cửa sổ riêng tư, hoặc cập nhật cả hai gói từ trang Ngoại tuyến; Android cũng cần cập nhật gói khi đang có mạng. Thêm địa điểm và upload ảnh ở Admin, chờ ảnh tải xong, lưu/gửi duyệt rồi duyệt và xuất bản; ảnh nháp không được public API phục vụ trước xuất bản.
 
 ## Cấu hình cũ
 

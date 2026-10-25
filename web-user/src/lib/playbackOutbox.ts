@@ -66,15 +66,16 @@ function persistUnsaved() {
   })();
   return persisting;
 }
-export async function retryOutbox() { await persistUnsaved(); await syncOutbox(true); }
+export async function retryOutbox(force = false) { await persistUnsaved(); await syncOutbox(force); }
 export function startOutbox() {
   const sync = () => { void retryOutbox(); };
+  const reconnected = () => { void retryOutbox(true); };
   const visible = () => { if (!document.hidden) sync(); };
   const changed = () => { void refreshOutbox().catch(() => {}); };
-  window.addEventListener('online', sync); document.addEventListener('visibilitychange', visible);
+  window.addEventListener('online', reconnected); document.addEventListener('visibilitychange', visible);
   navigator.serviceWorker?.addEventListener('message', changed);
-  const timer = window.setInterval(() => { void syncOutbox(); }, 15_000);
-  void syncOutbox();
-  return () => { window.removeEventListener('online', sync); document.removeEventListener('visibilitychange', visible);
+  const timer = window.setInterval(() => { void retryOutbox(); }, 15_000);
+  void retryOutbox();
+  return () => { window.removeEventListener('online', reconnected); document.removeEventListener('visibilitychange', visible);
     navigator.serviceWorker?.removeEventListener('message', changed); clearInterval(timer); };
 }

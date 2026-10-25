@@ -11,11 +11,16 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 data class ServerLocation(val id: String, val name: String, val latitude: Double? = null,
-                          val longitude: Double? = null, val category: String = "", val categoryId: String = "")
+                          val longitude: Double? = null, val category: String = "", val categoryId: String = "",
+                          val imageUrl: String? = null)
 data class ServerGuide(val contentId: String, val locationName: String, val languageCode: String,
                        val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "",
                        val offline: Boolean = false)
 class GuideApiException(val status: Int, message: String) : IllegalStateException(message)
+
+/** New POI contracts use image; older backend versions expose the same reference as imageUrl. */
+internal fun locationImageReference(item: JSONObject): String? = sequenceOf("image", "imageUrl")
+    .mapNotNull { item.opt(it) as? String }.map(String::trim).firstOrNull { it.isNotBlank() && it != "null" }
 
 object DemoApi {
     private val client = OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS)
@@ -39,7 +44,8 @@ object DemoApi {
                 it.optJSONObject("names")?.optString(language.lowercase())?.takeIf(String::isNotBlank)
                     ?: it.optJSONObject("names")?.optString("vi")?.takeIf(String::isNotBlank) ?: it.getString("name"),
                 it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
-                it.optString("categoryName"), it.optString("categoryId"))) } }
+                it.optString("categoryName"), it.optString("categoryId"),
+                locationImageReference(it))) } }
             page++
         } while (page < data.getInt("totalPages"))
         result.distinctBy { it.id }
@@ -68,7 +74,8 @@ object DemoApi {
             ?.let { payload.put("installationId", it).put("platform", "ANDROID") }
         val builder = Request.Builder().url(base + "api/playbacks")
         identity?.optString("installation")?.takeIf { it.isNotBlank() }?.let { builder.header("X-Installation-Key",it) }
-        json(builder.post(payload.toString().toRequestBody("application/json".toMediaType())).build())
+        val receipt = json(builder.post(payload.toString().toRequestBody("application/json".toMediaType())).build())
+        check(receipt.getString("eventId") == eventId && receipt.get("created") is Boolean) { "Phản hồi lượt nghe không hợp lệ." }
         Unit
     }
 

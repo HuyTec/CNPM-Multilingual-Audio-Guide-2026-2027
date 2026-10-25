@@ -9,8 +9,8 @@ plugins {
 val mapSecrets = Properties().apply {
     rootProject.file("secrets.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
 }
-val mapsApiKey = providers.environmentVariable("ANDROID_MAPS_API_KEY")
-    .orElse(mapSecrets.getProperty("MAPS_API_KEY", "")).get()
+val mapsApiKey = providers.environmentVariable("ANDROID_MAPS_API_KEY").orNull?.trim()?.takeIf { it.isNotEmpty() }
+    ?: mapSecrets.getProperty("MAPS_API_KEY", "").trim()
 val releaseSigningFile = rootProject.file(".signing/release.properties")
 val releaseSigning = Properties().apply { if (releaseSigningFile.isFile) releaseSigningFile.inputStream().use { load(it) } }
 val configuredApiOrigin = providers.gradleProperty("travelApiBaseUrl").orNull
@@ -26,8 +26,8 @@ android {
         applicationId = "vn.hvp.travelvoice"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.1.1"
         val serverUrl = providers.gradleProperty("travelApiBaseUrl").orElse("http://10.0.2.2:8081/").get()
         require(serverUrl.matches(Regex("https?://[a-zA-Z0-9.:-]+/?"))) { "travelApiBaseUrl must be an HTTP(S) origin" }
         buildConfigField("String", "API_BASE_URL", "\"${serverUrl.trimEnd('/')}/\"")

@@ -7,7 +7,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -20,6 +19,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import vn.hvp.travelvoice.R
+import vn.hvp.travelvoice.BuildConfig
+import vn.hvp.travelvoice.ui.components.PublishedLocationPhoto
 import vn.hvp.travelvoice.data.remote.ServerGuide
 import vn.hvp.travelvoice.data.remote.ServerLocation
 import vn.hvp.travelvoice.data.remote.SharedTourRepository
@@ -29,7 +30,8 @@ import java.util.Locale
 
 @Composable
 fun TravelPlaceCard(place: ServerLocation, guide: ServerGuide?, failed: Boolean, position: Location?,
-                    onRetry: () -> Unit, onClose: () -> Unit, onRead: () -> Unit, onPlay: () -> Unit) {
+                    onRetry: () -> Unit, onClose: () -> Unit, onRead: () -> Unit, onPlay: () -> Unit,
+                    base: String = BuildConfig.API_BASE_URL) {
     Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -43,9 +45,7 @@ fun TravelPlaceCard(place: ServerLocation, guide: ServerGuide?, failed: Boolean,
             IconButton(onClick = onClose) { Icon(Icons.Default.Close, stringResource(R.string.q1_close)) }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(Modifier.size(64.dp), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-                Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Image, stringResource(R.string.q1_no_image), tint = MaterialTheme.colorScheme.onSurfaceVariant) }
-            }
+            PublishedLocationPhoto(base, place.imageUrl, place.name, Modifier.size(80.dp), compact = true)
             when {
                 failed -> Column(Modifier.weight(1f)) { Text(stringResource(R.string.q1_error)); TextButton(onClick = onRetry) { Text(stringResource(R.string.q1_retry)) } }
                 guide == null -> Column(Modifier.weight(1f)) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.q1_description_pending), style = MaterialTheme.typography.bodySmall) }
@@ -72,14 +72,11 @@ fun TravelLanguages(language: String, onLanguage: (String) -> Unit) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TravelPlaceDetails(place: ServerLocation, guide: ServerGuide?, failed: Boolean, language: String, onLanguage: (String) -> Unit,
-                       mode: String, onMode: (String) -> Unit, onRetry: () -> Unit, onPlay: () -> Unit, onRate: (Float) -> Unit = {}) {
+                       mode: String, onMode: (String) -> Unit, onRetry: () -> Unit, onPlay: () -> Unit, onRate: (Float) -> Unit = {},
+                       base: String = BuildConfig.API_BASE_URL) {
     LazyColumn(Modifier.fillMaxHeight(0.9f), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item { Text(place.name, style = MaterialTheme.typography.headlineSmall); Text(place.category, color = MaterialTheme.colorScheme.primary) }
-        item { Surface(Modifier.fillMaxWidth().height(120.dp), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-            Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Icon(Icons.Default.Image, null); Text(stringResource(R.string.q1_no_image)); Text(stringResource(R.string.q1_gallery_pending), style = MaterialTheme.typography.bodySmall)
-            }
-        } }
+        item { PublishedLocationPhoto(base, place.imageUrl, place.name, Modifier.fillMaxWidth().height(180.dp)) }
         item { Text(stringResource(R.string.q1_language), style = MaterialTheme.typography.titleSmall); TravelLanguages(language, onLanguage)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) { listOf("FULL" to R.string.q1_full, "SHORT" to R.string.q1_short).forEach { (type, label) ->
                 FilterChip(selected = mode == type, onClick = { onMode(type) }, label = { Text(stringResource(label)) })

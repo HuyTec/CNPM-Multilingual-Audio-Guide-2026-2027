@@ -13,7 +13,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.*
 import vn.hvp.travelvoice.R
 import vn.hvp.travelvoice.data.remote.*
 
@@ -21,10 +20,9 @@ import vn.hvp.travelvoice.data.remote.*
 @Composable
 fun TravelProfile(base: String, onServer: (String) -> Unit = {}, onPackages: () -> Unit = {}) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val sync by PlaybackOutbox.state(context).collectAsState()
     var server by rememberSaveable(base) { mutableStateOf(base) }
     var message by remember { mutableStateOf("") }
-    var busy by remember { mutableStateOf(false) }
     var invalid by remember { mutableStateOf(false) }
     val visitor = remember { TouristIdentity(context).installation().take(8) }
     Column(Modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -33,28 +31,25 @@ fun TravelProfile(base: String, onServer: (String) -> Unit = {}, onPackages: () 
         Text(stringResource(R.string.q1_anonymous_hint))
         Text(stringResource(R.string.q1_visitor_code, visitor))
         Text(stringResource(R.string.q1_server), style = MaterialTheme.typography.titleMedium)
-        OutlinedTextField(server, { server = it; invalid = false }, Modifier.fillMaxWidth(), enabled = !busy,
+        OutlinedTextField(server, { server = it; invalid = false }, Modifier.fillMaxWidth(),
             singleLine = true, isError = invalid, label = { Text(stringResource(R.string.q1_server)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
             supportingText = { Text(stringResource(if (invalid) R.string.q1_server_invalid else R.string.q1_server_hint)) })
-        Button(enabled = !busy, onClick = {
+        Button(onClick = {
             val normalized = runCatching { DemoApi.normalizeBaseUrl(server) }.getOrNull()
             if (normalized == null) { invalid = true; return@Button }
             onServer(normalized)
             message = context.getString(R.string.q1_server_saved)
         }) { Text(stringResource(R.string.q1_save_server)) }
-        OutlinedButton(enabled = !busy, onClick = { scope.launch {
-            busy = true
-            try {
-                VisitorApi.heartbeat(context, base)
-                val pending = PlaybackOutbox.flush(context, base)
-                message = context.getString(R.string.q1_sync_done, pending)
-            } catch (cancelled: CancellationException) { throw cancelled }
-            catch (_: Exception) { message = context.getString(R.string.q1_sync_error) }
-            finally { busy = false }
-        } }) { Text(stringResource(R.string.q1_sync_now)) }
+        Text(stringResource(R.string.q1_sync_automatic))
+        if (sync.base == base) {
+            if (sync.syncing && sync.pending > 0) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (sync.pending > 0) Text(stringResource(R.string.q1_sync_pending, sync.pending), Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            if (sync.error) Text(stringResource(R.string.q1_sync_auto_error), color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+            if (sync.rejected > 0) Text(stringResource(R.string.q1_sync_rejected, sync.rejected), color = MaterialTheme.colorScheme.error)
+        }
         OutlinedButton(onClick = onPackages) { Text(stringResource(R.string.q1_offline)) }
-        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         if (message.isNotBlank()) Text(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
     }
 }

@@ -64,6 +64,12 @@ class TravelPlaybackService : Service() {
     private var lastState = ""
     private var lastPosition = -1
     private var server = ""
+    private val connectivity by lazy { getSystemService(android.net.ConnectivityManager::class.java) }
+    private val network = object : android.net.ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: android.net.Network) {
+            scope.launch { if (server.isNotBlank()) PlaybackOutbox.retryAutomatically(applicationContext, server) }
+        }
+    }
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) { TravelPlayback.narrator?.pause(); visibilityChanged() }
     }
@@ -93,12 +99,18 @@ class TravelPlaybackService : Service() {
         }
         ContextCompat.registerReceiver(this, noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)
         handler.post(ticker)
+        connectivity.registerDefaultNetworkCallback(network)
+        scope.launch {
+            while (isActive) {
+                if (server.isNotBlank()) PlaybackOutbox.retryAutomatically(applicationContext, server)
+                delay(15_000)
+            }
+        }
         scope.launch {
             while (isActive) {
                 if (server.isNotBlank() && TravelPlayback.narrator?.state in listOf("Đang phát", "Đang chuẩn bị…")) {
                     try {
                         vn.hvp.travelvoice.data.remote.VisitorApi.heartbeat(applicationContext, server)
-                        PlaybackOutbox.flush(applicationContext, server)
                     } catch (cancelled: CancellationException) { throw cancelled }
                     catch (_: Exception) { /* Keep queued events; retry while background playback continues. */ }
                 }
@@ -122,8 +134,8 @@ class TravelPlaybackService : Service() {
                     TravelPlayback.guide = guide
                     val base = intent.getStringExtra("base").orEmpty()
                     TravelPlayback.narrator = SharedNarrator(applicationContext, null, guide) { event ->
-                        scope.launch { runCatching { PlaybackOutbox.enqueueAndFlush(applicationContext, base, event, guide.contentId,
-                            guide.offline || !vn.hvp.travelvoice.data.remote.VisitorApi.isOnline(applicationContext)) } }
+                        PlaybackOutbox.recordAutomatically(applicationContext, base, event, guide.contentId,
+                            guide.offline || !vn.hvp.travelvoice.data.remote.VisitorApi.isOnline(applicationContext))
                     }
                 }
                 TravelPlayback.narrator?.speed(intent.getFloatExtra("rate", 1f))
@@ -174,6 +186,7 @@ class TravelPlaybackService : Service() {
             .setStyle(Notification.MediaStyle().setMediaSession(media.sessionToken).setShowActionsInCompactView(0, 1)).build()
     }
     override fun onDestroy() {
+        connectivity.unregisterNetworkCallback(network)
         handler.removeCallbacksAndMessages(null); unregisterReceiver(noisy)
         TravelPlayback.narrator?.close(); TravelPlayback.narrator = null; TravelPlayback.guide = null; TravelPlayback.service = null
         media.release(); scope.cancel(); super.onDestroy()

@@ -29,7 +29,9 @@ TravelQ1App dùng repeatOnLifecycle(STARTED): kiểm manifest lúc mở/resume v
 
 Nút kiểm tra thủ công và polling cập nhật cùng PackageUpdates, không khóa ở snapshot cũ. Người dùng xác nhận rồi mới tải JSON/key/audio. Lỗi truyền tải được thử lại tối đa 3 lần; checksum/chữ ký hỏng không được bỏ qua. Sau verify, PackagePlaybackGate chờ dừng/kết thúc bài nghe trước khi thay gói. Kho gói có khóa đọc/ghi dùng chung để polling không đọc đúng lúc AtomicFile đang commit. AtomicFile giữ bản cũ khi lỗi hoặc hủy; BASE được bảo vệ, OPTIONAL có thể xóa. Sau cài catalog/guide cache làm mới, có danh sách mở địa điểm trong gói.
 
-Đây là banner foreground, không có push khi app đóng. TTS offline phụ thuộc giọng đã cài của thiết bị. Ảnh POI mới chưa được đưa vào byte tài nguyên offline và Android chưa bổ sung UI ảnh upload trong lần sửa này.
+Đây là banner foreground, không có push khi app đóng. TTS offline phụ thuộc giọng đã cài của thiết bị. Android hiển thị ảnh POI ở danh sách và chi tiết, có trạng thái tải/lỗi/thử lại. API hiện hành trả `imageUrl`; client cũng đọc chuỗi `image` nếu có. Chỉ tải ảnh công khai thuộc `/api/content-images/{uuid}.png` trên cùng máy chủ. Cache ảnh hỗ trợ xem lại nhưng chưa đóng gói byte ảnh vào gói offline.
+
+Compose hiện dùng database `audio_guide` trong PostgreSQL Docker, không dùng giá trị mặc định local `travelvoice_db` trong application.properties. Kiểm tra ngày 26/10/2026: Docker chỉ có database `postgres` và `audio_guide`, trường ảnh là `locations.image_url`, chưa có bản ghi ảnh. Cần upload ảnh ở Admin rồi duyệt/xuất bản để public API trả ảnh; không đổi datasource để trỏ sang một database chưa tồn tại.
 
 ## Profile, khách vãng lai và lượt nghe
 
@@ -37,13 +39,17 @@ Profile dùng chế độ khách như Web user, không gọi API OTP không có 
 
 Xóa dữ liệu/cài lại có thể tạo ID mới; không coi đây là số người hoặc máy vật lý duy nhất. Tải APK nhưng chưa mở app chưa được tính. Web dùng một ID theo hồ sơ trình duyệt, nhiều tab tính cùng ID; không lấy email, vị trí hay mã phần cứng cho heartbeat.
 
-SharedNarrator chỉ tạo sự kiện khi âm thanh thực sự tiến triển. Pause/resume trong cùng phiên không tạo UUID mới. Outbox giữ thời điểm/offline và contentId revision đã nghe, gửi lại khi mở/resume và mỗi 60 giây. Backend chống đếm lặp theo eventId. Profile có nút đồng bộ thủ công; mất mạng không chặn đọc/nghe nội dung đã có.
+SharedNarrator chỉ tạo sự kiện khi âm thanh thực sự tiến triển, kể cả clip ngắn dưới một giây. Pause/resume trong cùng phiên không tạo UUID mới. Outbox giữ thời điểm/offline và contentId revision đã nghe, lưu trước khi gửi, tự gửi ngay và thử lại khi mở/resume, có mạng trở lại hoặc mỗi 15 giây khi màn hình/service phát đang hoạt động. Heartbeat khách vẫn mỗi 60 giây. Backend chống đếm lặp theo eventId. Profile chỉ hiển thị trạng thái đồng bộ; người dùng không cần bấm nút gửi lượt nghe. Mất mạng không chặn đọc/nghe nội dung đã có. Receipt bị từ chối 400/404/409 được giữ riêng để kiểm tra và không chặn receipt hợp lệ tiếp theo; lỗi lưu cục bộ được giữ tạm trong RAM để tự thử lại (chưa bảo đảm giữ qua force-stop nếu lưu đĩa đang lỗi).
+
+Kiểm tra thủ công: mở bài nghe rồi phát, quan sát thống kê Admin tăng một lượt; pause/resume không tăng thêm; phát lại từ đầu tạo lượt mới. Tắt mạng, phát bài đã tải, bật mạng rồi chờ đồng bộ tự động; không thao tác nút sync. Với ảnh, upload và duyệt một ảnh ở Admin, tải lại danh sách Android rồi mở chi tiết đúng POI. Với gói mới, xuất bản nội dung, chờ job READY và banner polling, xác nhận tải rồi mở địa điểm từ Offline.
 
 ## Build, APK và QR
 
-[build.gradle.kts](../../android/app/build.gradle.kts): version 1.1.0, debug suffix -dev, package .debug. Dependency giữ theo repo. Google key đặt trong android/secrets.properties hoặc ANDROID_MAPS_API_KEY, không commit. Build trực tiếp mặc định emulator 10.0.2.2:8081.
+[build.gradle.kts](../../android/app/build.gradle.kts): version 1.1.1, debug suffix -dev, package .debug. Dependency giữ theo repo. Google key đặt trong android/secrets.properties hoặc ANDROID_MAPS_API_KEY, không commit. Build trực tiếp mặc định emulator 10.0.2.2:8081.
 
-Từ gốc repo, với Java 21 và Android SDK sẵn sàng:
+Maps phân biệt thiếu key, Google Play services không khả dụng và timeout tải bản đồ. Retry tạo phiên kiểm tra mới; danh sách vẫn hoạt động. Refresh catalog không tự kéo camera về tâm; chọn POI sẽ đưa camera đến POI đó, kể cả điểm mẫu ở xa. Nếu SDK vẫn không tải tile, kiểm tra Google Cloud đã bật Maps SDK for Android, billing và Android restriction đúng package `vn.hvp.travelvoice.debug` + SHA-1 `09:34:78:C0:96:63:FF:90:DD:B1:C0:E8:EB:C2:7C:39:17:C1:A4:42` của APK demo hiện hành. Có key trong manifest chưa chứng minh quyền SDK hợp lệ; cần logcat trên thiết bị để xác định lỗi authorization.
+
+Từ gốc repo, với Java 21 và Android SDK sẵn sàng. Script lưu thêm `publicUrl` trong metadata APK từ URL tunnel Cloudflare; QR và nút tải trên Web User dùng URL công khai này ngay cả khi trang được mở trên `localhost`. Nếu không có tunnel, Web User tiếp tục dùng URL tương đối:
 
 ```powershell
 .\scripts\prepare-android-download.ps1 -ApiBaseUrl https://your-tunnel.trycloudflare.com/
@@ -53,5 +59,7 @@ docker compose --env-file .env.demo.local up -d --build web-user
 Script tự đọc URL Cloudflare từ runtime local nếu không truyền ApiBaseUrl; không có URL thì fallback emulator. APK có thể đổi URL trong Profile khi tunnel thay đổi. Không dùng localhost của PC trên điện thoại. Script chép APK/version/size/hash vào web-user/public/downloads (gitignore), thêm query hash vào URL APK; QR và nút tải Web cùng lấy URL này theo origin hiện tại.
 
 Unit/lint/build và nghiệm thu emulator/TalkBack/thiết bị thật là các bằng chứng riêng. Không dùng số test cũ trước lần nhập Android từ main để khẳng định bản 1.1.0 đã được kiểm; xem báo cáo thực thi của lần thay đổi hiện tại.
+
+Kiểm chứng 26/10/2026: 32 unit test Android đạt; lint 0 lỗi, 72 cảnh báo, 2 gợi ý; assembleDebug đạt. Web User lint/build và 15 Playwright đạt; kiểm thử QR trên Cloudflare giải mã và đối chiếu SHA-256 APK đạt. AVD cài APK được nhưng System UI ANR nên chưa nghiệm thu native playback/Maps/TalkBack. Kiểm thử thống kê Admin chưa qua login: database kiểm tra chỉ có `editor`/`reviewer`, không có `admin`; cần dùng đúng tài khoản đã seed, thay biến môi trường không đổi mật khẩu bản ghi đã tồn tại.
 
 Host UI tests dùng OfflineTestApplication với máy chủ loopback không hoạt động để không gửi heartbeat vào demo. Số liệu demo có thể bao gồm các lượt cài đặt kiểm thử trước đó; không diễn giải là số khách thực tế duy nhất. Heartbeat cần mạng, nên thiết bị đang offline không thể cập nhật số hoạt động tức thời.

@@ -1,9 +1,9 @@
 param([switch]$SkipBuild, [string]$ApiBaseUrl)
 $ErrorActionPreference = 'Stop'
 $downloadRoot = Split-Path -Parent $PSScriptRoot
+$tunnelState = Join-Path $downloadRoot '.local-tools/docker-web-share.json'
 if (-not $SkipBuild) {
     if (-not $ApiBaseUrl) {
-        $tunnelState = Join-Path $downloadRoot '.local-tools/docker-web-share.json'
         if (Test-Path -LiteralPath $tunnelState) { $ApiBaseUrl = (Get-Content -LiteralPath $tunnelState -Raw | ConvertFrom-Json).url }
         if (-not $ApiBaseUrl) { $ApiBaseUrl = 'http://10.0.2.2:8081/' }
     }
@@ -27,9 +27,21 @@ $release = Get-Content -LiteralPath (Join-Path $downloadRoot 'android/.verificat
 $apkHash = (Get-FileHash -LiteralPath $apkTarget -Algorithm SHA256).Hash.ToLowerInvariant()
 $metadata = [ordered]@{
     url = '/downloads/travelvoice.apk?v=' + $apkHash.Substring(0,12)
+    publicUrl = $null
     version = $release.elements[0].versionName
     sizeBytes = (Get-Item -LiteralPath $apkTarget).Length
     sha256 = $apkHash
+}
+if (Test-Path -LiteralPath $tunnelState) {
+    $publicOrigin = (Get-Content -LiteralPath $tunnelState -Raw | ConvertFrom-Json).url
+    if ($publicOrigin) {
+        $publicUri = [Uri]$publicOrigin
+        if ($publicUri.IsAbsoluteUri -and $publicUri.Scheme -eq 'https' -and -not $publicUri.UserInfo -and $publicUri.AbsolutePath -eq '/') {
+            $metadata.publicUrl = [Uri]::new($publicUri, $metadata.url).AbsoluteUri
+        } else {
+            throw 'The saved Cloudflare URL must be an HTTPS origin.'
+        }
+    }
 }
 $metadataTarget=Join-Path $downloadDir 'android-release.json'
 $metadataTemporary=Join-Path $downloadDir ('android-release.'+[Guid]::NewGuid().ToString('N')+'.tmp')
