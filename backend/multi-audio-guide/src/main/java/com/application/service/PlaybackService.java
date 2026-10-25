@@ -45,6 +45,8 @@ public class PlaybackService {
         if (request.eventId() == null || request.contentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu eventId hoặc contentId.");
         }
+        if ((request.installationId() == null) != (request.platform() == null))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "installationId và platform phải đi cùng nhau.");
         var existing = playbacks.contentForEvent(request.eventId());
         if (existing.isPresent()) {
             requireSameContent(existing.get(), request.contentId());
@@ -57,6 +59,8 @@ public class PlaybackService {
         GuideContent guide = guides.findPublicById(request.contentId()).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Nội dung không khả dụng để ghi nhận lượt nghe."));
         boolean created = playbacks.insert(request.eventId(), guide, occurredAt, Boolean.TRUE.equals(request.offline()));
+        if (created && request.installationId() != null)
+            playbacks.attribute(request.eventId(), request.installationId(), request.platform().name());
         if (!created) requireSameContent(playbacks.contentForEvent(request.eventId()).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.CONFLICT, "eventId đã được sử dụng.")), request.contentId());
         return new PlaybackReceipt(request.eventId(), created);

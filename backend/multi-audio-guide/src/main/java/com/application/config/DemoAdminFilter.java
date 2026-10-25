@@ -27,7 +27,8 @@ public class DemoAdminFilter extends OncePerRequestFilter {
         boolean allowed=path.startsWith("/api/admin/auth/") ||
             (path.startsWith("/api/admin/review")?user.role().equals("REVIEWER"):
              path.startsWith("/api/admin/content/") && writes?user.role().equals("EDITOR"):
-             path.startsWith("/api/admin/content/") || path.startsWith("/api/admin/analytics") || path.startsWith("/api/admin/feedback"));
+             path.startsWith("/api/admin/content/") || path.startsWith("/api/admin/analytics") || path.startsWith("/api/admin/feedback")
+                 || (path.equals("/api/admin/visitors") && request.getMethod().equals("GET")));
         if(!allowed) { response.sendError(403,"Vai trò không có quyền thực hiện thao tác này.");return; }
         request.setAttribute("adminIdentity",user);
         chain.doFilter(new HttpServletRequestWrapper(request) {

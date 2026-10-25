@@ -40,6 +40,11 @@ public class PlaybackRepository {
                 Map.of("id", eventId), (rs, row) -> rs.getObject(1, UUID.class)).stream().filter(java.util.Objects::nonNull).findFirst();
     }
 
+    public void attribute(UUID eventId, UUID installationId, String platform) {
+        jdbc.update("UPDATE analytics_events SET installation_id=:installation, client_platform=:platform WHERE id=:id",
+                Map.of("id", eventId, "installation", installationId, "platform", platform));
+    }
+
     public long count(Instant start, Instant end, boolean offline) {
         Long result = jdbc.queryForObject("SELECT count(*) " + PERIOD + " AND e.is_offline = :offline",
                 Map.of("start", Timestamp.from(start), "end", Timestamp.from(end), "offline", offline), Long.class);
