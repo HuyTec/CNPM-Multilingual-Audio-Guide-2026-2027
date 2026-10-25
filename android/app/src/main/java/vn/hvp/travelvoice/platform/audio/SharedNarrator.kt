@@ -43,7 +43,7 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
     private var ready = false
     private var generation = 0
     private var closed = false
-    private var counted = false
+    private val receipt = PlaybackReceiptTracker(started)
     private var work: java.io.File? = null
     private var renderTarget: java.io.File? = null
     private var parts = listOf<java.io.File>()
@@ -53,14 +53,14 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
     private val chunks = guide.scriptText.chunked(TextToSpeech.getMaxSpeechInputLength() - 1)
     init { lifecycle?.addObserver(observer) }
     private fun acquire() = manager.requestAudioFocus(focus) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
-    private fun begin() { handler.removeCallbacks(timeout); state = "Đang phát"; if (!counted && position > 0) { counted = true; started(UUID.randomUUID().toString()) } }
+    private fun begin() { handler.removeCallbacks(timeout); state = "Đang phát" }
     fun play() {
         if (closed || state in listOf("Đang phát", "Đang chuẩn bị…")) return
         if (state == "Tạm dừng" && player != null) {
             runCatching { if (acquire()) { player?.start(); begin() } }.onFailure { fail("Không thể tiếp tục âm thanh.") }
             return
         }
-        stop(); counted = false
+        stop(); receipt.newSession()
         val url = guide.audioUrl
         if (url.isNullOrBlank()) useTts() else { ttsSource = false; prepare(url, true) }
     }
@@ -82,7 +82,10 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
                     if (fallback) useTts() else { renderTarget?.delete(); fail("Tệp giọng đọc không khả dụng. Hãy thử lại.") }
                 }; true
             }
-            created.setOnCompletionListener { if (!closed && player === it) { state = "Đã nghe hết"; position = total; manager.abandonAudioFocusRequest(focus) } }
+            created.setOnCompletionListener { if (!closed && player === it) {
+                receipt.progressed(it.currentPosition, state == "Đang phát")
+                state = "Đã nghe hết"; position = total; manager.abandonAudioFocusRequest(focus)
+            } }
             handler.removeCallbacks(timeout); handler.postDelayed(timeout, 15_000); created.prepareAsync()
         } catch (_: Exception) { if (fallback) useTts() else fail("Không thể phát tệp giọng đọc.") }
     }
@@ -166,7 +169,12 @@ class SharedNarrator(private val context: Context, private val lifecycle: Lifecy
         val active = state == "Đang phát"
         runCatching { player?.let { if (total > 0) { it.playbackParams = it.playbackParams.setSpeed(value); if (!active) it.pause() } } }
     }
-    fun tick() { if (state == "Đang phát") runCatching { position = (player?.currentPosition ?: 0) / 1000; if (position > 0) begin() } }
+    fun tick() { if (state == "Đang phát") runCatching {
+        val current = player ?: return@runCatching
+        val positionMs = current.currentPosition
+        position = positionMs / 1000
+        receipt.progressed(positionMs, current.isPlaying)
+    } }
     private fun fail(message: String) { stop(); state = message }
     fun close() { if (!closed) { stop(); closed = true; engine?.shutdown(); engine = null; lifecycle?.removeObserver(observer); handler.removeCallbacksAndMessages(null) } }
 }

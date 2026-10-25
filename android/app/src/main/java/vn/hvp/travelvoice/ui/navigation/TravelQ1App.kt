@@ -135,10 +135,13 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
                     try { VisitorApi.heartbeat(context, base) }
                     catch (cancelled: CancellationException) { throw cancelled }
                     catch (_: Exception) { /* No connection never blocks reading. */ }
-                    try { PlaybackOutbox.flush(context, base) }
-                    catch (cancelled: CancellationException) { throw cancelled }
-                    catch (_: Exception) { /* Pending receipts stay on disk. */ }
                     delay(60_000)
+                }
+            }
+            launch {
+                while (isActive) {
+                    PlaybackOutbox.retryAutomatically(context, base)
+                    delay(15_000)
                 }
             }
         }
@@ -147,7 +150,10 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         val manager = context.getSystemService(android.net.ConnectivityManager::class.java)
         val callback = object : android.net.ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: android.net.Network) { appScope.launch {
-                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) { updates.check(); retry() }
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                    launch { PlaybackOutbox.retryAutomatically(context, base) }
+                    updates.check(); retry()
+                }
             } }
         }
         manager.registerDefaultNetworkCallback(callback)
@@ -207,14 +213,14 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
             "settings" -> TravelSettings(language, ::setLanguage, rate, ::setRate, onOffline = { tab = "offline" }, modifier = Modifier.padding(padding))
             "offline" -> LazyColumn(Modifier.padding(padding), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item { TextButton(onClick = { tab = "settings" }) { Text(stringResource(R.string.back)) }; Text(stringResource(R.string.q1_offline), style = MaterialTheme.typography.headlineSmall) }
-                item { SharedOfflineContent(repository, updates, onChanged = ::retry, onOpenLocation = { id -> tab = "map"; select(id); details = true }) }
+                item { SharedOfflineContent(repository, updates, onChanged = ::retry, onOpenLocation = { id -> home(); select(id); details = true }) }
             }
             else -> BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
                 val wide = maxWidth > maxHeight
                 if (mapContent != null) mapContent(visible, ::select, { showList = true })
                 else TravelMap(visible, ::select, { showList = true }, Modifier.fillMaxSize(), position, focusRequest,
                     obscuredBottom = if (wide) 0 else placePanelHeight,
-                    obscuredRight = if (wide) with(LocalDensity.current) { (maxWidth / 2).roundToPx() } else 0)
+                    obscuredRight = if (wide) with(LocalDensity.current) { (maxWidth / 2).roundToPx() } else 0, selectedId = selected)
                 Surface(Modifier.align(if (wide) Alignment.TopStart else Alignment.TopCenter).padding(16.dp).fillMaxWidth(if (wide) 0.45f else 1f)
                     .heightIn(max = maxHeight * if (wide) 0.9f else 0.45f), shape = MaterialTheme.shapes.large, tonalElevation = 3.dp) {
                     Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -244,7 +250,7 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
                     .heightIn(max = maxHeight * if (wide) 0.94f else 0.5f).onSizeChanged { placePanelHeight = it.height }, shape = MaterialTheme.shapes.large, tonalElevation = 2.dp) {
                     when {
                         place != null -> TravelPlaceCard(place, guide, guideFailed, position, onRetry = ::retry, onClose = { selected = null },
-                            onRead = { details = true }, onPlay = { guide?.let(::play) })
+                            onRead = { details = true }, onPlay = { guide?.let(::play) }, base = base)
                         else -> Column(Modifier.verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(stringResource(R.string.q1_places, visible.size), style = MaterialTheme.typography.titleMedium)
                             Text(stringResource(when { failed -> R.string.q1_error; locations == null -> R.string.q1_loading; visible.isEmpty() && nearby -> R.string.q1_nearby_empty;
@@ -283,7 +289,7 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         }
     }
     if (details && place != null) ModalBottomSheet(onDismissRequest = { details = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        TravelPlaceDetails(place, guide, guideFailed, language, ::setLanguage, mode, { mode = it }, onRetry = ::retry, onPlay = { guide?.let(::play) }, onRate = ::setRate)
+        TravelPlaceDetails(place, guide, guideFailed, language, ::setLanguage, mode, { mode = it }, onRetry = ::retry, onPlay = { guide?.let(::play) }, onRate = ::setRate, base = base)
     }
     if (details && place == null) ModalBottomSheet(onDismissRequest = { details = false }) { TravelPlayerPanel(::setRate) }
     if (profileOpen) ModalBottomSheet(onDismissRequest = { profileOpen = false }) {

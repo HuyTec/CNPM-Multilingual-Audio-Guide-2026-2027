@@ -64,6 +64,8 @@ class TravelQ1UxTest {
         compose.onNodeWithText("Bạn đang dùng với tư cách khách").assertExists()
         compose.onNodeWithText("Email").assertDoesNotExist()
         compose.onNodeWithText("Lưu máy chủ").assertExists()
+        compose.onNodeWithText("Đồng bộ lượt nghe ngay").assertDoesNotExist()
+        compose.onNode(hasText("Lượt nghe được ghi tự động", substring = true)).assertExists()
         compose.runOnUiThread { compose.activity.onBackPressedDispatcher.onBackPressed() }
         compose.onNodeWithText("Cài đặt").performClick()
         compose.onNodeWithText("Ngôn ngữ giao diện").assertExists()

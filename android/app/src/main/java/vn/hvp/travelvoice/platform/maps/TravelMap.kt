@@ -38,16 +38,25 @@ import vn.hvp.travelvoice.domain.model.isValidMapCoordinate
 /** A full-canvas native map; the surrounding screen supplies search and the place sheet. */
 @Composable
 fun TravelMap(locations: List<ServerLocation>, onSelect: (String) -> Unit, onList: () -> Unit, modifier: Modifier = Modifier,
-              position: Location? = null, focusRequest: Int = 0, obscuredBottom: Int = 0, obscuredRight: Int = 0) {
+              position: Location? = null, focusRequest: Int = 0, obscuredBottom: Int = 0, obscuredRight: Int = 0,
+              selectedId: String? = null) {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val select by rememberUpdatedState(onSelect)
     var camera by rememberSaveable(stateSaver = androidx.compose.runtime.saveable.listSaver(
         save = { listOf(it.latitude, it.longitude, it.zoom) }, restore = { MapCamera(it[0], it[1], it[2]) })) { mutableStateOf(MapCamera(10.777, 106.701, 15.0)) }
     var restore by rememberSaveable { mutableStateOf(false) }
-    var state by remember { mutableStateOf(MapLoadState.Loading) }
     var attempt by remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    val session = remember(context, lifecycle, attempt) { runCatching { MapSession(context, lifecycle, camera, restore,
+    val setup = remember(context, attempt) {
+        val info = context.packageManager.getApplicationInfo(context.packageName, android.content.pm.PackageManager.GET_META_DATA)
+        when {
+            info.metaData?.getString("com.google.android.geo.API_KEY").isNullOrBlank() -> MapLoadState.MissingKey
+            com.google.android.gms.common.GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) != com.google.android.gms.common.ConnectionResult.SUCCESS -> MapLoadState.PlayServicesUnavailable
+            else -> MapLoadState.Loading
+        }
+    }
+    var state by remember(attempt) { mutableStateOf(setup) }
+    val session = remember(context, lifecycle, attempt) { if (setup != MapLoadState.Loading) null else runCatching { MapSession(context, lifecycle, camera, restore,
         { select(it) }, { camera = it; restore = true }, { state = it }) }.getOrNull() }
     DisposableEffect(session) { onDispose { session?.close() } }
     val dark = MaterialTheme.colorScheme.background.luminance() < 0.5f
@@ -63,14 +72,23 @@ fun TravelMap(locations: List<ServerLocation>, onSelect: (String) -> Unit, onLis
     LaunchedEffect(session, focusRequest) {
         position?.let { session?.showUserLocation(it.latitude, it.longitude, it.accuracy) }
     }
-    LaunchedEffect(session) { if (session == null) state = MapLoadState.Error else { state = MapLoadState.Loading; delay(20_000); if (state == MapLoadState.Loading) state = MapLoadState.Error } }
+    LaunchedEffect(session, selectedId) { session?.selectPoint(selectedId) }
+    LaunchedEffect(session) {
+        if (session == null && setup == MapLoadState.Loading) state = MapLoadState.Error
+        else if (session != null) { delay(20_000); if (state == MapLoadState.Loading) state = MapLoadState.Error }
+    }
     val description = stringResource(R.string.q1_map_description)
     Box(modifier.semantics { contentDescription = description }) {
         if (session != null) AndroidView(factory = { session.view }, modifier = Modifier.fillMaxSize())
         if (state != MapLoadState.Ready) Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (state == MapLoadState.Loading) CircularProgressIndicator()
-            Text(stringResource(if (state == MapLoadState.Loading) R.string.q1_map_loading else R.string.q1_map_error), style = MaterialTheme.typography.bodyMedium)
-            if (state == MapLoadState.Error) {
+            Text(stringResource(when (state) {
+                MapLoadState.Loading -> R.string.q1_map_loading
+                MapLoadState.MissingKey -> R.string.q1_map_missing_key
+                MapLoadState.PlayServicesUnavailable -> R.string.q1_map_play_services
+                else -> R.string.q1_map_error
+            }), style = MaterialTheme.typography.bodyMedium)
+            if (state != MapLoadState.Loading) {
                 TextButton(onClick = { attempt++ }) { Text(stringResource(R.string.q1_retry)) }
                 TextButton(onClick = onList) { Text(stringResource(R.string.q1_list)) }
             }

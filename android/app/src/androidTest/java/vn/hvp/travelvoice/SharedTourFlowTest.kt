@@ -19,6 +19,7 @@ class SharedTourFlowTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     @Test fun nativePlaybackAdvancesAndPauseResumeDoesNotStartANewReceipt() {
         val context = compose.activity.applicationContext
+        val acknowledged = PlaybackOutbox.state(context).value.acknowledged
         val guide = runBlocking { DemoApi.guide(BuildConfig.API_BASE_URL, "20000000-0000-0000-0000-000000000101", "VI", "FULL") }
         assertNotNull(guide.audioUrl)
         try {
@@ -28,7 +29,8 @@ class SharedTourFlowTest {
             compose.waitUntil(5_000) { TravelPlayback.narrator?.state == "Tạm dừng" }
             compose.runOnUiThread { TravelPlayback.toggle() }
             compose.waitUntil(10_000) { (TravelPlayback.narrator?.position ?: 0) >= 3 }
-            runBlocking { assertEquals(0, PlaybackOutbox.flush(context, BuildConfig.API_BASE_URL)) }
+            compose.waitUntil(30_000) { PlaybackOutbox.state(context).value.acknowledged == acknowledged + 1 }
+            assertEquals(acknowledged + 1, PlaybackOutbox.state(context).value.acknowledged)
         } finally { compose.runOnUiThread { TravelPlayback.stop(context) } }
     }
     @Test fun anonymousProfileAndPublishedPackageDownloadUseTheSharedBackend() {
@@ -38,8 +40,8 @@ class SharedTourFlowTest {
         compose.onNodeWithContentDescription("Hồ sơ").performClick()
         compose.onNodeWithText("Bạn đang dùng với tư cách khách").assertExists()
         compose.onNodeWithText("Email").assertDoesNotExist()
-        compose.onNodeWithText("Đồng bộ lượt nghe ngay").performScrollTo().performClick()
-        compose.waitUntil(30_000) { compose.onAllNodes(hasText("Đã kết nối và đồng bộ.", substring = true)).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Đồng bộ lượt nghe ngay").assertDoesNotExist()
+        compose.onNode(hasText("Lượt nghe được ghi tự động", substring = true)).assertExists()
         compose.runOnUiThread { compose.activity.onBackPressedDispatcher.onBackPressed() }
         compose.onAllNodesWithText("Ngoại tuyến").onFirst().performClick()
         compose.onNodeWithText("Kiểm tra cập nhật").performScrollTo().performClick()

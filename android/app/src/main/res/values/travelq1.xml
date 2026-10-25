@@ -146,4 +146,12 @@
     <string name="q1_package_wait_playback">Đã xác minh. Hãy dừng bài đang nghe để cài gói; có thể hủy để giữ phiên bản cũ.</string>
     <string name="q1_stop_and_install">Dừng nghe để cài gói</string>
     <string name="q1_package_removed">Đã xóa gói bổ sung. Gói cơ bản được giữ.</string>
+    <string name="q1_sync_automatic">Lượt nghe được ghi tự động khi âm thanh thực sự phát. Không cần bấm đồng bộ. Nếu mất mạng, ứng dụng tự gửi lại khi có mạng, khi mở lại ứng dụng và mỗi 15 giây khi đang sử dụng.</string>
+    <string name="q1_sync_pending">Có %1$d lượt nghe chờ tự động gửi.</string>
+    <string name="q1_sync_auto_error">Chưa lưu hoặc gửi được một số lượt nghe. Ứng dụng sẽ tự thử lại; hãy kiểm tra mạng và dung lượng trống.</string>
+    <string name="q1_sync_rejected">Có %1$d lượt nghe bị máy chủ từ chối, được giữ lại để kiểm tra. Các lượt hợp lệ khác vẫn tự gửi.</string>
+    <string name="q1_photo_loading">Đang tải ảnh địa điểm…</string>
+    <string name="q1_photo_error">Chưa tải được ảnh. Nội dung thuyết minh vẫn sử dụng được.</string>
+    <string name="q1_map_missing_key">Bản APK chưa được cấu hình khóa Maps SDK cho Android. Bạn vẫn có thể mở danh sách địa điểm.</string>
+    <string name="q1_map_play_services">Google Play services chưa sẵn sàng. Hãy cập nhật dịch vụ hoặc dùng danh sách địa điểm.</string>
 </resources>

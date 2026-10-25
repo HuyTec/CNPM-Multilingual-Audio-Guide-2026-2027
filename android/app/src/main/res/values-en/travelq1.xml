@@ -152,4 +152,12 @@
     <string name="q1_package_wait_playback">Verified. Stop the current narration to install, or cancel to keep the previous package.</string>
     <string name="q1_stop_and_install">Stop listening and install</string>
     <string name="q1_package_removed">Optional content removed. Base content is preserved.</string>
+    <string name="q1_sync_automatic">Listening is recorded automatically when audio actually plays. No sync button is needed. Offline receipts retry on reconnection, app reopening and every 15 seconds while in use.</string>
+    <string name="q1_sync_pending">%1$d listening receipts waiting to sync automatically.</string>
+    <string name="q1_sync_auto_error">Some listening receipts could not be saved or sent. The app will retry automatically; check your connection and available storage.</string>
+    <string name="q1_sync_rejected">%1$d receipts were rejected and retained for diagnosis. Other valid receipts continue syncing automatically.</string>
+    <string name="q1_photo_loading">Loading location photo…</string>
+    <string name="q1_photo_error">The photo could not load. Narration remains available.</string>
+    <string name="q1_map_missing_key">This APK has no Android Maps SDK key configured. The location list remains available.</string>
+    <string name="q1_map_play_services">Google Play services is not ready. Update it or use the location list.</string>
 </resources>
