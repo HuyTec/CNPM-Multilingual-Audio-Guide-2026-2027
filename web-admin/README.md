@@ -11,7 +11,10 @@ npm.cmd run lint
 npm.cmd run test:e2e -- --workers=1
 ```
 
-Đặt API_PROXY_TARGET trong .env.local nếu backend khác mặc định 8080. Live-demo dùng 8081.
+Vite dev đọc `API_PROXY_TARGET` trong `web-admin/.env.local`; nếu không có, sẽ dùng
+`API_PROXY_TARGET` hoặc `BACKEND_PORT` từ `.env.demo.local` ở thư mục gốc (mặc định cổng
+8080). Với live-demo, Vite trên host proxy tới `127.0.0.1:8081`. Container Admin không
+dùng thiết lập Vite này: Nginx proxy `/api` và `/demo-audio` tới `backend:8080` trong Compose.
 Tài khoản seed demo: editor / EditorDemo!2026; reviewer / ReviewerDemo!2026 (chỉ seed lần đầu).
 Phiên bearer chỉ ở bộ nhớ tab; reload cần đăng nhập lại. Basic Auth cũ đã bị thay thế.
 HTTP fixture tests không chứng minh kết nối DB; suite publication.live dùng backend/DB riêng có chủ đích.

@@ -238,8 +238,10 @@ npm ci
 npm run dev
 ```
 
-Mở http://127.0.0.1:5175/ để chọn địa điểm. Proxy đọc `BACKEND_PORT` từ `.env` ở thư mục gốc
-(nếu chưa đặt thì dùng 8080). Có thể ghi đè bằng `API_PROXY_TARGET` trong `web-user/.env.local`.
+Mở http://127.0.0.1:5175/ để chọn địa điểm. Proxy ưu tiên `API_PROXY_TARGET` trong
+`web-user/.env.local`, sau đó dùng `API_PROXY_TARGET` hoặc `BACKEND_PORT` từ
+`.env.demo.local` ở thư mục gốc (nếu chưa đặt thì dùng cổng 8080). Có thể đặt URL backend
+khác trong `web-user/.env.local`; khởi động lại Vite sau khi đổi cấu hình.
 Backend dùng profile demo; phần geofence mới cần migration V4. Môi trường được kiểm tra ngày 22/10/2026 dùng cổng 8081.
 Danh sách mặc định là bảy điểm từ tài liệu nhóm cung cấp; vẫn có lựa chọn tất cả
 địa điểm cũ. Nội dung chưa thẩm định; tọa độ chỉ minh họa.
@@ -353,7 +355,9 @@ Invoke-RestMethod 'http://127.0.0.1:5175/api/locations?size=50&categoryId=100000
 Invoke-RestMethod 'http://127.0.0.1:5175/api/categories'
 ```
 
-Nếu đổi cổng backend, sửa `BACKEND_PORT` tại `.env` gốc hoặc `API_PROXY_TARGET`, rồi khởi động lại Vite.
+Nếu đổi cổng backend Docker, cập nhật `BACKEND_PORT` và `API_PROXY_TARGET` trong `.env.demo.local`,
+rồi khởi động lại Vite. Vite dev chạy trên host nên dùng `127.0.0.1`; container `web-user`
+được Compose cấu hình riêng với `http://backend:8080`.
 API phân trang chỉ chấp nhận `size` từ 1 đến 50; web tải tuần tự mọi trang để quét đủ địa điểm.
 Trong **Danh sách**, chọn **Danh mục** để duyệt nhóm hoặc tất cả địa điểm; mặc định vẫn là tuyến 7 điểm.
 

@@ -4,8 +4,12 @@ import { defineConfig, loadEnv } from 'vite';
 import { resolve } from 'node:path';
 
 export default defineConfig(({ mode }) => {
-  const backend = loadEnv(mode, resolve(process.cwd(), '..'), 'BACKEND_');
-  const target = loadEnv(mode, process.cwd(), '').API_PROXY_TARGET || `http://127.0.0.1:${backend.BACKEND_PORT || '8080'}`;
+  const workspace = resolve(process.cwd(), '..');
+  const app = loadEnv(mode, process.cwd(), 'API_PROXY_TARGET');
+  const backend = loadEnv(mode, workspace, 'BACKEND_');
+  const demoTarget = loadEnv('demo', workspace, 'API_PROXY_TARGET');
+  const demoBackend = loadEnv('demo', workspace, 'BACKEND_');
+  const target = app.API_PROXY_TARGET || demoTarget.API_PROXY_TARGET || `http://127.0.0.1:${backend.BACKEND_PORT || demoBackend.BACKEND_PORT || '8080'}`;
   return {
     build: { manifest: 'asset-manifest.json' },
     define: { 'import.meta.env.APP_BUILD': JSON.stringify(Date.now().toString()) },

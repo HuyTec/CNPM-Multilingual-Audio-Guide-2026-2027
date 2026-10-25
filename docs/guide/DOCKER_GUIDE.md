@@ -37,6 +37,26 @@ docker compose --env-file .env.demo.local ps
 
 Mọi service khởi động mặc định, không cần profile `tourist-web`. Backend và Admin bind localhost nếu không override; `start-live-demo.ps1 -Lan` mở hai cổng này trên LAN cho demo tin cậy. Script in cổng thực tế sau khi khởi động. Android emulator dùng `http://10.0.2.2:8081/`; điện thoại dùng IP LAN của PC hoặc URL HTTPS của Web du khách. Nginx Admin và gateway du khách cùng proxy về `backend:8080` trong mạng Compose.
 
+## Cấu hình từng thành phần
+
+| Service | Image/runtime và cổng | Kết nối/cấu hình chính | Health và lưu trữ |
+|---|---|---|---|
+| `postgres` | `postgis/postgis:17-3.6-alpine`, cổng nội bộ `5432` | DB `audio_guide`, user `audio_guide`; mật khẩu lấy từ `.env.demo.local`, không đưa lên host | `pg_isready`; volume `postgres_data` giữ dữ liệu |
+| `backend` | Spring Boot, container `8080` → host `BACKEND_PORT` (mặc định `8081`) | Profile `demo`; JDBC `postgres:5432/audio_guide`; proxy dịch mặc định `host.docker.internal:5000/translate` | Chỉ khởi động sau khi DB healthy; healthcheck `/actuator/health` |
+| `web-admin` | React build tĩnh + Nginx, container `80` → host `WEB_PORT` (mặc định `3001`) | Nginx proxy `/api` và `/demo-audio` tới `backend:8080`; Vite dev `5173` chạy riêng trên host | Healthcheck trang `/`; Admin/Backend bind theo `WEB_BIND_ADDRESS`/`BACKEND_BIND_ADDRESS` |
+| `web-user` | React build + Node public gateway, container `4176` → host `TOURIST_WEB_PORT` (mặc định `14176`) | Compose đặt `API_PROXY_TARGET=http://backend:8080`; gateway chỉ chuyển tiếp các API public được cho phép | Phụ thuộc backend healthy; bind host cố định `127.0.0.1` |
+| Android | Chạy trên emulator/điện thoại, không phải container | Emulator gọi host qua `10.0.2.2:<BACKEND_PORT>`; thiết bị thật cần IP LAN hoặc HTTPS public URL | Dùng chung API/backend; không kết nối thẳng PostgreSQL |
+
+Với Vite chạy trên host, `.env.demo.local` là cấu hình chung: `API_PROXY_TARGET=http://127.0.0.1:8081`
+được ưu tiên hơn `BACKEND_PORT`; nếu thiếu URL thì dùng `127.0.0.1:<BACKEND_PORT>`.
+Có thể ghi đè bằng `API_PROXY_TARGET` trong `web-user/.env.local` hoặc `web-admin/.env.local`.
+`localhost` trong container không phải host và không phải container backend; vì vậy các container
+dùng DNS service `backend`, còn Vite trên host dùng `127.0.0.1`.
+
+Mặc định `.env.demo.local` bind Backend/Admin vào `127.0.0.1`. Tùy chọn
+`start-live-demo.ps1 -Lan` đổi hai giá trị này thành `0.0.0.0`, mở Backend/Admin ra các giao
+diện mạng của máy; chỉ dùng trên mạng đáng tin cậy. Web du khách chỉ bind `127.0.0.1` trên host.
+
 ## Cloudflare và QR
 
 ```powershell
