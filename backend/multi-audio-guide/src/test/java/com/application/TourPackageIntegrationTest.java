@@ -65,7 +65,7 @@ class TourPackageIntegrationTest {
         var bundle = packages.build("BASE"); var manifest = bundle.manifest();
         assertThat(packages.build("BASE").manifest().version()).isEqualTo(manifest.version());
         assertThat(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bundle.bytes()))).isEqualTo(manifest.sha256());
-        var key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(packages.publicKey().get("spki"))));
+        var key = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(packages.publicKey().spki())));
         var verifier = Signature.getInstance("SHA256withRSA"); verifier.initVerify(key); verifier.update(bundle.bytes());
         assertThat(verifier.verify(Base64.getDecoder().decode(manifest.signature()))).isTrue();
         var payload = mapper.readTree(bundle.bytes());
