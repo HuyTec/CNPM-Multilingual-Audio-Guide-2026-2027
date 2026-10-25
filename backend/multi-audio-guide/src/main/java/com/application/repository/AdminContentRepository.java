@@ -55,7 +55,7 @@ public class AdminContentRepository {
                 draft = new LocationDetail(location, p.name(), p.category(), p.latitude(), p.longitude(), p.radius(),
                         rs.getString("draft_status"), p.packageVersion(), p.assets(), rs.getInt("edit_version"),
                         rs.getString("updated_by"), rs.getTimestamp("updated_at").toInstant(), null,
-                        p.names() == null ? Map.of("vi", value(p.name())) : p.names(), rs.getString("reviewer_comment"));
+                        p.names() == null ? Map.of("vi", value(p.name())) : p.names(), rs.getString("reviewer_comment"), p.fieldOrigins());
             }
             return new Row(location, original, draft);
         });
@@ -66,7 +66,7 @@ public class AdminContentRepository {
                     g.location_id,g.language_code,g.script_type,g.script_text,a.storage_key
                 FROM guide_content_revisions g JOIN locations l ON l.id=g.location_id
                 LEFT JOIN audio_assets a ON a.content_id=g.id
-                WHERE g.location_id IN (:ids) AND g.status<>'ARCHIVED'
+                WHERE g.location_id IN (:ids) AND g.status<>'ARCHIVED' AND g.is_current
                   AND (g.status='APPROVED' OR l.status<>'APPROVED')
                 ORDER BY g.location_id,g.language_code,g.script_type,g.revision_no DESC,g.id
                 """, Map.of("ids", rows.stream().map(Row::id).toList()), rs -> {
@@ -107,7 +107,7 @@ public class AdminContentRepository {
                 """, params) : jdbc.update("""
                 UPDATE admin_content_drafts SET payload=CAST(:payload AS jsonb),status=:status,
                     edit_version=edit_version+1,updated_by=:editor,updated_at=CURRENT_TIMESTAMP
-                WHERE location_id=:id AND edit_version=:expected
+                WHERE location_id=:id AND edit_version=:expected AND status<>'APPROVED'
                 """, params);
         return count == 1;
     }

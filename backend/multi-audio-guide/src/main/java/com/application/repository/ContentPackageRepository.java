@@ -25,20 +25,21 @@ public class ContentPackageRepository {
     public List<Location> locations(boolean base) {
         return jdbc.query("""
                 SELECT l.id,l.name,l.category_id,c.name AS category_name,
-                       ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,l.geofence_radius_m
+                       ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,l.geofence_radius_m,
+                    COALESCE((SELECT jsonb_object_agg(lower(t.language_code),t.name) FROM location_translations t WHERE t.location_id=l.id),'{}'::jsonb)::text AS localized_names
                 FROM locations l JOIN categories c ON c.id=l.category_id WHERE l.status='APPROVED' AND c.is_active
                 """ + FILTER + " ORDER BY l.id", parameters(base), (rs, row) -> new Location(rs.getObject("id", UUID.class),
                 rs.getString("name"), rs.getObject("category_id", UUID.class), rs.getString("category_name"),
-                rs.getDouble("lat"), rs.getDouble("lng"), rs.getInt("geofence_radius_m")));
+                rs.getDouble("lat"), rs.getDouble("lng"), rs.getInt("geofence_radius_m"), localized(rs.getString("localized_names"))));
     }
     public List<GuideContent> guides(boolean base) {
         return jdbc.query("""
                 SELECT DISTINCT ON (g.location_id,g.language_code,g.script_type)
-                    g.id,g.location_id,l.name,g.language_code,g.script_type,g.script_text,a.storage_key
+                    g.id,g.location_id,COALESCE((SELECT t.name FROM location_translations t WHERE t.location_id=l.id AND t.language_code=g.language_code),l.name) AS name,g.language_code,g.script_type,g.script_text,a.storage_key
                 FROM guide_content_revisions g JOIN locations l ON l.id=g.location_id
                 JOIN categories c ON c.id=l.category_id JOIN languages lang ON lang.code=g.language_code
                 LEFT JOIN audio_assets a ON a.content_id=g.id
-                WHERE l.status='APPROVED' AND g.status='APPROVED' AND c.is_active AND lang.is_active
+                WHERE l.status='APPROVED' AND g.status='APPROVED' AND g.is_current AND c.is_active AND lang.is_active
                   AND g.script_text ~ '[^[:space:]]'
                 """ + FILTER + " ORDER BY g.location_id,g.language_code,g.script_type,g.revision_no DESC,g.id", parameters(base),
                 (rs, row) -> new GuideContent(rs.getObject("id", UUID.class), rs.getObject("location_id", UUID.class),
@@ -50,7 +51,9 @@ public class ContentPackageRepository {
         if (cooldown.isEmpty() || locations.isEmpty()) return null;
         record Survey(String id, Instant at, Map<String, String> names) { }
         List<Survey> surveys = jdbc.query("""
-                SELECT s.location_id,s.surveyed_at,s.localized_names::text AS names
+                SELECT s.location_id,s.surveyed_at,(s.localized_names || COALESCE(
+                    (SELECT jsonb_object_agg(t.language_code,t.name) FROM location_translations t WHERE t.location_id=s.location_id),
+                    '{}'::jsonb))::text AS names
                 FROM location_geofence_surveys s JOIN locations l ON l.id=s.location_id
                 WHERE s.location_id IN (:ids) AND s.latitude=ST_Y(l.coordinates::geometry)
                   AND s.longitude=ST_X(l.coordinates::geometry) AND s.radius_m=l.geofence_radius_m
@@ -66,5 +69,10 @@ public class ContentPackageRepository {
     }
     public byte[] audio(String url) {
         return jdbc.queryForObject("SELECT data FROM admin_audio_uploads WHERE '/api/content-audio/'||id::text||'.'||format=:url", Map.of("url", url), byte[].class);
+    }
+    private static java.util.Map<String,String> localized(String raw) {
+        var result=new java.util.LinkedHashMap<String,String>();
+        tools.jackson.databind.json.JsonMapper.builder().build().readTree(raw).properties().forEach(e->result.put(e.getKey(),e.getValue().asString()));
+        return result;
     }
 }

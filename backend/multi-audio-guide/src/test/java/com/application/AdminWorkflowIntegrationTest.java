@@ -30,7 +30,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AdminWorkflowIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
-    private static final String AUTH = "Basic " + Base64.getEncoder().encodeToString("admin:integration-only-password".getBytes(StandardCharsets.UTF_8));
+    private String AUTH;
+    @Autowired com.application.service.AdminAuthService authService;
+    @org.junit.jupiter.api.BeforeEach void authenticate() {
+        AUTH="Bearer "+authService.login(new com.application.dto.AdminAuthDto.Login("editor","EditorDemo!2026")).token();
+    }
     private static final String LOCATION = "20000000-0000-0000-0000-000000000101";
     @DynamicPropertySource static void database(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url", () -> System.getenv("TEST_DATABASE_URL"));

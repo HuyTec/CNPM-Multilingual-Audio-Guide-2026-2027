@@ -34,6 +34,11 @@ class TourPackageIntegrationTest {
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
     @Autowired ContentPackageService packages;
+    @Autowired com.application.repository.PublicationRepository versions;
+    @Autowired com.application.service.PublicationService publisher;
+    @org.junit.jupiter.api.BeforeEach void materializePackages() {
+        var job=versions.enqueue(null);publisher.publish(job);
+    }
     private final JsonMapper mapper = JsonMapper.builder().build();
     @DynamicPropertySource static void database(DynamicPropertyRegistry registry) {
         registry.add("spring.datasource.url", () -> System.getenv("TEST_DATABASE_URL"));
@@ -113,6 +118,8 @@ class TourPackageIntegrationTest {
         var metadata = mapper.readTree(packages.build("BASE").bytes()).get("geofencing");
         assertThat(metadata.get("cooldownSeconds").asInt()).isEqualTo(3600);
         assertThat(metadata.get("localizedNames").size()).isEqualTo(1);
+        assertThat(metadata.get("localizedNames").get("20000000-0000-0000-0000-000000000101").get("VI").asString())
+                .isEqualTo(jdbc.queryForObject("SELECT name FROM location_translations WHERE location_id='20000000-0000-0000-0000-000000000101' AND language_code='VI'",String.class));
         jdbc.update("UPDATE location_geofence_surveys SET radius_m=radius_m+1");
         assertThat(mapper.readTree(packages.build("BASE").bytes()).has("geofencing")).isFalse();
     }

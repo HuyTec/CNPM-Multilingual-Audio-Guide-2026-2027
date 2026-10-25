@@ -13,7 +13,7 @@ import java.util.UUID;
 public class GuideRepository {
     private final NamedParameterJdbcTemplate jdbc;
     private static final String PUBLIC_GUIDE = """
-            SELECT g.id, g.location_id, l.name, g.language_code, g.script_type,
+            SELECT g.id, g.location_id, COALESCE((SELECT t.name FROM location_translations t WHERE t.location_id=l.id AND t.language_code=g.language_code),l.name) AS name, g.language_code, g.script_type,
                    g.script_text, a.storage_key
             FROM guide_content_revisions g
             JOIN locations l ON l.id = g.location_id
@@ -32,7 +32,7 @@ public class GuideRepository {
     /** Select the latest published revision, preserving script type across language fallback. */
     public Optional<GuideContent> find(UUID locationId, String language, String scriptType) {
         return jdbc.query(PUBLIC_GUIDE + """
-                AND g.location_id = :location AND g.script_type = :type
+                AND g.is_current AND g.location_id = :location AND g.script_type = :type
                 AND g.language_code IN (:language, 'EN', 'VI')
                 ORDER BY CASE g.language_code WHEN :language THEN 0 WHEN 'EN' THEN 1 ELSE 2 END,
                          g.revision_no DESC, g.id LIMIT 1

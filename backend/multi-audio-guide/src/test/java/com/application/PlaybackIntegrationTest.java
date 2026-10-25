@@ -33,7 +33,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PlaybackIntegrationTest {
     private static final String LOCATION = "20000000-0000-0000-0000-000000000001";
     private static final String CONTENT = "30000000-0000-0000-0000-000000000001";
-    private static final String AUTH = "Basic " + Base64.getEncoder().encodeToString("test-admin:test-only-password".getBytes(StandardCharsets.UTF_8));
+    private String AUTH;
+    @Autowired com.application.service.AdminAuthService authService;
+    @org.junit.jupiter.api.BeforeEach void authenticate() {
+        AUTH="Bearer "+authService.login(new com.application.dto.AdminAuthDto.Login("editor","EditorDemo!2026")).token();
+    }
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
 

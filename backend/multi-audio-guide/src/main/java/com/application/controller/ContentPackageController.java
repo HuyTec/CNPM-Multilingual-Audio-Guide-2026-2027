@@ -23,8 +23,11 @@ public class ContentPackageController {
     public PublicKey key() { return service.publicKey(); }
 
     @GetMapping("/api/content-packages")
-    public List<Manifest> packages() {
-        return service.manifests();
+    public ResponseEntity<List<Manifest>> packages(@org.springframework.web.bind.annotation.RequestHeader(value="If-None-Match",required=false) String previous) {
+        var manifests=service.manifests();
+        String tag="\""+manifests.stream().map(Manifest::version).collect(java.util.stream.Collectors.joining("."))+"\"";
+        boolean same=previous!=null && java.util.Arrays.stream(previous.split(",")).map(String::trim).anyMatch(v->v.equals(tag)||v.equals("W/"+tag)||v.equals("*"));
+        return same?ResponseEntity.status(304).eTag(tag).build():ResponseEntity.ok().cacheControl(CacheControl.noCache()).eTag(tag).body(manifests);
     }
 
     @GetMapping("/api/content-packages/{scope}/{version}")

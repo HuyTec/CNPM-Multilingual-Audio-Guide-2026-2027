@@ -14,6 +14,6 @@ public class DiscoveryMapper {
 
     public LocationResponse toResponse(Location location) {
         return new LocationResponse(location.id(), location.name(), location.categoryId(),
-                location.categoryName(), location.latitude(), location.longitude(), location.geofenceRadiusM());
+                location.categoryName(), location.latitude(), location.longitude(), location.geofenceRadiusM(), location.names());
     }
 }

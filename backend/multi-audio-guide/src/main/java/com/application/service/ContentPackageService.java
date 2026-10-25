@@ -22,18 +22,20 @@ public class ContentPackageService {
     private final ContentPackageRepository repository;
     private final PackageSigner signer;
     private final AudioFileReader audio;
+    private final com.application.repository.PublicationRepository versions;
     private final JsonMapper json = JsonMapper.builder().build();
-    public ContentPackageService(ContentPackageRepository repository, PackageSigner signer, AudioFileReader audio) {
-        this.repository = repository; this.signer = signer; this.audio = audio;
+    public ContentPackageService(ContentPackageRepository repository, PackageSigner signer, AudioFileReader audio) { this(repository,signer,audio,null); }
+    @org.springframework.beans.factory.annotation.Autowired
+    public ContentPackageService(ContentPackageRepository repository,PackageSigner signer,AudioFileReader audio,com.application.repository.PublicationRepository versions) {
+        this.repository=repository;this.signer=signer;this.audio=audio;this.versions=versions;
     }
     public PublicKey publicKey() { return signer.publicKey(); }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public List<Manifest> manifests() { return List.of(build("BASE").manifest(), build("OPTIONAL").manifest()); }
+    public List<Manifest> manifests() { return versions.manifests(); }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Bundle download(String scope, String version) {
-        Bundle bundle = build(scope);
-        if (!bundle.manifest().version().equals(version)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Gói đã thay đổi. Hãy kiểm tra cập nhật lại.");
-        return bundle;
+        if (!List.of("BASE", "OPTIONAL").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loại gói không hợp lệ.");
+        return versions.bundle(scope,version).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Chưa có phiên bản gói sẵn sàng."));
     }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Bundle build(String scope) {

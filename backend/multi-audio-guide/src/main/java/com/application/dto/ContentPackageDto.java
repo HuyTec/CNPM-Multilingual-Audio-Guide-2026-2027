@@ -16,7 +16,9 @@ public final class ContentPackageDto {
                            long sizeBytes, String sha256, String signature, String keyId, String downloadUrl, List<Asset> assets) { }
     public record Bundle(Manifest manifest, byte[] bytes) { }
     public record Location(UUID locationId, String name, UUID categoryId, String categoryName,
-                           double latitude, double longitude, int geofenceRadiusM) { }
+                           double latitude, double longitude, int geofenceRadiusM, Map<String,String> names) {
+        public Location(UUID id,String name,UUID category,String categoryName,double latitude,double longitude,int radius) { this(id,name,category,categoryName,latitude,longitude,radius,Map.of()); }
+    }
     public record Geofencing(int cooldownSeconds, Instant surveyedAt, Map<String, Map<String, String>> localizedNames) { }
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonPropertyOrder({"schemaVersion","status","scope","isBase","locations","guides","languages","assets","geofencing"})

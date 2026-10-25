@@ -35,10 +35,10 @@ public class AdminContentService {
     private LocationDetail combine(Workspace workspace) {
         LocationDetail original = workspace.original(), current = workspace.draft() == null ? original : workspace.draft();
         Published published = original != null && "APPROVED".equals(original.status())
-                ? new Published("APPROVED", original.name(), original.assets()) : null;
+                ? new Published("APPROVED", original.name(), original.assets(),original.names(),original.category(),original.latitude(),original.longitude(),original.radius()) : null;
         return new LocationDetail(current.id(), displayName(current.names(), current.name()), current.category(), current.latitude(), current.longitude(),
                 current.radius(), current.status(), current.packageVersion(), current.assets(), current.editVersion(),
-                current.updatedBy(), current.updatedAt(), published, current.names(), current.reviewerComment());
+                current.updatedBy(), current.updatedAt(), published, current.names(), current.reviewerComment(), current.fieldOrigins());
     }
     @Transactional
     public LocationDetail save(UUID id, SaveRequest body) {
@@ -78,8 +78,8 @@ public class AdminContentService {
                     audio.isBlank() ? null : value(source.audioName()), audio.isBlank() ? null : "ready"));
         }
         var payload = new LocationDetail(id, name, category, value(body.latitude()), value(body.longitude()), value(body.radius()),
-                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null, names, null);
-        if (!repository.save(payload, body.editVersion() == null ? 0 : body.editVersion(), editor))
+                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null, names, null, body.fieldOrigins() == null ? Map.of() : body.fieldOrigins());
+        if (!repository.save(payload, body.editVersion() == null ? 0 : body.editVersion(), actor()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bản làm việc đã đổi. Hãy mở lại địa điểm; nội dung đang nhập vẫn được giữ.");
         return detail(id);
     }
@@ -96,11 +96,16 @@ public class AdminContentService {
             default -> false;
         };
         if (!signature || name.length() > 255) bad("Định dạng hoặc header audio không hợp lệ (MP3/WAV/OGG).");
-        UUID id = UUID.randomUUID(); repository.insertAudio(id, location, language, type, name, format, bytes, editor);
+        UUID id = UUID.randomUUID(); repository.insertAudio(id, location, language, type, name, format, bytes, actor());
         return new UploadResponse("/api/content-audio/" + id + "." + format, name, "ready");
     }
     public Audio audio(UUID id, String format, boolean preview) {
         return repository.audio(id, format, preview).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có audio công khai hoặc tệp không tồn tại."));
+    }
+    private String actor() {
+        var attributes=org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if(attributes instanceof org.springframework.web.context.request.ServletRequestAttributes a && a.getRequest().getUserPrincipal()!=null) return a.getRequest().getUserPrincipal().getName();
+        return editor;
     }
     private static String value(String value) { return value == null ? "" : value; }
     private static String displayName(Map<String, String> names, String legacy) {
