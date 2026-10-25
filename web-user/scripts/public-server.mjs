@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const uuid = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 const locationRoute = new RegExp(`^/api/locations(?:/${uuid}(?:/guide)?)?$`);
 const audioRoute = new RegExp(`^/api/content-audio/${uuid}\\.(?:mp3|wav|ogg)$`);
+const imageRoute = new RegExp(`^/api/content-images/${uuid}\\.png$`);
 const guidePage = new RegExp(`^/locations/${uuid}/?$`);
 const packageRoute = /^\/api\/content-packages(?:\/key|\/(?:BASE|OPTIONAL)\/(?:base|optional)-[a-f0-9]{64})?$/;
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -31,7 +32,7 @@ export function createPublicServer({ dist, backend }) {
     catch { reply(res, 400, 'Invalid URL'); return; }
     const path = url.pathname;
     const read = req.method === 'GET' || req.method === 'HEAD';
-    const publicApi = locationRoute.test(path) || audioRoute.test(path) || packageRoute.test(path)
+    const publicApi = locationRoute.test(path) || imageRoute.test(path) || audioRoute.test(path) || packageRoute.test(path)
       || path === '/api/categories' || /^\/demo-audio\/[a-z-]+\.wav$/.test(path);
     const playback = path === '/api/playbacks' && req.method === 'POST';
     if (publicApi || playback) {

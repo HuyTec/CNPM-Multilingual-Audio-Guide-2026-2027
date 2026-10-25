@@ -130,5 +130,6 @@ export async function offlineGuide(selection: Selection): Promise<Guide | undefi
   }
 }
 export async function offlineLocations() {
-  return (await installedPackages()).flatMap(item => item.payload.locations);
+  // Custom images are currently served online; do not render broken network images offline.
+  return (await installedPackages()).flatMap(item => item.payload.locations).map(item => ({ ...item, imageUrl: undefined }));
 }

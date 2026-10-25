@@ -15,7 +15,7 @@ import { CategoryFilter } from './CategoryFilter';
 
 function popupFor(item: TourLocation, language: string, scriptType: string) {
   const content = document.createElement('div'); content.className = 'map-popup';
-  const photo = locationPhoto(item.locationId);
+  const photo = locationPhoto(item.locationId, item.imageUrl);
   if (photo) {
     const image = document.createElement('img'); image.src = photo.src; image.alt = item.name;
     image.width = photo.width; image.height = photo.height; content.append(image);

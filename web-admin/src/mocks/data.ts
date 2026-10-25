@@ -15,6 +15,7 @@ export type Location = {
   id: string;
   name: string;
   names?: Record<string, string>;
+  imageUrl?: string;
   reviewerComment?: string;
   category: string;
   latitude: string;

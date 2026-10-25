@@ -2,6 +2,68 @@ import { test, expect } from "./admin-fixture";
 import ExcelJS from "exceljs";
 import AxeBuilder from "@axe-core/playwright";
 
+test("entry modes preserve manual content, image upload failure retries and draft retains image", async ({
+  page,
+  adminData,
+}) => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII=",
+    "base64",
+  );
+  const imageUrl =
+    "/api/content-images/40000000-0000-0000-0000-000000000001.png";
+  let failed = false;
+  await page.route("**/api/admin/content/images", (route) => {
+    if (!failed) {
+      failed = true;
+      return route.fulfill({ status: 500 });
+    }
+    return route.fulfill({ json: { imageUrl } });
+  });
+  await page.route("**/api/admin/content/images/*.png", (route) =>
+    route.fulfill({ contentType: "image/png", body: png }),
+  );
+  await page.goto("/locations/new");
+  await expect(
+    page.getByRole("radio", { name: "Nhập thủ công", exact: true }),
+  ).toBeChecked();
+  await page.getByLabel("Tên địa điểm").fill("POI ảnh thử");
+  await page
+    .getByLabel("Nội dung thuyết minh", { exact: true })
+    .fill("Nội dung để TTS đọc.");
+  await page
+    .getByRole("radio", { name: "Dịch tự động từ nội dung nguồn" })
+    .click();
+  await expect(page).toHaveURL(/mode=auto/);
+  await expect(
+    page.getByRole("button", { name: "Dịch tự động", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("radio", { name: "Nhập thủ công", exact: true }).click();
+  await expect(
+    page.getByLabel("Nội dung thuyết minh", { exact: true }),
+  ).toHaveValue("Nội dung để TTS đọc.");
+  const file = { name: "poi.png", mimeType: "image/png", buffer: png };
+  await page
+    .getByLabel("Chọn ảnh địa điểm", { exact: true })
+    .setInputFiles(file);
+  await expect(page.getByText(/Không tải được ảnh. Kiểm tra/)).toBeVisible();
+  await expect(page.getByLabel("Tên địa điểm")).toHaveValue("POI ảnh thử");
+  await page
+    .getByLabel("Chọn ảnh địa điểm", { exact: true })
+    .setInputFiles(file);
+  await expect(
+    page.getByAltText("Ảnh đại diện địa điểm đang biên tập"),
+  ).toBeVisible();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.getByRole("button", { name: "Lưu nháp", exact: true }).click();
+  await expect(
+    page.getByText("Đã lưu bản nháp vào database chung.", { exact: true }),
+  ).toBeVisible();
+  expect(
+    adminData.locations.find((item) => item.name === "POI ảnh thử")?.imageUrl,
+  ).toBe(imageUrl);
+});
+
 test("translation failure keeps source text and manual editing available", async ({
   page,
 }) => {
@@ -16,6 +78,9 @@ test("translation failure keeps source text and manual editing available", async
   await page
     .getByLabel("Nội dung thuyết minh", { exact: true })
     .fill("Kịch bản không bị mất khi dịch lỗi.");
+  await page
+    .getByRole("radio", { name: "Dịch tự động từ nội dung nguồn", exact: true })
+    .click();
   await page.getByRole("checkbox", { name: "English", exact: true }).check();
   await page.getByRole("button", { name: "Dịch tự động", exact: true }).click();
   await expect(

@@ -1,6 +1,6 @@
 # Danh sách API dùng chung
 
-Đối chiếu trực tiếp annotation controller ngày 25/10/2026: **29 method/path**. Các chức năng admin/package/playback trong profile demo, còn discovery/guide có ở profile mặc định. Base URL tùy chạy local/Compose; đường dẫn dưới đây chưa gồm host. Response thành công mặc định HTTP 200; manifest có thể 304. Body lỗi do controller là ProblemDetail (status/detail); filter có thể trả lỗi servlet 401/403, client không được giả định mọi lỗi đều cùng JSON.
+Đối chiếu trực tiếp annotation controller ngày 25/10/2026: **32 method/path**. Các chức năng admin/package/playback trong profile demo, còn discovery/guide có ở profile mặc định. Base URL tùy chạy local/Compose; đường dẫn dưới đây chưa gồm host. Response thành công mặc định HTTP 200; manifest có thể 304. Body lỗi do controller là ProblemDetail (status/detail); filter có thể trả lỗi servlet 401/403, client không được giả định mọi lỗi đều cùng JSON.
 
 Admin gửi Authorization: Bearer <token> sau login; không còn Basic Auth cấu hình. Vai trò được backend kiểm trên từng request; thiếu/hết hạn/thu hồi token → 401, trái vai trò → 403. Không gửi admin token từ client du khách.
 
@@ -20,6 +20,9 @@ Admin gửi Authorization: Bearer <token> sau login; không còn Basic Auth cấ
 | Editor | GET | /api/admin/content/locations/{id} | UUID path | AdminContentDto.LocationDetail | EDITOR/REVIEWER | LocationForm | 400/401/403/404/503 |
 | Editor | PUT | /api/admin/content/locations/{id} | AdminContentDto.SaveRequest | AdminContentDto.LocationDetail | EDITOR | LocationForm | 400/401/403/409/503 |
 | Audio | POST | /api/admin/content/audio | multipart: locationId, language, scriptType, file | AdminContentDto.UploadResponse | EDITOR | LocationForm | 400/401/403/413/503 |
+| Image | POST | /api/admin/content/images | multipart: locationId, file (JPEG/PNG, tối đa 5 MB) | LocationImageService.Upload (imageUrl) | EDITOR | LocationImageField | 400/401/403/413/503 |
+| Image | GET | /api/admin/content/images/{id}.png | UUID | PNG bytes | EDITOR/REVIEWER | LocationImageField preview | 400/401/403/404/503 |
+| Image | GET | /api/content-images/{id}.png | UUID | PNG bytes (ảnh hiện đang công khai) | Public | LocationResults, TourMap, PublishedLocationPhoto | 400/404/503 |
 | Audio | GET | /api/admin/content/audio/{id}.{format} | UUID; mp3/wav/ogg | audio bytes | EDITOR/REVIEWER | LocationForm preview | 400/401/403/404/503 |
 | Audio | GET | /api/content-audio/{id}.{format} | UUID; mp3/wav/ogg | audio bytes (published reference only) | Public | GuidePlayer; SharedNarrator; packages | 400/404/503 |
 | Translation | POST | /api/admin/content/translate | TranslationDto.Request | TranslationDto.Result | EDITOR | LocationForm | 400/401/403/502/503 |

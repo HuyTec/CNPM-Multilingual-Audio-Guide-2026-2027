@@ -20,6 +20,7 @@ import { AudioPlayer } from "../components/ui/AudioPlayer";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { ErrorState, LoadingState } from "../components/ui/States";
+import { LocationImageField } from "../components/LocationImageField";
 
 function blankLocation(): ContentLocation {
   return {
@@ -59,6 +60,7 @@ export default function LocationForm() {
   const [targets, setTargets] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState("");
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
   const [saveStatus, setSaveStatus] = useState<
     "DRAFT" | "PENDING_REVIEW" | null
   >(null);
@@ -73,6 +75,7 @@ export default function LocationForm() {
     ? params.get("language")!
     : "vi";
   const type = params.get("type") === "SHORT" ? "SHORT" : "FULL";
+  const entryMode = params.get("mode") === "auto" ? "auto" : "manual";
   const key = `${language}:${type}`;
   const asset: Asset = form.assets[key] || {
     locationId: form.id,
@@ -277,7 +280,7 @@ export default function LocationForm() {
       setMessage(
         result.simulated
           ? "DEMO: kết quả giả lập, chưa phải bản dịch thật. Hãy kiểm tra và sửa trước khi gửi duyệt."
-          : "Đã dịch. Hãy kiểm tra tên và kịch bản trước khi gửi duyệt; audio vẫn upload thủ công.",
+          : "Đã dịch. Hãy kiểm tra tên và kịch bản trước khi gửi duyệt. Web/Android dùng TTS để đọc nếu không có audio.",
       );
     } catch (error) {
       setMessage(
@@ -480,7 +483,7 @@ export default function LocationForm() {
           <p className="eyebrow">BIÊN TẬP NỘI DUNG</p>
           <h1>{id ? "Chỉnh sửa địa điểm" : "Thêm địa điểm"}</h1>
           <p className="muted">
-            Chuẩn bị nội dung, nghe thử audio và gửi để duyệt.
+            Thêm ảnh, nhập nội dung đa ngôn ngữ rồi lưu nháp hoặc gửi duyệt.
           </p>
         </div>
         <StatusBadge status={form.status} />
@@ -522,6 +525,7 @@ export default function LocationForm() {
           disabled={
             busy ||
             uploadBusy ||
+            imageBusy ||
             translating ||
             identity?.role === "REVIEWER" ||
             (form.status === "APPROVED" && !!form.editVersion)
@@ -529,46 +533,96 @@ export default function LocationForm() {
           className="editor-fields"
         >
           <section className="card" aria-labelledby="translation-heading">
-            <h2 id="translation-heading">Nhập thủ công hoặc dịch tự động</h2>
-            <p>
-              Ngôn ngữ đang chọn là nguồn. Bạn có thể nhập mọi ô bằng tay; dịch
-              chỉ tạo văn bản.
-            </p>
-            <p>
-              Nguồn tên: {form.fieldOrigins?.[`name:${language}`] || "MANUAL"} ·
-              Kịch bản: {form.fieldOrigins?.[`script:${key}`] || "MANUAL"}
-            </p>
-            <fieldset>
-              <legend>Ngôn ngữ đích</legend>
-              {languages
-                .filter((l) => l.code !== language)
-                .map((l) => (
-                  <label key={l.code}>
-                    <input
-                      type="checkbox"
-                      name="translationTargets"
-                      value={l.code}
-                      checked={targets.includes(l.code)}
-                      onChange={(e) =>
-                        setTargets((old) =>
-                          e.target.checked
-                            ? [...old, l.code]
-                            : old.filter((x) => x !== l.code),
-                        )
-                      }
-                    />{" "}
-                    {l.label}{" "}
-                  </label>
-                ))}
+            <h2 id="translation-heading">Chọn cách biên tập</h2>
+            <fieldset className="content-entry-options">
+              <legend>Chọn phương án nhập nội dung</legend>
+              <label>
+                <input
+                  type="radio"
+                  name="entryMode"
+                  value="manual"
+                  checked={entryMode === "manual"}
+                  onChange={() => query("mode", "manual")}
+                />{" "}
+                Nhập thủ công
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="entryMode"
+                  value="auto"
+                  checked={entryMode === "auto"}
+                  onChange={() => query("mode", "auto")}
+                />{" "}
+                Dịch tự động từ nội dung nguồn
+              </label>
             </fieldset>
-            <Button
-              type="button"
-              busy={translating}
-              onClick={() => void translate()}
-            >
-              Dịch tự động
-            </Button>
+            <p>
+              {entryMode === "manual"
+                ? "Chọn từng ngôn ngữ bên dưới và nhập tên, nội dung FULL/SHORT tương ứng. Chuyển phương án vẫn giữ dữ liệu đang nhập."
+                : "Nhập tên và nội dung ở ngôn ngữ nguồn bên dưới, chọn ngôn ngữ đích rồi bấm Dịch tự động. Kết quả có thể chỉnh sửa."}
+            </p>
+            <p>
+              Web/Android đọc nội dung bằng TTS khi không có file audio; không
+              bắt buộc tải audio lên.
+            </p>
+            {entryMode === "auto" && (
+              <>
+                <p className="notice">
+                  Dịch tự động phụ thuộc dịch vụ được cấu hình. Provider demo
+                  chỉ tạo kết quả giả lập, không phải bản dịch thật.
+                </p>
+                <p>
+                  Nguồn tên:{" "}
+                  {form.fieldOrigins?.[`name:${language}`] || "MANUAL"} · Kịch
+                  bản: {form.fieldOrigins?.[`script:${key}`] || "MANUAL"}
+                </p>
+                <fieldset>
+                  <legend>Ngôn ngữ đích</legend>
+                  {languages
+                    .filter((l) => l.code !== language)
+                    .map((l) => (
+                      <label key={l.code}>
+                        <input
+                          type="checkbox"
+                          name="translationTargets"
+                          value={l.code}
+                          checked={targets.includes(l.code)}
+                          onChange={(e) =>
+                            setTargets((old) =>
+                              e.target.checked
+                                ? [...old, l.code]
+                                : old.filter((x) => x !== l.code),
+                            )
+                          }
+                        />{" "}
+                        {l.label}{" "}
+                      </label>
+                    ))}
+                </fieldset>
+                <Button
+                  type="button"
+                  busy={translating}
+                  onClick={() => void translate()}
+                >
+                  Dịch tự động
+                </Button>
+              </>
+            )}
           </section>
+          <LocationImageField
+            key={form.imageUrl || "no-image"}
+            locationId={form.id}
+            imageUrl={form.imageUrl}
+            authorization={authorization}
+            onBusyChange={setImageBusy}
+            onChange={(imageUrl) => {
+              setForm((old) => ({ ...old, imageUrl }));
+              setDirty(true);
+              setMessage("");
+            }}
+          />
+          {imageBusy && <p role="status">Đang tải ảnh…</p>}
           <div className="form-grid">
             <section className="card">
               <div className="section-heading">
@@ -657,7 +711,7 @@ export default function LocationForm() {
             <section className="card">
               <div className="section-heading">
                 <div>
-                  <h2>Kịch bản & audio</h2>
+                  <h2>Nội dung thuyết minh & TTS</h2>
                   <p className="muted">
                     Mỗi ngôn ngữ và loại kịch bản có nội dung riêng.
                   </p>
@@ -717,76 +771,83 @@ export default function LocationForm() {
                   }
                 />
               </Field>
-              <div
-                className="upload-box"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  if (!uploadBusy && !busy && e.dataTransfer.files[0])
-                    void upload(e.dataTransfer.files[0]);
-                }}
-              >
-                <Upload size={24} aria-hidden="true" />
-                <strong>Kéo tệp audio vào đây hoặc chọn tệp</strong>
-                <p className="muted">MP3, WAV, OGG · Tối đa 20 MB mỗi tệp</p>
-                <label htmlFor="audio-file">
-                  Chọn audio cho {language} / {type}
-                </label>
-                <input
-                  ref={audioInput}
-                  className="sr-only"
-                  tabIndex={-1}
-                  id="audio-file"
-                  type="file"
-                  name="audio"
-                  accept=".mp3,.wav,.ogg"
-                  disabled={uploadBusy || busy}
-                  aria-describedby="audio-error"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void upload(file);
-                    e.target.value = "";
+              <details open>
+                <summary>Audio thu sẵn (tùy chọn)</summary>
+                <div
+                  className="upload-box"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (!uploadBusy && !busy && e.dataTransfer.files[0])
+                      void upload(e.dataTransfer.files[0]);
                   }}
-                />
-                <Button
-                  secondary
-                  disabled={uploadBusy || busy}
-                  onClick={() => audioInput.current?.click()}
                 >
-                  Chọn tệp audio
-                </Button>
-                {uploadBusy && <p role="status">Đang tải audio…</p>}
-                <p id="audio-error" className="field-error" aria-live="polite">
-                  {uploadError}
-                </p>
-                {uploadError &&
-                  pendingFile &&
-                  /\.(mp3|wav|ogg)$/i.test(pendingFile.file.name) && (
-                    <Button
-                      secondary
-                      onClick={() => {
-                        if (pendingFile) void upload(pendingFile.file, true);
-                      }}
-                    >
-                      Thử lại upload
-                    </Button>
-                  )}
-              </div>
-              {asset.audioName && (
-                <p className="footnote">
-                  Tệp: {asset.audioName}
-                  {!asset.audioUrl &&
-                    " · Chọn lại tệp để nghe thử sau khi tải lại trang."}
-                </p>
-              )}
-              <AudioPlayer
-                src={
-                  asset.audioUrl?.startsWith("/api/content-audio/")
-                    ? previews[asset.audioUrl]
-                    : asset.audioUrl
-                }
-                transcript={asset.text}
-              />
+                  <Upload size={24} aria-hidden="true" />
+                  <strong>Kéo tệp audio vào đây hoặc chọn tệp</strong>
+                  <p className="muted">MP3, WAV, OGG · Tối đa 20 MB mỗi tệp</p>
+                  <label htmlFor="audio-file">
+                    Chọn audio cho {language} / {type}
+                  </label>
+                  <input
+                    ref={audioInput}
+                    className="sr-only"
+                    tabIndex={-1}
+                    id="audio-file"
+                    type="file"
+                    name="audio"
+                    accept=".mp3,.wav,.ogg"
+                    disabled={uploadBusy || busy}
+                    aria-describedby="audio-error"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void upload(file);
+                      e.target.value = "";
+                    }}
+                  />
+                  <Button
+                    secondary
+                    disabled={uploadBusy || busy}
+                    onClick={() => audioInput.current?.click()}
+                  >
+                    Chọn tệp audio
+                  </Button>
+                  {uploadBusy && <p role="status">Đang tải audio…</p>}
+                  <p
+                    id="audio-error"
+                    className="field-error"
+                    aria-live="polite"
+                  >
+                    {uploadError}
+                  </p>
+                  {uploadError &&
+                    pendingFile &&
+                    /\.(mp3|wav|ogg)$/i.test(pendingFile.file.name) && (
+                      <Button
+                        secondary
+                        onClick={() => {
+                          if (pendingFile) void upload(pendingFile.file, true);
+                        }}
+                      >
+                        Thử lại upload
+                      </Button>
+                    )}
+                </div>
+                {asset.audioName && (
+                  <p className="footnote">
+                    Tệp: {asset.audioName}
+                    {!asset.audioUrl &&
+                      " · Chọn lại tệp để nghe thử sau khi tải lại trang."}
+                  </p>
+                )}
+                <AudioPlayer
+                  src={
+                    asset.audioUrl?.startsWith("/api/content-audio/")
+                      ? previews[asset.audioUrl]
+                      : asset.audioUrl
+                  }
+                  transcript={asset.text}
+                />
+              </details>
             </section>
           </div>
           <div className="form-footer">

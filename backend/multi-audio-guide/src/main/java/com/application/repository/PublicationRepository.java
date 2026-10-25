@@ -40,11 +40,12 @@ public class PublicationRepository {
     /** Called only inside the same transaction as building and marking all scopes READY. */
     public void promote(LocationDetail p) {
         var params=new HashMap<String,Object>();params.put("id",p.id());params.put("n",p.name());params.put("c",p.category());
+        params.put("image",p.imageUrl());
         params.put("lat",Double.parseDouble(p.latitude().replace(',','.')));params.put("lng",Double.parseDouble(p.longitude().replace(',','.')));params.put("r",(int)Double.parseDouble(p.radius().replace(',','.')));
         jdbc.update("""
-                INSERT INTO locations(id,name,category_id,coordinates,geofence_radius_m,status)
-                VALUES(:id,:n,(SELECT id FROM categories WHERE name=:c AND is_active),ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography,:r,'APPROVED')
-                ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,category_id=EXCLUDED.category_id,coordinates=EXCLUDED.coordinates,geofence_radius_m=EXCLUDED.geofence_radius_m,status='APPROVED'
+                INSERT INTO locations(id,name,category_id,coordinates,geofence_radius_m,status,image_url)
+                VALUES(:id,:n,(SELECT id FROM categories WHERE name=:c AND is_active),ST_SetSRID(ST_MakePoint(:lng,:lat),4326)::geography,:r,'APPROVED',:image)
+                ON CONFLICT(id) DO UPDATE SET name=EXCLUDED.name,category_id=EXCLUDED.category_id,coordinates=EXCLUDED.coordinates,geofence_radius_m=EXCLUDED.geofence_radius_m,status='APPROVED',image_url=EXCLUDED.image_url
                 """,params);
         jdbc.update("DELETE FROM location_translations WHERE location_id=:id",Map.of("id",p.id()));
         for(var entry:p.names().entrySet()) if(!entry.getValue().isBlank()) jdbc.update("INSERT INTO location_translations(location_id,language_code,name) VALUES(:id,:l,:n)",Map.of("id",p.id(),"l",entry.getKey().toUpperCase(Locale.ROOT),"n",entry.getValue()));

@@ -51,6 +51,17 @@ test("real DB: translate, draft, reviewer publication, reconnect polling, verifi
   await page
     .getByLabel("Nội dung thuyết minh", { exact: true })
     .fill("Nội dung nguồn được kiểm tra trước khi xuất bản.");
+  await page.getByLabel("Chọn ảnh địa điểm", { exact: true }).setInputFiles({
+    name: "poi-test.png",
+    mimeType: "image/png",
+    buffer: await page.screenshot(),
+  });
+  await expect(
+    page.getByAltText("Ảnh đại diện địa điểm đang biên tập"),
+  ).toBeVisible();
+  await page
+    .getByRole("radio", { name: "Dịch tự động từ nội dung nguồn", exact: true })
+    .click();
   await page.getByRole("checkbox", { name: "English", exact: true }).check();
   await page.getByRole("button", { name: "Dịch tự động", exact: true }).click();
   await expect(page.getByText(/DEMO: kết quả giả lập/)).toBeVisible();

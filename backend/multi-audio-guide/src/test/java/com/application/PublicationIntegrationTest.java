@@ -29,6 +29,38 @@ class PublicationIntegrationTest {
     @Autowired TranslationService translation;
     @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
     private final JsonMapper json=JsonMapper.builder().build();
+    @Autowired LocationImageService images;
+    @Test void imageDraftPrivacyPublicationAndReplacement() throws Exception {
+        UUID id=UUID.randomUUID();
+        var output=new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(new java.awt.image.BufferedImage(2,2,java.awt.image.BufferedImage.TYPE_INT_RGB),"png",output);
+        var upload=images.upload(id,output.toByteArray(),"editor");
+        String preview=upload.imageUrl().replace("/api/content-images/","/api/admin/content/images/");
+        String editor="Bearer "+auth.login(new Login("editor","EditorDemo!2026")).token();
+        mvc.perform(get(preview)).andExpect(status().isUnauthorized());
+        mvc.perform(get(preview).header("Authorization",editor)).andExpect(status().isOk());
+        mvc.perform(get(upload.imageUrl())).andExpect(status().isNotFound());
+        Map<String,Asset> assets=Map.of("vi:FULL",new Asset(id,"vi","FULL","", "Bài đọc bằng TTS",null,null,null));
+        var draft=content.save(id,new SaveRequest(id,"Ảnh thử",content.config().categories().getFirst(),"10.78","106.7","80","DRAFT",assets,0,Map.of("vi","Ảnh thử"),Map.of(),upload.imageUrl()));
+        assertThat(content.detail(id).imageUrl()).isEqualTo(upload.imageUrl());
+        draft=content.save(id,new SaveRequest(id,draft.name(),draft.category(),draft.latitude(),draft.longitude(),draft.radius(),"DRAFT",assets,draft.editVersion(),draft.names()));
+        assertThat(draft.imageUrl()).isEqualTo(upload.imageUrl());
+        var submitted=content.save(id,new SaveRequest(id,draft.name(),draft.category(),draft.latitude(),draft.longitude(),draft.radius(),"PENDING_REVIEW",assets,draft.editVersion(),draft.names(),Map.of(),draft.imageUrl()));
+        var job=review.approve(id,new Decision(submitted.editVersion(),""),"reviewer");
+        publisher.publish(job);
+        mvc.perform(get(upload.imageUrl())).andExpect(status().isOk()).andExpect(content().contentType("image/png"));
+        mvc.perform(get("/api/locations/"+id)).andExpect(status().isOk()).andExpect(jsonPath("$.imageUrl").value(upload.imageUrl()));
+        var replacement=images.upload(id,output.toByteArray(),"editor");
+        var current=content.detail(id);
+        content.save(id,new SaveRequest(id,current.name(),current.category(),current.latitude(),current.longitude(),current.radius(),"DRAFT",assets,current.editVersion(),current.names(),Map.of(),replacement.imageUrl()));
+        mvc.perform(get(upload.imageUrl())).andExpect(status().isOk());
+        mvc.perform(get(replacement.imageUrl())).andExpect(status().isNotFound());
+        UUID other=UUID.randomUUID();
+        assertThatThrownBy(()->content.save(other,new SaveRequest(other,"","","","","","DRAFT",Map.of(),0,Map.of(),Map.of(),upload.imageUrl())))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+        assertThatThrownBy(()->images.upload(id,"not an image".getBytes(),"editor"))
+                .isInstanceOf(org.springframework.web.server.ResponseStatusException.class);
+    }
     @DynamicPropertySource static void database(DynamicPropertyRegistry r) {
         r.add("spring.datasource.url",()->System.getenv("TEST_DATABASE_URL"));r.add("spring.datasource.username",()->System.getenv("TEST_DATABASE_USERNAME"));r.add("spring.datasource.password",()->System.getenv("TEST_DATABASE_PASSWORD"));
     }

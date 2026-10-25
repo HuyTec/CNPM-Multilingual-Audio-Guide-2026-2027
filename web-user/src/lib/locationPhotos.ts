@@ -17,7 +17,9 @@ const photos: Record<string, { src: string; width: number; height: number }> = {
   '20000000-0000-0000-0000-000000000107': { src: bitexco, width: 886, height: 1600 },
 };
 
-export const locationPhoto = (id: string) => photos[id];
+export const locationPhoto = (id: string, imageUrl?: string) =>
+  imageUrl && /^\/api\/content-images\/[0-9a-f-]{36}\.png$/.test(imageUrl)
+    ? { src: imageUrl, width: 800, height: 450 } : photos[id];
 
 export function normalizePlaceName(value: string) {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLocaleLowerCase('vi-VN').trim();

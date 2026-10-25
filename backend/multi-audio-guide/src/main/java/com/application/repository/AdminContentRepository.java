@@ -31,7 +31,7 @@ public class AdminContentRepository {
         record Row(UUID id, LocationDetail original, LocationDetail draft) { }
         List<Row> rows = jdbc.query("""
                 WITH ids AS (SELECT id FROM locations UNION SELECT location_id FROM admin_content_drafts)
-                SELECT ids.id,l.id AS original_id,l.name,c.name AS category,l.status,
+                SELECT ids.id,l.id AS original_id,l.name,c.name AS category,l.status,l.image_url,
                     ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,
                     l.geofence_radius_m AS radius,d.payload::text,d.status AS draft_status,
                     d.edit_version,d.updated_by,d.updated_at,d.reviewer_comment,
@@ -48,14 +48,14 @@ public class AdminContentRepository {
                     value(rs.getString("lng")), value(rs.getString("radius")),
                     "REJECTED".equals(rs.getString("status")) ? "REJECTED" : "APPROVED".equals(rs.getString("status")) ? "APPROVED" : "DRAFT",
                     "Chưa gán phiên bản làm việc", new LinkedHashMap<>(), 0, null, null, null,
-                    names(rs.getString("names"), value(rs.getString("name"))), null);
+                    names(rs.getString("names"), value(rs.getString("name"))), null,Map.of(),rs.getString("image_url"));
             LocationDetail draft = null;
             if (rs.getString("payload") != null) {
                 LocationDetail p = json.readValue(rs.getString("payload"), LocationDetail.class);
                 draft = new LocationDetail(location, p.name(), p.category(), p.latitude(), p.longitude(), p.radius(),
                         rs.getString("draft_status"), p.packageVersion(), p.assets(), rs.getInt("edit_version"),
                         rs.getString("updated_by"), rs.getTimestamp("updated_at").toInstant(), null,
-                        p.names() == null ? Map.of("vi", value(p.name())) : p.names(), rs.getString("reviewer_comment"), p.fieldOrigins());
+                        p.names() == null ? Map.of("vi", value(p.name())) : p.names(), rs.getString("reviewer_comment"), p.fieldOrigins(),p.imageUrl());
             }
             return new Row(location, original, draft);
         });

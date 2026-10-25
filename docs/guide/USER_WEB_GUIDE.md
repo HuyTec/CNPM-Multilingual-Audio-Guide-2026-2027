@@ -21,6 +21,8 @@ Hợp đồng API/JSON: [API_list.md](API_list.md). Gói/DB: [BACKEND_GUIDE.md](
 
 ## Offline và cập nhật
 
+Ảnh POI mới lấy từ `imageUrl` của API địa điểm sau khi reviewer xuất bản; dùng trong danh sách, bản đồ và trang bài đọc qua [PublishedLocationPhoto.tsx](../../web-user/src/components/PublishedLocationPhoto.tsx). Gateway chỉ mở route ảnh UUID `.png`, không mở ảnh nháp hay API Admin. **Giới hạn:** ảnh tự tải lên hiện phục vụ online, chưa có byte ảnh trong manifest tài nguyên offline; khi dùng danh sách offline, bỏ URL ảnh mạng để tránh ảnh hỏng. Ảnh tham chiếu đóng sẵn của các POI cũ vẫn có trong app shell. Android chưa bổ sung UI hiển thị ảnh mới.
+
 Polling chỉ lấy manifest; phát hiện version khác mới hiện thông báo trong ứng dụng, không ép tải. Download lấy public key, raw JSON và audio; kiểm size, SHA-256, keyId và RSA trên đúng bytes. Verify schema/APPROVED/scope/location/guide/audio liên kết trước commit. IndexedDB travelvoice-content-v1 lưu manifest, raw bytes, key, audio và installedAt; đọc lại vẫn verify. Thiếu dung lượng, bị hủy hoặc dữ liệu hỏng không ghi đè gói cũ. Cài xong phát travelvoice-content-changed để cập nhật notice/geofence. Web cần online lần đầu để chuẩn bị app shell/service worker và dữ liệu; TTS offline tùy voice máy. Không có push khi đóng tab; không bảo đảm polling nền khi browser bị treo.
 
 Lượt nghe dùng contentId của revision đã phát và timestamp/offline. Server giữ revision cũ; thay tên POI không làm mất thống kê locationId. Chỉ mở trang/đọc script chưa tính lượt nghe. Tên trong gói có names; guide.locationName lấy tên phù hợp effective language. Bản đồ nền cần mạng; POI/geofence chỉ đáng tin khi đã khảo sát.

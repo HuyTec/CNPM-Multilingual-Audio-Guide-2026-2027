@@ -16,7 +16,7 @@ public class LocationRepository {
     private static final String SELECT_LOCATION = """
             SELECT l.id, l.name, l.category_id, c.name AS category_name,
                    ST_Y(l.coordinates::geometry) AS latitude,
-                   ST_X(l.coordinates::geometry) AS longitude, l.geofence_radius_m,
+                   ST_X(l.coordinates::geometry) AS longitude, l.geofence_radius_m,l.image_url,
                     COALESCE((SELECT jsonb_object_agg(lower(t.language_code),t.name) FROM location_translations t WHERE t.location_id=l.id),'{}'::jsonb)::text AS localized_names
             """;
     private static final String VISIBLE_LOCATIONS = """
@@ -27,7 +27,7 @@ public class LocationRepository {
             rs.getObject("id", UUID.class), rs.getString("name"),
             rs.getObject("category_id", UUID.class), rs.getString("category_name"),
             rs.getObject("latitude", Double.class), rs.getObject("longitude", Double.class),
-            rs.getObject("geofence_radius_m", Integer.class), localized(rs.getString("localized_names")));
+            rs.getObject("geofence_radius_m", Integer.class), localized(rs.getString("localized_names")),rs.getString("image_url"));
 
     private final NamedParameterJdbcTemplate jdbc;
 

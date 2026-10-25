@@ -113,3 +113,7 @@ $env:SPRING_PROFILES_ACTIVE='demo'
 ```
 
 [PublicationIntegrationTest.java](../../backend/multi-audio-guide/src/test/java/com/application/PublicationIntegrationTest.java) kiểm chuỗi nháp/dịch/duyệt/manifest/tải/xác minh và rollback khi audio lỗi. Service tests dùng repository mock. Các kiểm thử DB tự skip nếu thiếu TEST_DATABASE_URL; phải báo số skip thay vì nhận tất cả đã kiểm. Trên máy Windows đã gặp lỗi Unix-domain pipe: có thể đặt JVM property jdk.net.unixdomain.tmpdir tới một thư mục không tồn tại để JVM dùng TCP pipe dự phòng; không tạo thư mục đó. Mockito tự attach bị treo thì dùng javaagent Mockito cùng phiên bản dependency; đường dẫn có khoảng trắng phải quote đúng.
+
+## Ảnh POI và TTS trong Admin
+
+Migration V8__location_images.sql thêm location_image_uploads và locations.image_url. LocationImageController → LocationImageService → LocationImageRepository xử lý upload/preview/public, chỉ nhận JPEG/PNG với giới hạn byte/dimensions, re-encode PNG loại metadata. AdminContentService xác nhận ảnh thuộc location; PublicationRepository.promote công bố image_url cùng transaction dữ liệu/gói. Ảnh nháp chỉ preview có auth, ảnh công khai phải đang được locations APPROVED tham chiếu. Payload gói có imageUrl nhưng chưa đóng byte ảnh để dùng offline. Không có pipeline sinh MP3: TTS vẫn chạy tại client; upload audio là tùy chọn.

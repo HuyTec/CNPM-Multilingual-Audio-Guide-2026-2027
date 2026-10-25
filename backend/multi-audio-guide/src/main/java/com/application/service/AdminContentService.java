@@ -21,8 +21,11 @@ import java.util.UUID;
 public class AdminContentService {
     private final AdminContentRepository repository;
     private final String editor;
-    public AdminContentService(AdminContentRepository repository, @Value("${demo.admin.username:admin}") String editor) {
-        this.repository = repository; this.editor = editor;
+    private final com.application.repository.LocationImageRepository images;
+    public AdminContentService(AdminContentRepository repository, String editor) { this(repository,editor,null); }
+    @org.springframework.beans.factory.annotation.Autowired
+    public AdminContentService(AdminContentRepository repository, @Value("${demo.admin.username:admin}") String editor, com.application.repository.LocationImageRepository images) {
+        this.repository = repository; this.editor = editor; this.images=images;
     }
     public Config config() { return repository.config(); }
     @Transactional(readOnly = true)
@@ -35,14 +38,17 @@ public class AdminContentService {
     private LocationDetail combine(Workspace workspace) {
         LocationDetail original = workspace.original(), current = workspace.draft() == null ? original : workspace.draft();
         Published published = original != null && "APPROVED".equals(original.status())
-                ? new Published("APPROVED", original.name(), original.assets(),original.names(),original.category(),original.latitude(),original.longitude(),original.radius()) : null;
+                ? new Published("APPROVED", original.name(), original.assets(),original.names(),original.category(),original.latitude(),original.longitude(),original.radius(),original.imageUrl()) : null;
         return new LocationDetail(current.id(), displayName(current.names(), current.name()), current.category(), current.latitude(), current.longitude(),
                 current.radius(), current.status(), current.packageVersion(), current.assets(), current.editVersion(),
-                current.updatedBy(), current.updatedAt(), published, current.names(), current.reviewerComment(), current.fieldOrigins());
+                current.updatedBy(), current.updatedAt(), published, current.names(), current.reviewerComment(), current.fieldOrigins(),current.imageUrl());
     }
     @Transactional
     public LocationDetail save(UUID id, SaveRequest body) {
         if (!id.equals(body.id())) bad("ID địa điểm không khớp.");
+        String image = body.imageUrl() == null ? repository.workspaces(id).stream().findFirst()
+                .map(this::combine).map(LocationDetail::imageUrl).orElse("") : body.imageUrl();
+        if (!image.isBlank() && (!image.matches("/api/content-images/[0-9a-f-]{36}\\.png") || !images.belongs(id,image))) bad("Ảnh không thuộc địa điểm đang sửa.");
         if (!List.of("DRAFT", "PENDING_REVIEW").contains(value(body.status()))) bad("Chỉ được lưu nháp hoặc gửi duyệt; không tự xuất bản.");
         Map<String, String> names = new LinkedHashMap<>();
         if (body.names() != null) body.names().forEach((language, text) -> {
@@ -78,7 +84,7 @@ public class AdminContentService {
                     audio.isBlank() ? null : value(source.audioName()), audio.isBlank() ? null : "ready"));
         }
         var payload = new LocationDetail(id, name, category, value(body.latitude()), value(body.longitude()), value(body.radius()),
-                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null, names, null, body.fieldOrigins() == null ? Map.of() : body.fieldOrigins());
+                body.status(), "Chưa gán phiên bản làm việc", assets, 0, null, null, null, names, null, body.fieldOrigins() == null ? Map.of() : body.fieldOrigins(),image.isBlank()?null:image);
         if (!repository.save(payload, body.editVersion() == null ? 0 : body.editVersion(), actor()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bản làm việc đã đổi. Hãy mở lại địa điểm; nội dung đang nhập vẫn được giữ.");
         return detail(id);

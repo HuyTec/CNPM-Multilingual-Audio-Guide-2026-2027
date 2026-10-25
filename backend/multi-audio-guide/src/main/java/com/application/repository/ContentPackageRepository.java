@@ -25,12 +25,12 @@ public class ContentPackageRepository {
     public List<Location> locations(boolean base) {
         return jdbc.query("""
                 SELECT l.id,l.name,l.category_id,c.name AS category_name,
-                       ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,l.geofence_radius_m,
+                       ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,l.geofence_radius_m,l.image_url,
                     COALESCE((SELECT jsonb_object_agg(lower(t.language_code),t.name) FROM location_translations t WHERE t.location_id=l.id),'{}'::jsonb)::text AS localized_names
                 FROM locations l JOIN categories c ON c.id=l.category_id WHERE l.status='APPROVED' AND c.is_active
                 """ + FILTER + " ORDER BY l.id", parameters(base), (rs, row) -> new Location(rs.getObject("id", UUID.class),
                 rs.getString("name"), rs.getObject("category_id", UUID.class), rs.getString("category_name"),
-                rs.getDouble("lat"), rs.getDouble("lng"), rs.getInt("geofence_radius_m"), localized(rs.getString("localized_names"))));
+                rs.getDouble("lat"), rs.getDouble("lng"), rs.getInt("geofence_radius_m"), localized(rs.getString("localized_names")),rs.getString("image_url")));
     }
     public List<GuideContent> guides(boolean base) {
         return jdbc.query("""

@@ -16,7 +16,7 @@ export function LocationResults({ items, language, scriptType, label, page, onPa
   return <>
     <ol className="map-place-list" aria-label={label}>
       {items.slice(current * 50, (current + 1) * 50).map((item, index) => {
-        const photo = locationPhoto(item.locationId);
+        const photo = locationPhoto(item.locationId, item.imageUrl);
         const content = <>
           <span className="place-index" aria-hidden="true">{number.format(current * 50 + index + 1).padStart(2, '0')}</span>
           {photo && <img className="place-thumbnail" {...photo} alt="" loading="lazy" />}
