@@ -44,7 +44,10 @@ export default function LiveAnalytics() {
     setExporting(true);
     setExportError("");
     try {
-      const feedback = await feedbackForExport(authorization, feedbackQuery(params, data.from, data.to));
+      const feedback = await feedbackForExport(
+        authorization,
+        feedbackQuery(params, data.from, data.to),
+      );
       await exportReport(
         data.from,
         data.to,
@@ -52,8 +55,22 @@ export default function LiveAnalytics() {
           ["Tổng lượt phát", data.totalPlaybacks],
           ["Online", data.onlinePlaybacks],
           ["Offline", data.offlinePlaybacks],
-          ["Tỷ lệ ngoại tuyến", percent(data.totalPlaybacks ? data.offlinePlaybacks / data.totalPlaybacks : 0)],
-          ["Tỷ lệ trực tuyến", percent(data.totalPlaybacks ? data.onlinePlaybacks / data.totalPlaybacks : 0)],
+          [
+            "Tỷ lệ ngoại tuyến",
+            percent(
+              data.totalPlaybacks
+                ? data.offlinePlaybacks / data.totalPlaybacks
+                : 0,
+            ),
+          ],
+          [
+            "Tỷ lệ trực tuyến",
+            percent(
+              data.totalPlaybacks
+                ? data.onlinePlaybacks / data.totalPlaybacks
+                : 0,
+            ),
+          ],
           ...data.topLocations.map((x): [string, number] => [
             `Địa điểm: ${x.label}`,
             x.count,
@@ -81,14 +98,9 @@ export default function LiveAnalytics() {
           <p className="eyebrow">DỮ LIỆU CHUNG WEB VÀ ANDROID</p>
           <h1>Thống kê lượt nghe</h1>
           <p className="muted">
-            Số liệu PostgreSQL thật · cập nhật mỗi 5 giây khi trang đang mở.
+            Theo dõi lượt phát, ngôn ngữ và phản hồi trong kỳ báo cáo.
           </p>
         </div>
-        {authorization && (
-          <Button secondary onClick={() => setAuthorization("")}>
-            Đăng xuất thống kê
-          </Button>
-        )}
       </div>
       {!authorization || result.unauthorized ? (
         <AdminAccess
@@ -222,16 +234,17 @@ export default function LiveAnalytics() {
           <LiveFeedback from={from} to={to} />
         </>
       )}
-      <section className="card live-panel">
-        <h2>Phạm vi bản demo</h2>
+      <details className="card admin-demo-details">
+        <summary>Thông tin bản demo</summary>
         <p>
-          Địa điểm, bản nháp, gửi duyệt, lượt nghe và phản hồi dùng database chung.
-          Phản hồi được tiếp nhận qua hệ thống bên ngoài; trang này quản lý trạng thái.
+          Địa điểm, bản nháp, gửi duyệt, lượt nghe và phản hồi dùng database
+          chung. Phản hồi được tiếp nhận qua hệ thống bên ngoài; trang này quản
+          lý trạng thái.
         </p>
         <Link to="/analytics?source=mock">
           Mở giao diện thống kê và phản hồi giả lập
         </Link>
-      </section>
+      </details>
     </>
   );
 }

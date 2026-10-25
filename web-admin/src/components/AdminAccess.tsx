@@ -45,10 +45,12 @@ export function AdminAccess({
     }
   }
   return (
-    <section className="card live-panel">
+    <section className="card live-panel admin-login">
+      <p className="login-kicker">HVP · KHÔNG GIAN QUẢN TRỊ</p>
       <h2>Đăng nhập quản trị</h2>
       <p>
-        Tài khoản được kiểm tra tại backend. Phiên chỉ giữ trong bộ nhớ của tab.
+        Đăng nhập bằng tài khoản được cấp để biên tập hoặc duyệt nội dung thuyết
+        minh.
       </p>
       <form onSubmit={submit}>
         <Field id="content-admin-user" label="Tên đăng nhập">
@@ -83,6 +85,14 @@ export function AdminAccess({
           Đăng nhập
         </Button>
       </form>
+      <div className="login-help">
+        <strong>Lần đầu sử dụng?</strong>
+        <p>
+          Biên tập viên tạo nội dung và gửi duyệt. Người duyệt kiểm tra rồi xuất
+          bản gói cho du khách.
+        </p>
+        <a href="/help">Xem hướng dẫn thao tác</a>
+      </div>
     </section>
   );
 }

@@ -62,3 +62,9 @@ npx.cmd playwright test --config playwright.publication.config.ts
 ```
 
 [admin-fixture.ts](../../web-admin/tests/admin-fixture.ts) dùng HTTP fixtures cho hồi quy UI, không chứng minh PostgreSQL. [publication.live.spec.ts](../../web-admin/tests/publication.live.spec.ts) dùng backend/DB thật để biên tập → duyệt → browser polling/tải/xác minh và QR APK. Không chạy suite live trên dữ liệu quan trọng: nó tạo POI. Config live dùng output riêng tránh hai tiến trình xóa artifact của nhau. Còn cảnh báo chunk ExcelJS khoảng 930KB dù đã lazy-load; kiểm tra Chromium/axe không thay thế screen reader và trình duyệt/thiết bị khác.
+
+## Hướng dẫn cho người vận hành
+
+Xem [ADMIN_USER_GUIDE.md](ADMIN_USER_GUIDE.md) cho thao tác đăng nhập, biên tập, duyệt, kiểm tra gói, phản hồi và QR. Trong ứng dụng có trang /help với menu Hướng dẫn sử dụng, dùng được cả trước khi đăng nhập.
+
+Hàng đợi UI chỉ hiển thị PENDING_REVIEW và bản APPROVED có editVersion > 0 đang chờ công bố; các POI legacy APPROVED với editVersion = 0 không bị liệt kê nhầm như bản cần xét duyệt.

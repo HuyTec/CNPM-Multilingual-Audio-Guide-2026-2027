@@ -7,6 +7,7 @@ import {
 } from "../lib/admin-content";
 import { Button } from "../components/ui/Button";
 import { Field } from "../components/ui/Field";
+import { StatusBadge } from "../components/ui/StatusBadge";
 type Job = {
   id: string;
   locationId: string;
@@ -59,13 +60,14 @@ export default function ReviewQueue() {
       clearInterval(timer);
     };
   }, [authorization, identity?.role, revision]);
-  const selected = data?.queue.find((p) => p.id === params.get("location"));
-  const totalPages = Math.max(1, Math.ceil((data?.queue.length || 0) / 20));
+  const queue = data?.queue.filter(p => p.status === "PENDING_REVIEW" || (p.status === "APPROVED" && (p.editVersion || 0) > 0)) || [];
+  const selected = queue.find((p) => p.id === params.get("location"));
+  const totalPages = Math.max(1, Math.ceil(queue.length / 20));
   const page = Math.max(
     1,
     Math.min(totalPages, Number(params.get("page")) || 1),
   );
-  const visible = data?.queue.slice((page - 1) * 20, page * 20);
+  const visible = queue.slice((page - 1) * 20, page * 20);
   function turnPage(next: number) {
     const query = new URLSearchParams(params);
     query.set("page", String(next));
@@ -128,8 +130,19 @@ export default function ReviewQueue() {
       </>
     );
   return (
-    <>
-      <h1>Duyệt và xuất bản</h1>
+    <div className="review-workspace">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">KIỂM TRA TRƯỚC KHI CÔNG BỐ</p>
+          <h1>Duyệt và xuất bản</h1>
+          <p className="muted">
+            So sánh bản biên tập, gửi nhận xét và theo dõi gói nội dung.
+          </p>
+        </div>
+        <Button secondary onClick={() => setRevision((n) => n + 1)}>
+          Làm mới hàng đợi
+        </Button>
+      </div>
       <p role="status" aria-live="polite">
         {message}
       </p>
@@ -140,107 +153,159 @@ export default function ReviewQueue() {
         </div>
       )}
       {!data && !error && <p role="status">Đang tải…</p>}
-      {data?.queue.length === 0 && <p>Không có bản chờ duyệt.</p>}
-      <section className="card">
-        <h2>Hàng đợi</h2>
-        {visible?.map((p) => (
-          <p key={p.id}>
-            <Link
-              to={`?page=${page}&location=${p.id}`}
-              onClick={() => setComment("")}
-            >
-              {p.name || "POI chưa có tên"}
-            </Link>{" "}
-            · {p.status}
-          </p>
-        ))}
-        {totalPages > 1 && (
-          <nav aria-label="Phân trang bản chờ duyệt">
-            <Button disabled={page === 1} onClick={() => turnPage(page - 1)}>
-              Trang trước
-            </Button>
+      {data && queue.length === 0 && <p>Không có bản chờ duyệt.</p>}
+      <div className="review-layout">
+        <section className="card review-queue" aria-label="Hàng đợi duyệt">
+          <div className="review-card-heading">
+            <h2>Hàng đợi</h2>
             <span>
-              {" "}
-              Trang {new Intl.NumberFormat("vi-VN").format(page)} /{" "}
-              {new Intl.NumberFormat("vi-VN").format(totalPages)}{" "}
+              {new Intl.NumberFormat("vi-VN").format(queue.length)}{" "}
+              bản
             </span>
-            <Button
-              disabled={page === totalPages}
-              onClick={() => turnPage(page + 1)}
-            >
-              Trang sau
-            </Button>
-          </nav>
-        )}
-      </section>
-      {selected && (
-        <section className="card">
-          <h2>So sánh bản nội dung</h2>
-          <p>Bản công khai: {selected.published?.name || "Chưa xuất bản"}</p>
-          <p>
-            Bản đề xuất: {selected.name} · {selected.category} ·{" "}
-            {selected.latitude}, {selected.longitude} · {selected.radius} m
-          </p>
-          <p>
-            Danh mục/vị trí đang công khai:{" "}
-            {selected.published?.category || "Chưa có"} ·{" "}
-            {selected.published?.latitude}, {selected.published?.longitude} ·{" "}
-            {selected.published?.radius} m
-          </p>
-          {Object.entries(selected.names || {}).map(([l, n]) => (
-            <p key={l}>
-              {l}: {selected.published?.names?.[l] || "Chưa có"} → {n} ·{" "}
-              {selected.fieldOrigins?.[`name:${l}`] || "MANUAL"}
+          </div>
+          {data && !visible?.length && (
+            <p className="review-empty">
+              Chưa có nội dung cần xét duyệt. Bản được gửi duyệt sẽ xuất hiện
+              tại đây.
             </p>
-          ))}
-          {Object.entries(selected.assets).map(([key, a]) => (
-            <details key={key}>
-              <summary>{key}</summary>
-              <h3>Đang công khai</h3>
-              <p className="pre-wrap">
-                {selected.published?.assets[key]?.text || "Chưa có"}
-              </p>
-              <h3>Đề xuất</h3>
-              <p className="pre-wrap">{a.text || "Chưa có"}</p>
-              <p>Audio: {a.audioName || a.audioUrl || "Không có"}</p>
-            </details>
-          ))}
-          <Link to={`/locations/${selected.id}/edit`}>
-            Xem đầy đủ bản biên tập
-          </Link>
-          <Field id="review-comment" label="Nhận xét (bắt buộc khi từ chối)">
-            <textarea
-              id="review-comment"
-              name="reviewComment"
-              autoComplete="off"
-              maxLength={4000}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-            />
-          </Field>
-          {selected.status === "PENDING_REVIEW" && (
-            <div>
-              <Button busy={busy} onClick={() => void decide("approve")}>
-                Chấp thuận và tạo gói
-              </Button>
-              <Button busy={busy} onClick={() => void decide("reject")}>
-                Từ chối
-              </Button>
+          )}
+          {visible?.map((p) => (
+            <div className="review-queue-item" key={p.id}>
+              <Link
+                className={selected?.id === p.id ? "is-selected" : ""}
+                to={`?page=${page}&location=${p.id}`}
+                onClick={() => setComment("")}
+              >
+                <strong>{p.name || "POI chưa có tên"}</strong>
+                <StatusBadge status={p.status} />
+              </Link>
             </div>
+          ))}
+          {totalPages > 1 && (
+            <nav aria-label="Phân trang bản chờ duyệt">
+              <Button disabled={page === 1} onClick={() => turnPage(page - 1)}>
+                Trang trước
+              </Button>
+              <span>
+                {" "}
+                Trang {new Intl.NumberFormat("vi-VN").format(page)} /{" "}
+                {new Intl.NumberFormat("vi-VN").format(totalPages)}{" "}
+              </span>
+              <Button
+                disabled={page === totalPages}
+                onClick={() => turnPage(page + 1)}
+              >
+                Trang sau
+              </Button>
+            </nav>
           )}
         </section>
-      )}
-      <section className="card">
+        {selected && (
+          <section className="card review-detail">
+            <h2>So sánh bản nội dung</h2>
+            <p>Bản công khai: {selected.published?.name || "Chưa xuất bản"}</p>
+            <p>
+              Bản đề xuất: {selected.name} · {selected.category} ·{" "}
+              {selected.latitude}, {selected.longitude} · {selected.radius} m
+            </p>
+            <p>
+              Danh mục/vị trí đang công khai:{" "}
+              {selected.published?.category || "Chưa có"} ·{" "}
+              {selected.published?.latitude}, {selected.published?.longitude} ·{" "}
+              {selected.published?.radius} m
+            </p>
+            {Object.entries(selected.names || {}).map(([l, n]) => (
+              <p key={l}>
+                {l}: {selected.published?.names?.[l] || "Chưa có"} → {n} ·{" "}
+                {selected.fieldOrigins?.[`name:${l}`] || "MANUAL"}
+              </p>
+            ))}
+            {Object.entries(selected.assets).map(([key, a]) => (
+              <details key={key}>
+                <summary>
+                  {key.split(":")[0].toUpperCase()} ·{" "}
+                  {key.endsWith("FULL") ? "Bài đầy đủ" : "Bài rút gọn"}
+                </summary>
+                <div className="review-script-columns">
+                  <section>
+                    <h3>Đang công khai</h3>
+                    <p className="pre-wrap">
+                      {selected.published?.assets[key]?.text || "Chưa có"}
+                    </p>
+                  </section>
+                  <section>
+                    <h3>Đề xuất</h3>
+                    <p className="pre-wrap">{a.text || "Chưa có"}</p>
+                    <p>Audio: {a.audioName || a.audioUrl || "Không có"}</p>
+                  </section>
+                </div>
+              </details>
+            ))}
+            <Link to={`/locations/${selected.id}/edit`}>
+              Xem đầy đủ bản biên tập
+            </Link>
+            <Field id="review-comment" label="Nhận xét (bắt buộc khi từ chối)">
+              <textarea
+                id="review-comment"
+                name="reviewComment"
+                autoComplete="off"
+                maxLength={4000}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+            </Field>
+            {selected.status === "PENDING_REVIEW" && (
+              <div className="review-actions">
+                <Button busy={busy} onClick={() => void decide("approve")}>
+                  Chấp thuận và tạo gói
+                </Button>
+                <Button busy={busy} onClick={() => void decide("reject")}>
+                  Từ chối
+                </Button>
+              </div>
+            )}
+          </section>
+        )}
+        {!selected && (
+          <section className="card review-detail review-placeholder">
+            <h2>Chọn nội dung để kiểm tra</h2>
+            <p>
+              Chọn một địa điểm trong hàng đợi để so sánh với bản đang công
+              khai, xem nội dung và ghi nhận xét.
+            </p>
+            <p>
+              Chấp thuận chỉ bắt đầu tạo gói. Nội dung mới được công bố sau khi
+              tác vụ hoàn thành.
+            </p>
+          </section>
+        )}
+      </div>
+      <section className="card publication-jobs">
         <h2>Tác vụ tạo gói</h2>
+        <p className="muted">
+          Sẵn sàng: du khách có thể tải. Tạo thất bại: bản công khai cũ vẫn được
+          giữ.
+        </p>
         {data?.jobs.length === 0 && <p>Chưa có tác vụ.</p>}
         {data?.jobs.map((j) => (
-          <div key={j.id}>
+          <div className="publication-job" key={j.id}>
             <p>
               {new Intl.DateTimeFormat("vi-VN", {
                 dateStyle: "short",
                 timeStyle: "short",
               }).format(new Date(j.createdAt))}{" "}
-              · {j.status}
+              ·{" "}
+              <span
+                className={`publication-status publication-${j.status.toLowerCase()}`}
+              >
+                {(
+                  {
+                    BUILDING: "Đang tạo gói",
+                    READY: "Sẵn sàng",
+                    FAILED: "Tạo thất bại",
+                  } as Record<string, string>
+                )[j.status] || j.status}
+              </span>
             </p>
             {j.errorLog && <p>{j.errorLog}</p>}
             {j.status === "FAILED" && (
@@ -251,7 +316,11 @@ export default function ReviewQueue() {
           </div>
         ))}
       </section>
-      <Button onClick={() => setParams({})}>Bỏ chọn</Button>
-    </>
+      {selected && (
+        <Button secondary onClick={() => setParams({})}>
+          Bỏ chọn
+        </Button>
+      )}
+    </div>
   );
 }

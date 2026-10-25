@@ -5,7 +5,7 @@ from urllib.parse import unquote
 
 ROOT=Path(__file__).resolve().parents[1]
 DOCS=ROOT/'docs/guide'
-FILES=['BACKEND_GUIDE.md','ADMIN_GUIDE.md','USER_WEB_GUIDE.md','ANDROID_GUIDE.md','API_list.md','DEMO_CODE_GUIDE.md']
+FILES=['BACKEND_GUIDE.md','ADMIN_GUIDE.md','ADMIN_USER_GUIDE.md','USER_WEB_GUIDE.md','ANDROID_GUIDE.md','API_list.md','DEMO_CODE_GUIDE.md']
 checked=0
 for name in FILES:
     source=(DOCS/name).read_text(encoding='utf-8')
