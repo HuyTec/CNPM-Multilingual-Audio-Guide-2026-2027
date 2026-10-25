@@ -11,7 +11,7 @@ import java.net.URI
 import java.util.concurrent.TimeUnit
 
 data class ServerLocation(val id: String, val name: String, val latitude: Double? = null,
-                          val longitude: Double? = null, val category: String = "", val categoryId: String = "", val names: Map<String,String> = emptyMap())
+                          val longitude: Double? = null, val category: String = "", val categoryId: String = "")
 data class ServerGuide(val contentId: String, val locationName: String, val languageCode: String,
                        val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "")
 class GuideApiException(val status: Int, message: String) : IllegalStateException(message)
@@ -29,16 +29,18 @@ object DemoApi {
     }
 
     suspend fun locations(base: String): List<ServerLocation> = withContext(Dispatchers.IO) {
-        val array = json(Request.Builder().url(base + "api/locations?size=50").build()).getJSONArray("items")
-        List(array.length()) { i -> array.getJSONObject(i).let { ServerLocation(it.getString("locationId"), it.getString("name"),
-            it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
-            it.optString("categoryName"), it.optString("categoryId"), localizedNames(it)) } }
+        val result = mutableListOf<ServerLocation>(); var page = 0
+        do {
+            val data = json(Request.Builder().url(base + "api/locations?size=50&page=$page").build())
+            val array = data.getJSONArray("items")
+            repeat(array.length()) { i -> array.getJSONObject(i).let { result.add(ServerLocation(it.getString("locationId"), it.getString("name"),
+                it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
+                it.optString("categoryName"), it.optString("categoryId"))) } }
+            page++
+        } while (page < data.getInt("totalPages"))
+        result.distinctBy { it.id }
     }
 
-    fun localizedNames(value: JSONObject): Map<String,String> {
-        val names=value.optJSONObject("names") ?: return emptyMap()
-        return names.keys().asSequence().associateWith { names.optString(it) }
-    }
     suspend fun guide(base: String, location: String, language: String = "VI", type: String = "SHORT"): ServerGuide = withContext(Dispatchers.IO) {
         require(language.matches(Regex("[A-Z]{2,3}(-[A-Z]{2})?")) && type in listOf("FULL", "SHORT"))
         val data = json(Request.Builder().url(base + "api/locations/$location/guide?language=$language&scriptType=$type").build())
@@ -54,9 +56,12 @@ object DemoApi {
             data.getString("scriptType"), data.getString("scriptText"), audio, data.getString("locationId"))
     }
 
-    suspend fun playback(base: String, eventId: String, contentId: String) = withContext(Dispatchers.IO) {
+    suspend fun playback(base: String, eventId: String, contentId: String, identity: JSONObject? = null) = withContext(Dispatchers.IO) {
         val payload = JSONObject().put("eventId", eventId).put("contentId", contentId).toString()
-        json(Request.Builder().url(base + "api/playbacks").post(payload.toRequestBody("application/json".toMediaType())).build())
+        val builder = Request.Builder().url(base + "api/playbacks")
+        identity?.optString("installation")?.takeIf { it.isNotBlank() }?.let { builder.header("X-Installation-Key",it) }
+        identity?.optString("token")?.takeIf { it.isNotBlank() }?.let { builder.header("Authorization","Bearer $it") }
+        json(builder.post(payload.toRequestBody("application/json".toMediaType())).build())
         Unit
     }
 

@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.net.URI
 
 plugins {
     id("com.android.application")
@@ -10,30 +11,67 @@ val mapSecrets = Properties().apply {
 }
 val mapsApiKey = providers.environmentVariable("ANDROID_MAPS_API_KEY")
     .orElse(mapSecrets.getProperty("MAPS_API_KEY", "")).get()
+val releaseSigningFile = rootProject.file(".signing/release.properties")
+val releaseSigning = Properties().apply { if (releaseSigningFile.isFile) releaseSigningFile.inputStream().use { load(it) } }
+val configuredApiOrigin = providers.gradleProperty("travelApiBaseUrl").orNull
+val allowLocalBackend = providers.gradleProperty("allowLocalBackend").orElse("false").map(String::toBoolean).get()
 // Optional isolated output for verification when Android Studio also builds this checkout.
-providers.gradleProperty("demoBuildDir").orNull?.let {
+providers.gradleProperty("buildOutputDir").orElse(providers.gradleProperty("demoBuildDir")).orNull?.let {
     layout.buildDirectory.set(rootProject.layout.projectDirectory.dir(it.ifBlank { ".verification-build" }).dir("app"))
 }
 android {
     namespace = "vn.hvp.travelvoice"
     compileSdk = 36
     defaultConfig {
-        applicationId = "vn.hvp.travelvoice.demo"
+        applicationId = "vn.hvp.travelvoice"
         minSdk = 26
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2-shared-content"
-        buildConfigField("String", "DEMO_API_BASE_URL", "\"http://10.0.2.2:8080/\"")
+        versionCode = 1
+        versionName = "1.0.0"
+        val serverUrl = providers.gradleProperty("travelApiBaseUrl").orElse("http://10.0.2.2:8080/").get()
+        require(serverUrl.matches(Regex("https?://[a-zA-Z0-9.:-]+/?"))) { "travelApiBaseUrl must be an HTTP(S) origin" }
+        buildConfigField("String", "API_BASE_URL", "\"${serverUrl.trimEnd('/')}/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
     buildFeatures { compose = true; buildConfig = true }
+    signingConfigs {
+        if (releaseSigningFile.isFile) create("release") {
+            storeFile = rootProject.file(releaseSigning.getProperty("storeFile"))
+            storePassword = releaseSigning.getProperty("storePassword")
+            keyAlias = releaseSigning.getProperty("keyAlias")
+            keyPassword = releaseSigning.getProperty("keyPassword")
+        }
+    }
+    buildTypes {
+        debug { applicationIdSuffix = ".debug"; versionNameSuffix = "-dev" }
+        release {
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            if (releaseSigningFile.isFile) signingConfig = signingConfigs.getByName("release")
+        }
+    }
     testOptions { unitTests.isIncludeAndroidResources = true }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+val verifyReleaseConfiguration by tasks.registering {
+    doLast {
+        require(releaseSigningFile.isFile) { "Configure .signing/release.properties before building a signed release." }
+        require(!mapsApiKey.isBlank()) { "Configure the Android Maps key for the release package and signing certificate." }
+        val uri = configuredApiOrigin?.let(::URI)
+        val local = uri?.host in listOf("localhost", "127.0.0.1", "10.0.2.2")
+        require(uri != null && !uri.host.isNullOrBlank() && !uri.host.endsWith(".invalid") &&
+            (uri.scheme == "https" || (allowLocalBackend && local && uri.scheme == "http"))) {
+            "Specify an HTTPS backend, or explicitly select the supported local emulator backend with -PallowLocalBackend=true."
+        }
+    }
+}
+tasks.matching { it.name == "preReleaseBuild" }.configureEach { dependsOn(verifyReleaseConfiguration) }
 kotlin { compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17) } }
 tasks.withType<Test>().configureEach {
     maxHeapSize = "1g"
@@ -46,6 +84,7 @@ dependencies {
     androidTestImplementation(composeBom)
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.activity:activity-compose:1.11.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui-tooling-preview")

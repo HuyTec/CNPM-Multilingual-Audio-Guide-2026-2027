@@ -50,7 +50,7 @@ import java.util.Locale
 fun LiveDemoScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current.applicationContext
     val preferences = remember(context) { context.getSharedPreferences("demo-server", Context.MODE_PRIVATE) }
-    var base by rememberSaveable { mutableStateOf(preferences.getString("base", BuildConfig.DEMO_API_BASE_URL)!!) }
+    var base by rememberSaveable { mutableStateOf(preferences.getString("base", BuildConfig.API_BASE_URL)!!) }
     var address by rememberSaveable { mutableStateOf(base) }
     var addressError by remember { mutableStateOf("") }
     var revision by remember { mutableIntStateOf(0) }

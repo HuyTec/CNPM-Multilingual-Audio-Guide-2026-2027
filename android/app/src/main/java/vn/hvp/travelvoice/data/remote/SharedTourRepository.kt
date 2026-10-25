@@ -28,6 +28,10 @@ import kotlin.coroutines.resumeWithException
 
 /** Same signed schemaVersion=1 package consumed by Web; one AtomicFile per scope. */
 class SharedTourRepository(private val context: Context, val base: String) {
+    private val guideCache = object : LinkedHashMap<String,Pair<Long,ServerGuide>>(16,0.75f,true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String,Pair<Long,ServerGuide>>?) = size > 32
+    }
+    fun invalidateCache() { synchronized(guideCache) { guideCache.clear() } }
     companion object {
         val languages = listOf("VI", "EN", "FR", "JA", "ZH", "RU")
         const val TOUR_CATEGORY = "10000000-0000-0000-0000-000000000101"
@@ -55,7 +59,8 @@ class SharedTourRepository(private val context: Context, val base: String) {
     private fun file(scope: String): AtomicFile {
         require(scope in listOf("BASE", "OPTIONAL")); return AtomicFile(File(directory, "$scope.json"))
     }
-    private fun readRecords(): List<Pair<JSONObject, JSONObject>> = listOf("BASE", "OPTIONAL").mapNotNull { scope ->
+    private fun readRecords(): List<Pair<JSONObject, JSONObject>> {
+        val records = listOf("BASE", "OPTIONAL").mapNotNull { scope ->
         val record = runCatching {
             JSONObject(file(scope).openRead().bufferedReader().use { it.readText() })
         }.getOrElse {
@@ -63,8 +68,31 @@ class SharedTourRepository(private val context: Context, val base: String) {
             runCatching { JSONObject(context.assets.open("content/base.json").bufferedReader().use { it.readText() }) }.getOrNull()
         } ?: return@mapNotNull null
         record to verify(record)
+        }
+        val bundled = verify(JSONObject(context.assets.open("content/base.json").bufferedReader().use { it.readText() }))
+        val retired = (records.map { it.second } + bundled).flatMap { payload ->
+            val ids = payload.optJSONArray("retiredLocationIds") ?: JSONArray()
+            List(ids.length()) { ids.getString(it) }
+        }.toSet()
+        return records.map { (record,payload) ->
+            // Signature is verified before applying signed revocations; never modify the stored package.
+            val visible = JSONObject(payload.toString())
+            for (field in listOf("locations","guides")) {
+                val items = payload.getJSONArray(field); val kept = JSONArray()
+                for (i in 0 until items.length()) if (items.getJSONObject(i).getString("locationId") !in retired) kept.put(items.getJSONObject(i))
+                visible.put(field,kept)
+            }
+            record to visible
+        }
     }
     suspend fun installed(): List<JSONObject> = withContext(Dispatchers.IO) { readRecords().map { it.first } }
+    suspend fun localLocations(): List<ServerLocation> = withContext(Dispatchers.IO) {
+        readRecords().flatMap { (_,payload) ->
+            val items = payload.getJSONArray("locations")
+            List(items.length()) { i -> val item = items.getJSONObject(i)
+                ServerLocation(item.getString("locationId"),item.getString("name"),item.optDouble("latitude"),item.optDouble("longitude"),item.optString("categoryName"),item.optString("categoryId")) }
+        }.distinctBy { it.id }
+    }
 
     suspend fun locations(): Pair<List<ServerLocation>, Boolean> {
         try { return DemoApi.locations(base) to false }
@@ -72,20 +100,21 @@ class SharedTourRepository(private val context: Context, val base: String) {
         catch (error: GuideApiException) { if (error.status < 500) throw error }
         catch (_: IOException) { /* Fall back only to verified installed/bundled content. */ }
         return withContext(Dispatchers.IO) {
-            val locations = readRecords().flatMap { (_, payload) ->
-                val items = payload.getJSONArray("locations")
-                List(items.length()) { i -> val item = items.getJSONObject(i)
-                    ServerLocation(item.getString("locationId"), item.getString("name"), item.optDouble("latitude"),
-                        item.optDouble("longitude"), item.optString("categoryName"), item.optString("categoryId"), DemoApi.localizedNames(item)) }
-            }
+            val locations = localLocations()
             require(locations.isNotEmpty()) { "Chưa có gói cơ bản đã xác minh. Cần chuẩn bị nội dung khi có mạng." }
             locations to true
         }
     }
     suspend fun guide(id: String, language: String, mode: String): Pair<ServerGuide, Boolean> {
-        try { return DemoApi.guide(base, id, language, mode) to false }
+        val key = "$id/$language/$mode"
+        synchronized(guideCache) { guideCache[key]?.let { if (android.os.SystemClock.elapsedRealtime() - it.first < 60_000) return it.second to false } }
+        try {
+            val content = DemoApi.guide(base, id, language, mode)
+            synchronized(guideCache) { guideCache[key] = android.os.SystemClock.elapsedRealtime() to content }
+            return content to false
+        }
         catch (cancelled: CancellationException) { throw cancelled }
-        catch (error: GuideApiException) { if (error.status < 500) throw error }
+        catch (error: GuideApiException) { synchronized(guideCache) { guideCache.remove(key) }; if (error.status < 500) throw error }
         catch (_: IOException) { }
         return withContext(Dispatchers.IO) {
             for (lang in listOf(language, "EN", "VI").distinct()) for ((record, payload) in readRecords()) {
@@ -130,19 +159,9 @@ class SharedTourRepository(private val context: Context, val base: String) {
             }
         })
     }
-    private var manifestTag: String? = null
-    private var cachedManifests: List<JSONObject> = emptyList()
-    suspend fun available(): List<JSONObject> = withContext(Dispatchers.IO) {
-        val builder = Request.Builder().url(base.trimEnd('/') + "/api/content-packages")
-        manifestTag?.let { builder.header("If-None-Match", it) }
-        client.newCall(builder.build()).execute().use { response ->
-            if (response.code == 304) return@withContext cachedManifests
-            check(response.isSuccessful) { "Chưa kiểm tra được gói mới" }
-            val list = JSONArray(response.body?.string() ?: "[]")
-            val next = List(list.length()) { list.getJSONObject(it) }
-            require(next.all { it.getString("status") == "APPROVED" })
-            cachedManifests = next; manifestTag = response.header("ETag"); next
-        }
+    suspend fun available(): List<JSONObject> {
+        val list = JSONArray(get("/api/content-packages").toString(Charsets.UTF_8))
+        return List(list.length()) { list.getJSONObject(it) }
     }
     suspend fun download(manifest: JSONObject, progress: (String) -> Unit) = withContext(Dispatchers.IO) {
         val scope = manifest.getString("scope"); require(scope in listOf("BASE", "OPTIONAL"))
@@ -151,23 +170,25 @@ class SharedTourRepository(private val context: Context, val base: String) {
         require(url == "/api/content-packages/$scope/${manifest.getString("version")}")
         val required = manifest.getLong("sizeBytes") + manifest.getJSONArray("assets").let { entries -> (0 until entries.length()).sumOf { entries.getJSONObject(it).getLong("sizeBytes") } }
         require(directory.usableSpace > required * 2) { "Không đủ dung lượng; phiên bản cũ được giữ" }
-        withContext(Dispatchers.Main) { progress("Đang tải và xác minh nội dung…") }
+        withContext(Dispatchers.Main) { progress(message(vn.hvp.travelvoice.R.string.q1_package_downloading)) }
         val record = JSONObject().put("manifest", manifest).put("raw", Base64.encodeToString(get(url), Base64.NO_WRAP)).put("key", key)
             .put("installedAt", System.currentTimeMillis())
         val payload = verify(record); val assets = payload.getJSONArray("assets"); val downloaded = JSONArray()
         for (i in 0 until assets.length()) {
-            withContext(Dispatchers.Main) { progress("Đang tải audio ${i + 1}/${assets.length()}…") }
+            withContext(Dispatchers.Main) { progress(message(vn.hvp.travelvoice.R.string.q1_package_audio, i + 1, assets.length())) }
             val asset = assets.getJSONObject(i); val bytes = get(asset.getString("url"))
             require(bytes.size.toLong() == asset.getLong("sizeBytes") && sha(bytes) == asset.getString("sha256")) { "Audio không toàn vẹn" }
             downloaded.put(JSONObject().put("url", asset.getString("url")).put("data", Base64.encodeToString(bytes, Base64.NO_WRAP)))
         }
         record.put("downloadedAssets", downloaded); currentCoroutineContext().ensureActive()
-        withContext(Dispatchers.Main) { progress("Đang chờ kết thúc lượt nghe để cài gói…") }
-        vn.hvp.travelvoice.platform.audio.PackagePlaybackGate.awaitIdle()
-        currentCoroutineContext().ensureActive()
         val target = file(scope); val stream = target.startWrite()
         try { stream.write(record.toString().toByteArray(Charsets.UTF_8)); target.finishWrite(stream) }
         catch (error: Exception) { target.failWrite(stream); throw error }
     }
     suspend fun deleteOptional() = withContext(Dispatchers.IO) { file("OPTIONAL").delete() }
+    private fun message(id: Int, vararg arguments: Any): String {
+        val language = context.getSharedPreferences("travelq1-settings",Context.MODE_PRIVATE).getString("app-language","vi")!!
+        val configuration = android.content.res.Configuration(context.resources.configuration).apply { setLocale(java.util.Locale.forLanguageTag(language)) }
+        return context.createConfigurationContext(configuration).getString(id,*arguments)
+    }
 }

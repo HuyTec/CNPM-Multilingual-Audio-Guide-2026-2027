@@ -10,3 +10,5 @@ secrets.properties
 **/build/
 *.apk
 *.aab
+.signing/
+.release-artifacts/
