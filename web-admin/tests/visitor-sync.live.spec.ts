@@ -64,7 +64,7 @@ test('new Android QR points to the exact APK published with current metadata', a
   });
   expect(jsQR(new Uint8ClampedArray(raw.pixels), raw.width, raw.height)?.data).toBe(href);
   const metadata = await (await request.get(origin + '/downloads/android-release.json')).json();
-  expect(metadata.version).toBe('1.1.0-dev');
+  expect(metadata.version).toBe('1.1.1-dev');
   expect(href).toBe(new URL(metadata.url, origin).href);
   expect(href).toContain(metadata.sha256.slice(0, 12));
   const response = await request.get(href);

@@ -56,7 +56,8 @@ test('permanent rejection retained without infinite retries', async ({ page }) =
   await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('bị máy chủ từ chối');
   expect(count).toBe(1);
 });
-test('storage failure is visible and keeps the same unsaved receipt for manual recovery', async ({ page }) => {
+test('storage failure recovers automatically on the timer without a sync button', async ({ page }) => {
+  await page.clock.install();
   const requests: { eventId: string }[] = [];
   await page.route('**/api/playbacks', route => {
     const data = route.request().postDataJSON(); requests.push(data);
@@ -71,7 +72,8 @@ test('storage failure is visible and keeps the same unsaved receipt for manual r
   }, contentId);
   await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('bộ nhớ');
   expect(requests).toHaveLength(0);
-  await page.getByRole('button', { name: 'Thử đồng bộ lượt nghe', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Thử đồng bộ lượt nghe', exact: true })).toHaveCount(0);
+  await page.clock.fastForward(15_000);
   await expect.poll(() => requests.length).toBe(1);
   await expect(page.getByLabel('Đồng bộ lượt nghe')).not.toContainText('bộ nhớ');
 });

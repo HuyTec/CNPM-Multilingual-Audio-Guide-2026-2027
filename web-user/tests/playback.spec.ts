@@ -36,6 +36,7 @@ async function setup(page: Page, options: { language?: string; missingVoice?: bo
   }, { options });
   const receipts: string[] = [];
   await page.route('**/api/**', async route => {
+    if (new URL(route.request().url()).pathname === '/api/visitors/heartbeat') return route.fulfill({ status: 204 });
     if (route.request().method() === 'POST') { receipts.push(route.request().postData()!); return route.fulfill({ json: { eventId: route.request().postDataJSON().eventId, created: true } }); }
     const query = new URL(route.request().url()).searchParams;
     await route.fulfill({ json: { contentId: '31000000-0000-0000-0000-000000000001', locationId: location,
@@ -49,6 +50,7 @@ async function speechData(page: Page) {
 }
 
 test('failed playback receipt retries the same eventId without restarting media', async ({ page }) => {
+  await page.clock.install();
   await setup(page);
   const receipts: string[] = [];
   await page.route('**/api/playbacks', route => {
@@ -57,7 +59,9 @@ test('failed playback receipt retries the same eventId without restarting media'
   });
   await page.goto(`/locations/${location}`);
   await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
-  await page.getByRole('button', { name: 'Gửi lại lượt nghe' }).click();
+  await expect.poll(() => receipts.length).toBe(1);
+  await page.clock.fastForward(15_000);
+  await expect.poll(() => receipts.length).toBe(2);
   await expect(page.getByRole('button', { name: 'Gửi lại lượt nghe' })).toHaveCount(0);
   expect(receipts).toHaveLength(2);
   expect(receipts[1]).toBe(receipts[0]);
