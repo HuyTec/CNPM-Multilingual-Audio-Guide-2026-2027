@@ -4,6 +4,10 @@ import type { Location } from "../mocks/data";
 export type ContentLocation = Location & {
   editVersion?: number;
   updatedBy?: string;
+  fieldOrigins?: Record<
+    string,
+    "MANUAL" | "AUTO_TRANSLATED" | "EDITED_AFTER_TRANSLATE"
+  >;
 };
 export type ContentConfig = {
   categories: string[];
@@ -12,6 +16,7 @@ export type ContentConfig = {
 export const AdminSession = createContext<{
   authorization: string;
   setAuthorization: (value: string) => void;
+  identity?: { username: string; role: "EDITOR" | "REVIEWER" };
   config?: ContentConfig;
   error?: string;
 } | null>(null);

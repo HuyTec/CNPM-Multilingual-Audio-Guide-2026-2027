@@ -3,10 +3,18 @@ import {
   Link,
   useBlocker,
   useNavigate,
+  useLocation,
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import { ArrowLeft, Upload, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  ShieldCheck,
+  PenLine,
+  Languages,
+} from "lucide-react";
+import "./location-editor.css";
 import { type Asset, type Location } from "../mocks/data";
 import {
   adminRequest,
@@ -19,12 +27,13 @@ import { AudioPlayer } from "../components/ui/AudioPlayer";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
 import { StatusBadge } from "../components/ui/StatusBadge";
 import { ErrorState, LoadingState } from "../components/ui/States";
-import { PoiMediaEditor } from "../components/locations/PoiMediaEditor";
+import { LocationImageField } from "../components/LocationImageField";
 
 function blankLocation(): ContentLocation {
   return {
     id: crypto.randomUUID(),
     name: "",
+    names: {},
     category: "",
     latitude: "",
     longitude: "",
@@ -36,10 +45,11 @@ function blankLocation(): ContentLocation {
   };
 }
 export default function LocationForm() {
+  const route = useLocation();
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { authorization, config } = useAdminSession();
+  const { authorization, config, identity } = useAdminSession();
   const categories = config!.categories,
     languages = config!.languages;
   const [form, setForm] = useState<ContentLocation>(blankLocation);
@@ -48,12 +58,16 @@ export default function LocationForm() {
   const [revision, setRevision] = useState(0);
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [dirty, setDirty] = useState(false);
-  const [mediaDirty, setMediaDirty] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(
+    (route.state as { savedMessage?: string } | null)?.savedMessage || "",
+  );
   const [busy, setBusy] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [targets, setTargets] = useState<string[]>([]);
   const [uploadError, setUploadError] = useState("");
   const [uploadBusy, setUploadBusy] = useState(false);
+  const [imageBusy, setImageBusy] = useState(false);
   const [saveStatus, setSaveStatus] = useState<
     "DRAFT" | "PENDING_REVIEW" | null
   >(null);
@@ -68,6 +82,7 @@ export default function LocationForm() {
     ? params.get("language")!
     : "vi";
   const type = params.get("type") === "SHORT" ? "SHORT" : "FULL";
+  const entryMode = params.get("mode") === "auto" ? "auto" : "manual";
   const key = `${language}:${type}`;
   const asset: Asset = form.assets[key] || {
     locationId: form.id,
@@ -134,24 +149,26 @@ export default function LocationForm() {
   }, [asset.audioUrl, authorization, previews]);
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      (dirty || mediaDirty) &&
-      currentLocation.pathname !== nextLocation.pathname,
+      dirty && currentLocation.pathname !== nextLocation.pathname,
   );
   // Register the latest navigation guard before redirecting a newly saved draft.
   useEffect(() => {
     if (!id && form.editVersion && !dirty)
-      void navigate(`/locations/${form.id}/edit`, { replace: true });
-  }, [id, form.editVersion, form.id, dirty, navigate]);
+      void navigate(`/locations/${form.id}/edit?${params.toString()}`, {
+        replace: true,
+        state: { savedMessage: message },
+      });
+  }, [id, form.editVersion, form.id, dirty, navigate, params, message]);
   useEffect(() => {
     const guard = (event: BeforeUnloadEvent) => {
-      if (dirty || mediaDirty) {
+      if (dirty) {
         event.preventDefault();
         event.returnValue = "";
       }
     };
     window.addEventListener("beforeunload", guard);
     return () => window.removeEventListener("beforeunload", guard);
-  }, [dirty, mediaDirty]);
+  }, [dirty]);
   useEffect(
     () => () => {
       urls.current.forEach((url) => URL.revokeObjectURL(url));
@@ -159,15 +176,128 @@ export default function LocationForm() {
     [],
   );
   function change(field: keyof Location, value: string) {
-    setForm((old) => ({ ...old, [field]: value }));
+    setForm((old) => {
+      if (field !== "name") return { ...old, [field]: value };
+      const names = { ...(old.names || { vi: old.name }), [language]: value };
+      const name =
+        names.vi?.trim() ||
+        names.en?.trim() ||
+        Object.keys(names)
+          .sort()
+          .map((key) => names[key].trim())
+          .find(Boolean) ||
+        "";
+      const originKey = `name:${language}`;
+      const origin = old.fieldOrigins?.[originKey];
+      return {
+        ...old,
+        name,
+        names,
+        fieldOrigins: {
+          ...old.fieldOrigins,
+          [originKey]:
+            origin && origin !== "MANUAL" ? "EDITED_AFTER_TRANSLATE" : "MANUAL",
+        },
+      };
+    });
     setDirty(true);
     setMessage("");
     setErrors((old) => ({ ...old, [field]: "" }));
   }
   function updateAsset(next: Asset, target = key) {
-    setForm((old) => ({ ...old, assets: { ...old.assets, [target]: next } }));
+    setForm((old) => {
+      const originKey = `script:${target}`;
+      const origin = old.fieldOrigins?.[originKey];
+      return {
+        ...old,
+        assets: { ...old.assets, [target]: next },
+        fieldOrigins: {
+          ...old.fieldOrigins,
+          [originKey]:
+            origin && origin !== "MANUAL" ? "EDITED_AFTER_TRANSLATE" : "MANUAL",
+        },
+      };
+    });
     setDirty(true);
     setMessage("");
+  }
+  async function translate() {
+    if (!targets.length || !form.names?.[language]?.trim()) {
+      setMessage("Nhập tên nguồn và chọn ít nhất một ngôn ngữ đích.");
+      return;
+    }
+    if (
+      targets.some(
+        (l) =>
+          form.names?.[l] ||
+          form.assets[`${l}:FULL`]?.text ||
+          form.assets[`${l}:SHORT`]?.text,
+      ) &&
+      !window.confirm(
+        "Dịch sẽ thay nội dung các ngôn ngữ đích đã chọn. Tiếp tục?",
+      )
+    )
+      return;
+    setTranslating(true);
+    setMessage("");
+    try {
+      const result = await adminRequest<{
+        provider: string;
+        simulated: boolean;
+        variants: {
+          language: string;
+          name: string;
+          full: string;
+          shortText: string;
+        }[];
+      }>("/api/admin/content/translate", authorization, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sourceLanguage: language,
+          targetLanguages: targets,
+          name: form.names?.[language],
+          full: form.assets[`${language}:FULL`]?.text || "",
+          shortText: form.assets[`${language}:SHORT`]?.text || "",
+        }),
+      });
+      setForm((old) => {
+        const names = { ...old.names },
+          assets = { ...old.assets },
+          fieldOrigins = { ...old.fieldOrigins };
+        for (const variant of result.variants) {
+          names[variant.language] = variant.name;
+          fieldOrigins[`name:${variant.language}`] = "AUTO_TRANSLATED";
+          for (const type of ["FULL", "SHORT"] as const) {
+            const key = `${variant.language}:${type}`;
+            assets[key] = {
+              ...assets[key],
+              locationId: old.id,
+              languageCode: variant.language,
+              scriptType: type,
+              packageVersion: old.packageVersion,
+              text: type === "FULL" ? variant.full : variant.shortText,
+            };
+            fieldOrigins[`script:${key}`] = "AUTO_TRANSLATED";
+          }
+        }
+        return { ...old, names, assets, fieldOrigins };
+      });
+      setDirty(true);
+      setMessage(
+        result.simulated
+          ? "DEMO: kết quả giả lập, chưa phải bản dịch thật. Hãy kiểm tra và sửa trước khi gửi duyệt."
+          : "Đã dịch. Hãy kiểm tra tên và kịch bản trước khi gửi duyệt. Web/Android dùng TTS để đọc nếu không có audio.",
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Dịch lỗi; dữ liệu được giữ nguyên.",
+      );
+    } finally {
+      setTranslating(false);
+    }
   }
   function query(name: string, value: string) {
     const next = new URLSearchParams(params);
@@ -360,7 +490,7 @@ export default function LocationForm() {
           <p className="eyebrow">BIÊN TẬP NỘI DUNG</p>
           <h1>{id ? "Chỉnh sửa địa điểm" : "Thêm địa điểm"}</h1>
           <p className="muted">
-            Chuẩn bị nội dung, nghe thử audio và gửi để duyệt.
+            Thêm ảnh, nhập nội dung đa ngôn ngữ rồi lưu nháp hoặc gửi duyệt.
           </p>
         </div>
         <StatusBadge status={form.status} />
@@ -373,244 +503,411 @@ export default function LocationForm() {
             : "Lưu nháp hoặc gửi duyệt không xuất bản nội dung lên ứng dụng du khách."}
         </p>
       </div>
-      <form onSubmit={submit} noValidate>
-        <div className="form-grid">
-          <section className="card">
-            <div className="section-heading">
-              <div>
-                <h2>Thông tin địa điểm</h2>
-                <p className="muted">
-                  Bắt buộc khi gửi duyệt; bản nháp có thể để trống.
-                </p>
-              </div>
-            </div>
-            <div className="field-grid">
-              {(
-                ["name", "category", "latitude", "longitude", "radius"] as const
-              ).map((field) => (
-                <Field
-                  key={field}
-                  id={field}
-                  label={
-                    {
-                      name: "Tên địa điểm",
-                      category: "Danh mục",
-                      latitude: "Vĩ độ",
-                      longitude: "Kinh độ",
-                      radius: "Bán kính geofence (m)",
-                    }[field]
-                  }
-                  error={errors[field]}
-                >
-                  {field === "category" ? (
-                    <select
-                      id={field}
-                      name={field}
-                      disabled={busy}
-                      value={form[field]}
-                      aria-invalid={!!errors[field]}
-                      aria-describedby={`${field}-error`}
-                      onChange={(e) => change(field, e.target.value)}
-                    >
-                      <option value="">Chọn danh mục</option>
-                      {categories.map((x) => (
-                        <option key={x}>{x}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      id={field}
-                      name={field}
-                      disabled={busy}
-                      value={form[field]}
-                      type={field === "radius" ? "number" : "text"}
-                      inputMode={field === "name" ? "text" : "decimal"}
-                      min={field === "radius" ? 1 : undefined}
-                      autoComplete="off"
-                      spellCheck={field === "name"}
-                      placeholder={
-                        {
-                          name: "Bưu điện Trung tâm…",
-                          latitude: "10.7769…",
-                          longitude: "106.7009…",
-                          radius: "80…",
-                        }[field]
-                      }
-                      aria-invalid={!!errors[field]}
-                      aria-describedby={`${field}-error`}
-                      onChange={(e) => change(field, e.target.value)}
-                    />
-                  )}
-                </Field>
-              ))}
-            </div>
-            <p className="footnote">
-              ID: {form.id} · Phiên bản làm việc: {form.packageVersion}
+      {(form.status === "REJECTED" || form.reviewerComment) && (
+        <section className="notice" aria-label="Kết quả xét duyệt">
+          <div className="min-w-0">
+            <h2>
+              {form.status === "REJECTED"
+                ? "Nội dung bị từ chối"
+                : "Nhận xét của người duyệt"}
+            </h2>
+            <p className="pre-wrap">
+              {form.reviewerComment || "Chưa có nhận xét từ người duyệt."}
             </p>
-          </section>
-          <section className="card">
-            <div className="section-heading">
-              <div>
-                <h2>Kịch bản & audio</h2>
-                <p className="muted">
-                  Mỗi ngôn ngữ và loại kịch bản có nội dung riêng.
-                </p>
-              </div>
-            </div>
-            <div className="filters">
-              <Field id="language" label="Ngôn ngữ">
-                <select
-                  id="language"
-                  name="language"
-                  value={language}
-                  disabled={uploadBusy || busy}
-                  onChange={(e) => {
-                    setUploadError("");
-                    query("language", e.target.value);
-                  }}
-                >
-                  {languages.map((x) => (
-                    <option key={x.code} value={x.code}>
-                      {x.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field id="script-type" label="Loại kịch bản">
-                <select
-                  id="script-type"
-                  name="scriptType"
-                  value={type}
-                  disabled={uploadBusy || busy}
-                  onChange={(e) => {
-                    setUploadError("");
-                    query("type", e.target.value);
-                  }}
-                >
-                  <option value="FULL">FULL · Đầy đủ</option>
-                  <option value="SHORT">SHORT · Rút gọn</option>
-                </select>
-              </Field>
-            </div>
-            <Field
-              id="script"
-              label="Nội dung thuyết minh"
-              help="Bản biên tập chỉ công khai sau khi được duyệt và xuất bản."
+            <p>
+              Sửa nội dung theo nhận xét, sau đó lưu nháp hoặc gửi duyệt lại.
+              REVIEWER sẽ duyệt và xuất bản trong hệ thống.
+            </p>
+          </div>
+        </section>
+      )}
+      {identity?.role === "REVIEWER" && (
+        <p>
+          Bạn đang xem với vai trò REVIEWER.{" "}
+          <Link to="/reviews">Mở hàng đợi duyệt</Link>.
+        </p>
+      )}
+      <form className="location-editor" onSubmit={submit} noValidate>
+        <fieldset
+          disabled={
+            busy ||
+            uploadBusy ||
+            imageBusy ||
+            translating ||
+            identity?.role === "REVIEWER" ||
+            (form.status === "APPROVED" && !!form.editVersion)
+          }
+          className="editor-fields"
+        >
+          <div className="editor-overview">
+            <section
+              className="card editor-method"
+              aria-labelledby="translation-heading"
             >
-              <textarea
-                disabled={busy}
-                id="script"
-                name="scriptText"
-                autoComplete="off"
-                rows={8}
-                placeholder="Giới thiệu địa điểm và nội dung thuyết minh…"
-                value={asset.text}
-                aria-describedby="script-help"
-                onChange={(e) =>
-                  updateAsset({ ...asset, text: e.target.value })
-                }
-              />
-            </Field>
-            <div
-              className="upload-box"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (!uploadBusy && !busy && e.dataTransfer.files[0])
-                  void upload(e.dataTransfer.files[0]);
-              }}
-            >
-              <Upload size={24} aria-hidden="true" />
-              <strong>Kéo tệp audio vào đây hoặc chọn tệp</strong>
-              <p className="muted">MP3, WAV, OGG · Tối đa 20 MB mỗi tệp</p>
-              <label htmlFor="audio-file">
-                Chọn audio cho {language} / {type}
-              </label>
-              <input
-                ref={audioInput}
-                className="sr-only"
-                tabIndex={-1}
-                id="audio-file"
-                type="file"
-                name="audio"
-                accept=".mp3,.wav,.ogg"
-                disabled={uploadBusy || busy}
-                aria-describedby="audio-error"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) void upload(file);
-                  e.target.value = "";
-                }}
-              />
-              <Button
-                secondary
-                disabled={uploadBusy || busy}
-                onClick={() => audioInput.current?.click()}
-              >
-                Chọn tệp audio
-              </Button>
-              {uploadBusy && <p role="status">Đang tải audio…</p>}
-              <p id="audio-error" className="field-error" aria-live="polite">
-                {uploadError}
+              <p className="editor-kicker">CHUẨN BỊ BẢN THUYẾT MINH</p>
+              <h2 id="translation-heading">Chọn cách biên tập</h2>
+              <fieldset className="content-entry-options">
+                <legend>Chọn phương án nhập nội dung</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="entryMode"
+                    aria-label="Nhập thủ công"
+                    value="manual"
+                    checked={entryMode === "manual"}
+                    onChange={() => query("mode", "manual")}
+                  />{" "}
+                  <PenLine size={19} aria-hidden="true" />
+                  <span>
+                    <strong>Nhập thủ công</strong>
+                    <small>Tự viết nội dung cho từng ngôn ngữ</small>
+                  </span>
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="entryMode"
+                    aria-label="Dịch tự động từ nội dung nguồn"
+                    value="auto"
+                    checked={entryMode === "auto"}
+                    onChange={() => query("mode", "auto")}
+                  />{" "}
+                  <Languages size={19} aria-hidden="true" />
+                  <span>
+                    <strong>Dịch tự động</strong>
+                    <small>Dịch từ một nội dung nguồn, sau đó chỉnh sửa</small>
+                  </span>
+                </label>
+              </fieldset>
+              <p className="editor-method-help">
+                {entryMode === "manual"
+                  ? "Chọn từng ngôn ngữ bên dưới và nhập tên, nội dung FULL/SHORT tương ứng. Chuyển phương án vẫn giữ dữ liệu đang nhập."
+                  : "Nhập tên và nội dung ở ngôn ngữ nguồn bên dưới, chọn ngôn ngữ đích rồi bấm Dịch tự động. Kết quả có thể chỉnh sửa."}
               </p>
-              {uploadError &&
-                pendingFile &&
-                /\.(mp3|wav|ogg)$/i.test(pendingFile.file.name) && (
-                  <Button
-                    secondary
-                    onClick={() => {
-                      if (pendingFile) void upload(pendingFile.file, true);
+              <p className="editor-tts-note">
+                Web/Android đọc nội dung bằng TTS khi không có file audio; không
+                bắt buộc tải audio lên.
+              </p>
+              {entryMode === "auto" && (
+                <>
+                  <p className="editor-translation-warning">
+                    Dịch tự động phụ thuộc dịch vụ được cấu hình. Provider demo
+                    chỉ tạo kết quả giả lập, không phải bản dịch thật.
+                  </p>
+                  <fieldset className="editor-targets">
+                    <legend>
+                      Ngôn ngữ đích <span>Chọn một hoặc nhiều ngôn ngữ</span>
+                    </legend>
+                    <div className="editor-language-grid">
+                      {languages
+                        .filter((l) => l.code !== language)
+                        .map((l) => (
+                          <label key={l.code}>
+                            <input
+                              type="checkbox"
+                              name="translationTargets"
+                              value={l.code}
+                              checked={targets.includes(l.code)}
+                              onChange={(e) =>
+                                setTargets((old) =>
+                                  e.target.checked
+                                    ? [...old, l.code]
+                                    : old.filter((x) => x !== l.code),
+                                )
+                              }
+                            />{" "}
+                            <span>{l.label}</span>
+                            <small aria-hidden="true">
+                              {l.code.toUpperCase()}
+                            </small>
+                          </label>
+                        ))}
+                    </div>
+                  </fieldset>
+                  <div className="editor-translation-action">
+                    <Button
+                      type="button"
+                      busy={translating}
+                      onClick={() => void translate()}
+                    >
+                      <Languages size={16} aria-hidden="true" />
+                      Dịch tự động
+                    </Button>
+                    <span>Có thể sửa lại kết quả trước khi lưu.</span>
+                  </div>
+                </>
+              )}
+            </section>
+            <LocationImageField
+              key={form.imageUrl || "no-image"}
+              locationId={form.id}
+              imageUrl={form.imageUrl}
+              authorization={authorization}
+              onBusyChange={setImageBusy}
+              onChange={(imageUrl) => {
+                setForm((old) => ({ ...old, imageUrl }));
+                setDirty(true);
+                setMessage("");
+              }}
+            />
+          </div>
+          {imageBusy && <p role="status">Đang tải ảnh…</p>}
+          <div className="form-grid">
+            <section className="card">
+              <div className="section-heading">
+                <div>
+                  <h2>Thông tin địa điểm</h2>
+                  <p className="muted">
+                    Bắt buộc khi gửi duyệt; bản nháp có thể để trống.
+                  </p>
+                </div>
+              </div>
+              <div className="field-grid">
+                {(
+                  [
+                    "name",
+                    "category",
+                    "latitude",
+                    "longitude",
+                    "radius",
+                  ] as const
+                ).map((field) => (
+                  <Field
+                    key={field}
+                    id={field}
+                    label={
+                      {
+                        name: `Tên địa điểm · ${languages.find((item) => item.code === language)?.label || language}`,
+                        category: "Danh mục",
+                        latitude: "Vĩ độ",
+                        longitude: "Kinh độ",
+                        radius: "Bán kính geofence (m)",
+                      }[field]
+                    }
+                    error={errors[field]}
+                  >
+                    {field === "category" ? (
+                      <select
+                        id={field}
+                        name={field}
+                        disabled={busy}
+                        value={form[field]}
+                        aria-invalid={!!errors[field]}
+                        aria-describedby={`${field}-error`}
+                        onChange={(e) => change(field, e.target.value)}
+                      >
+                        <option value="">Chọn danh mục</option>
+                        {categories.map((x) => (
+                          <option key={x}>{x}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        id={field}
+                        name={field}
+                        disabled={busy}
+                        value={
+                          field === "name"
+                            ? (form.names?.[language] ??
+                              (language === "vi" ? form.name : ""))
+                            : form[field]
+                        }
+                        type={field === "radius" ? "number" : "text"}
+                        inputMode={field === "name" ? "text" : "decimal"}
+                        min={field === "radius" ? 1 : undefined}
+                        autoComplete="off"
+                        spellCheck={field === "name"}
+                        placeholder={
+                          {
+                            name: "Bưu điện Trung tâm…",
+                            latitude: "10.7769…",
+                            longitude: "106.7009…",
+                            radius: "80…",
+                          }[field]
+                        }
+                        aria-invalid={!!errors[field]}
+                        aria-describedby={`${field}-error`}
+                        onChange={(e) => change(field, e.target.value)}
+                      />
+                    )}
+                  </Field>
+                ))}
+              </div>
+              <p className="footnote">
+                ID: {form.id} · Phiên bản làm việc: {form.packageVersion}
+              </p>
+            </section>
+            <section className="card">
+              <div className="section-heading">
+                <div>
+                  <h2>Nội dung thuyết minh & TTS</h2>
+                  <p className="muted">
+                    Mỗi ngôn ngữ và loại kịch bản có nội dung riêng.
+                  </p>
+                </div>
+              </div>
+              <div className="filters">
+                <Field id="language" label="Ngôn ngữ">
+                  <select
+                    id="language"
+                    name="language"
+                    value={language}
+                    disabled={uploadBusy || busy}
+                    onChange={(e) => {
+                      setUploadError("");
+                      query("language", e.target.value);
                     }}
                   >
-                    Thử lại upload
+                    {languages.map((x) => (
+                      <option key={x.code} value={x.code}>
+                        {x.label}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                <Field id="script-type" label="Loại kịch bản">
+                  <select
+                    id="script-type"
+                    name="scriptType"
+                    value={type}
+                    disabled={uploadBusy || busy}
+                    onChange={(e) => {
+                      setUploadError("");
+                      query("type", e.target.value);
+                    }}
+                  >
+                    <option value="FULL">FULL · Đầy đủ</option>
+                    <option value="SHORT">SHORT · Rút gọn</option>
+                  </select>
+                </Field>
+              </div>
+              <Field
+                id="script"
+                label="Nội dung thuyết minh"
+                help="Bản biên tập chỉ công khai sau khi được duyệt và xuất bản."
+              >
+                <textarea
+                  disabled={busy}
+                  id="script"
+                  name="scriptText"
+                  autoComplete="off"
+                  rows={8}
+                  placeholder="Giới thiệu địa điểm và nội dung thuyết minh…"
+                  value={asset.text}
+                  aria-describedby="script-help"
+                  onChange={(e) =>
+                    updateAsset({ ...asset, text: e.target.value })
+                  }
+                />
+              </Field>
+              <details>
+                <summary>Audio thu sẵn (tùy chọn)</summary>
+                <div
+                  className="upload-box"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (!uploadBusy && !busy && e.dataTransfer.files[0])
+                      void upload(e.dataTransfer.files[0]);
+                  }}
+                >
+                  <Upload size={24} aria-hidden="true" />
+                  <strong>Kéo tệp audio vào đây hoặc chọn tệp</strong>
+                  <p className="muted">MP3, WAV, OGG · Tối đa 20 MB mỗi tệp</p>
+                  <label htmlFor="audio-file">
+                    Chọn audio cho {language} / {type}
+                  </label>
+                  <input
+                    ref={audioInput}
+                    className="sr-only"
+                    tabIndex={-1}
+                    id="audio-file"
+                    type="file"
+                    name="audio"
+                    accept=".mp3,.wav,.ogg"
+                    disabled={uploadBusy || busy}
+                    aria-describedby="audio-error"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void upload(file);
+                      e.target.value = "";
+                    }}
+                  />
+                  <Button
+                    secondary
+                    disabled={uploadBusy || busy}
+                    onClick={() => audioInput.current?.click()}
+                  >
+                    Chọn tệp audio
                   </Button>
+                  {uploadBusy && <p role="status">Đang tải audio…</p>}
+                  <p
+                    id="audio-error"
+                    className="field-error"
+                    aria-live="polite"
+                  >
+                    {uploadError}
+                  </p>
+                  {uploadError &&
+                    pendingFile &&
+                    /\.(mp3|wav|ogg)$/i.test(pendingFile.file.name) && (
+                      <Button
+                        secondary
+                        onClick={() => {
+                          if (pendingFile) void upload(pendingFile.file, true);
+                        }}
+                      >
+                        Thử lại upload
+                      </Button>
+                    )}
+                </div>
+                {asset.audioName && (
+                  <p className="footnote">
+                    Tệp: {asset.audioName}
+                    {!asset.audioUrl &&
+                      " · Chọn lại tệp để nghe thử sau khi tải lại trang."}
+                  </p>
                 )}
-            </div>
-            {asset.audioName && (
-              <p className="footnote">
-                Tệp: {asset.audioName}
-                {!asset.audioUrl &&
-                  " · Chọn lại tệp để nghe thử sau khi tải lại trang."}
-              </p>
-            )}
-            <AudioPlayer
-              src={
-                asset.audioUrl?.startsWith("/api/content-audio/")
-                  ? previews[asset.audioUrl]
-                  : asset.audioUrl
-              }
-              transcript={asset.text}
-            />
-          </section>
-        </div>
-        <PoiMediaEditor
-          disabled={busy || uploadBusy}
-          onDirtyChange={setMediaDirty}
-        />
-        <div className="form-footer">
-          <span role="status" aria-live="polite">
-            {message ||
-              (dirty
-                ? "Có thay đổi chưa lưu"
-                : "Đang biên tập dữ liệu từ database chung")}
-          </span>
-          <div className="actions">
-            <Button
-              secondary
-              busy={busy || uploadBusy}
-              onClick={() => requestSave("DRAFT")}
-            >
-              {uploadBusy ? "Đang tải audio…" : busy ? "Đang lưu…" : "Lưu nháp"}
-            </Button>
-            <Button type="submit" busy={busy || uploadBusy}>
-              {uploadBusy
-                ? "Đang tải audio…"
-                : busy
-                  ? "Đang gửi…"
-                  : "Gửi duyệt"}
-            </Button>
+                <AudioPlayer
+                  src={
+                    asset.audioUrl?.startsWith("/api/content-audio/")
+                      ? previews[asset.audioUrl]
+                      : asset.audioUrl
+                  }
+                  transcript={asset.text}
+                />
+              </details>
+            </section>
           </div>
-        </div>
+          <div className="form-footer">
+            <span role="status" aria-live="polite">
+              {message ||
+                (dirty
+                  ? "Có thay đổi chưa lưu"
+                  : "Đang biên tập dữ liệu từ database chung")}
+            </span>
+            <div className="actions">
+              <Button
+                secondary
+                busy={busy || uploadBusy}
+                onClick={() => requestSave("DRAFT")}
+              >
+                {uploadBusy
+                  ? "Đang tải audio…"
+                  : busy
+                    ? "Đang lưu…"
+                    : "Lưu nháp"}
+              </Button>
+              <Button type="submit" busy={busy || uploadBusy}>
+                {uploadBusy
+                  ? "Đang tải audio…"
+                  : busy
+                    ? "Đang gửi…"
+                    : "Gửi duyệt"}
+              </Button>
+            </div>
+          </div>
+        </fieldset>
       </form>
       <ConfirmDialog
         open={saveStatus !== null}
@@ -637,12 +934,6 @@ export default function LocationForm() {
           Thay đổi chưa lưu sẽ bị mất. Hãy ở lại và lưu nháp nếu cần giữ nội
           dung.
         </p>
-        {mediaDirty && (
-          <p>
-            Ảnh xem trước chỉ giữ trong phiên này; Lưu nháp chưa lưu các ảnh đó
-            lên máy chủ.
-          </p>
-        )}
       </ConfirmDialog>
     </>
   );

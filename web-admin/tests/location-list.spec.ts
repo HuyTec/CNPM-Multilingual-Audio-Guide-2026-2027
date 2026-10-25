@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./admin-fixture";
 import AxeBuilder from "@axe-core/playwright";
 
 test("LocationList readiness, timestamps, accessible tooltips and row links", async ({

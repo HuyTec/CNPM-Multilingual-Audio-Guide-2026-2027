@@ -26,6 +26,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.CancellationException
 import vn.hvp.travelvoice.MainActivity
 import vn.hvp.travelvoice.R
 import vn.hvp.travelvoice.data.remote.PlaybackOutbox
@@ -40,14 +43,15 @@ object TravelPlayback {
 
     fun visible(value: Boolean) { appVisible = value; service?.visibilityChanged() }
     fun play(context: Context, guide: ServerGuide, base: String, rate: Float) {
+        check(!PackagePlaybackGate.installing) { "Đang cài gói; hãy chờ hoàn tất." }
         val intent = Intent(context, TravelPlaybackService::class.java).setAction("PLAY")
             .putExtra("content", guide.contentId).putExtra("location", guide.locationId)
             .putExtra("name", guide.locationName).putExtra("language", guide.languageCode)
             .putExtra("type", guide.scriptType).putExtra("text", guide.scriptText)
-            .putExtra("audio", guide.audioUrl).putExtra("base", base).putExtra("rate", rate)
+            .putExtra("audio", guide.audioUrl).putExtra("base", base).putExtra("rate", rate).putExtra("offline", guide.offline)
         ContextCompat.startForegroundService(context, intent)
     }
-    fun toggle() { narrator?.let { if (it.state in listOf("Đang phát", "Đang chuẩn bị…")) it.pause() else it.play() }; service?.visibilityChanged() }
+    fun toggle() { if (PackagePlaybackGate.installing) return; narrator?.let { if (it.state in listOf("Đang phát", "Đang chuẩn bị…")) it.pause() else it.play() }; service?.visibilityChanged() }
     fun stop(context: Context) { context.stopService(Intent(context, TravelPlaybackService::class.java)) }
 }
 
@@ -59,6 +63,7 @@ class TravelPlaybackService : Service() {
     private var promoted = false
     private var lastState = ""
     private var lastPosition = -1
+    private var server = ""
     private val noisy = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) { TravelPlayback.narrator?.pause(); visibilityChanged() }
     }
@@ -88,6 +93,18 @@ class TravelPlaybackService : Service() {
         }
         ContextCompat.registerReceiver(this, noisy, IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY), ContextCompat.RECEIVER_NOT_EXPORTED)
         handler.post(ticker)
+        scope.launch {
+            while (isActive) {
+                if (server.isNotBlank() && TravelPlayback.narrator?.state in listOf("Đang phát", "Đang chuẩn bị…")) {
+                    try {
+                        vn.hvp.travelvoice.data.remote.VisitorApi.heartbeat(applicationContext, server)
+                        PlaybackOutbox.flush(applicationContext, server)
+                    } catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { /* Keep queued events; retry while background playback continues. */ }
+                }
+                delay(60_000)
+            }
+        }
     }
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // A startForegroundService request must be acknowledged even if the UI is still visible.
@@ -96,15 +113,17 @@ class TravelPlaybackService : Service() {
             "STOP" -> { stopSelf(); return START_NOT_STICKY }
             "TOGGLE" -> TravelPlayback.toggle()
             "PLAY" -> {
+                server = intent.getStringExtra("base").orEmpty()
                 val id = intent.getStringExtra("content") ?: run { stopSelf(); return START_NOT_STICKY }
                 if (TravelPlayback.guide?.contentId != id) {
                     TravelPlayback.narrator?.close()
                     val guide = ServerGuide(id, intent.getStringExtra("name").orEmpty(), intent.getStringExtra("language").orEmpty(),
-                        intent.getStringExtra("type").orEmpty(), intent.getStringExtra("text").orEmpty(), intent.getStringExtra("audio"), intent.getStringExtra("location").orEmpty())
+                        intent.getStringExtra("type").orEmpty(), intent.getStringExtra("text").orEmpty(), intent.getStringExtra("audio"), intent.getStringExtra("location").orEmpty(), intent.getBooleanExtra("offline", false))
                     TravelPlayback.guide = guide
                     val base = intent.getStringExtra("base").orEmpty()
                     TravelPlayback.narrator = SharedNarrator(applicationContext, null, guide) { event ->
-                        scope.launch { runCatching { PlaybackOutbox.enqueueAndFlush(applicationContext, base, event, guide.contentId) } }
+                        scope.launch { runCatching { PlaybackOutbox.enqueueAndFlush(applicationContext, base, event, guide.contentId,
+                            guide.offline || !vn.hvp.travelvoice.data.remote.VisitorApi.isOnline(applicationContext)) } }
                     }
                 }
                 TravelPlayback.narrator?.speed(intent.getFloatExtra("rate", 1f))

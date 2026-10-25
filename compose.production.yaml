@@ -1,0 +1,77 @@
+name: travelvoice-vps
+services:
+  postgres:
+    image: postgis/postgis:17-3.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: audio_guide
+      POSTGRES_USER: audio_guide
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Dat POSTGRES_PASSWORD trong .env.production}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks: [data]
+    mem_limit: 512m
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U audio_guide -d audio_guide']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+  backend:
+    build: ./backend/multi-audio-guide
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: demo
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/audio_guide
+      SPRING_DATASOURCE_USERNAME: audio_guide
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Dat POSTGRES_PASSWORD trong .env.production}
+      JAVA_TOOL_OPTIONS: '-XX:MaxRAMPercentage=65.0 -XX:+ExitOnOutOfMemoryError'
+      DEMO_ADMIN_USERNAME: admin
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Dat DEMO_ADMIN_PASSWORD trong .env.production}
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: never
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_COMPONENTS: never
+    networks: [data]
+    mem_limit: 768m
+    depends_on:
+      postgres: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/actuator/health || exit 1']
+      start_period: 60s
+      interval: 15s
+      timeout: 5s
+      retries: 10
+  web:
+    build: ./web-user
+    restart: unless-stopped
+    init: true
+    environment:
+      API_PROXY_TARGET: http://backend:8080
+    networks: [public, data]
+    mem_limit: 256m
+    depends_on:
+      backend: {condition: service_healthy}
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Dat ten mien tro DNS ve VPS}
+      ACME_EMAIL: ${ACME_EMAIL:?Dat email nhan thong bao chung chi}
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./deploy/vps/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [public]
+    mem_limit: 128m
+    depends_on:
+      web: {condition: service_healthy}
+networks:
+  public:
+  data:
+    internal: true
+volumes:
+  pg_data:
+  caddy_data:
+  caddy_config:

@@ -2,6 +2,7 @@ node_modules/
 dist/
 test-results/
 test-results-offline/
+test-results-background/
 test-results-maps/
 test-results-google-live/
 playwright-report/

@@ -10,6 +10,9 @@ import { LoadingState } from "../components/ui/States";
 import { useLiveAnalytics, type CountItem } from "../lib/live-analytics";
 import { daysAgo, today, number, percent, dateTime } from "../lib/format";
 import { exportReport } from "../lib/export";
+import { feedbackForExport, feedbackQuery } from "../lib/feedback";
+import { LiveFeedback } from "../components/LiveFeedback";
+import { VisitorStats } from "../components/VisitorStats";
 
 export default function LiveAnalytics() {
   const [params, setParams] = useSearchParams();
@@ -34,6 +37,7 @@ export default function LiveAnalytics() {
     next.set("from", from);
     next.set("to", to);
     next.set(name, value);
+    next.delete("page");
     setParams(next);
   }
   async function download() {
@@ -41,6 +45,10 @@ export default function LiveAnalytics() {
     setExporting(true);
     setExportError("");
     try {
+      const feedback = await feedbackForExport(
+        authorization,
+        feedbackQuery(params, data.from, data.to),
+      );
       await exportReport(
         data.from,
         data.to,
@@ -48,6 +56,22 @@ export default function LiveAnalytics() {
           ["Tổng lượt phát", data.totalPlaybacks],
           ["Online", data.onlinePlaybacks],
           ["Offline", data.offlinePlaybacks],
+          [
+            "Tỷ lệ ngoại tuyến",
+            percent(
+              data.totalPlaybacks
+                ? data.offlinePlaybacks / data.totalPlaybacks
+                : 0,
+            ),
+          ],
+          [
+            "Tỷ lệ trực tuyến",
+            percent(
+              data.totalPlaybacks
+                ? data.onlinePlaybacks / data.totalPlaybacks
+                : 0,
+            ),
+          ],
           ...data.topLocations.map((x): [string, number] => [
             `Địa điểm: ${x.label}`,
             x.count,
@@ -57,8 +81,8 @@ export default function LiveAnalytics() {
             x.count,
           ]),
         ],
-        [],
-        "PostgreSQL — lượt bắt đầu phát từ Web và Android; chưa tích hợp phản hồi",
+        feedback,
+        "PostgreSQL — lượt bắt đầu phát và phản hồi theo bộ lọc đang chọn",
       );
     } catch {
       setExportError(
@@ -75,14 +99,9 @@ export default function LiveAnalytics() {
           <p className="eyebrow">DỮ LIỆU CHUNG WEB VÀ ANDROID</p>
           <h1>Thống kê lượt nghe</h1>
           <p className="muted">
-            Số liệu PostgreSQL thật · cập nhật mỗi 5 giây khi trang đang mở.
+            Theo dõi lượt phát, ngôn ngữ và phản hồi trong kỳ báo cáo.
           </p>
         </div>
-        {authorization && (
-          <Button secondary onClick={() => setAuthorization("")}>
-            Đăng xuất thống kê
-          </Button>
-        )}
       </div>
       {!authorization || result.unauthorized ? (
         <AdminAccess
@@ -130,7 +149,7 @@ export default function LiveAnalytics() {
                 busy={exporting}
                 onClick={() => void download()}
               >
-                {exporting ? "Đang xuất…" : "Xuất lượt nghe .xlsx"}
+                {exporting ? "Đang xuất…" : "Xuất báo cáo .xlsx"}
               </Button>
             </div>
           </section>
@@ -145,6 +164,7 @@ export default function LiveAnalytics() {
             <LoadingState />
           ) : (
             <>
+              <VisitorStats authorization={authorization} />
               <p className="muted" role="status" aria-live="polite">
                 Cập nhật: {dateTime(data.generatedAt)} · Một lượt = một phiên
                 bắt đầu phát, không phải lượt nghe hết.
@@ -213,18 +233,20 @@ export default function LiveAnalytics() {
               </Button>
             </div>
           )}
+          <LiveFeedback from={from} to={to} />
         </>
       )}
-      <section className="card live-panel">
-        <h2>Phạm vi bản demo</h2>
+      <details className="card admin-demo-details">
+        <summary>Thông tin bản demo</summary>
         <p>
-          Địa điểm, bản nháp, gửi duyệt và lượt nghe dùng database chung. Phản
-          hồi vẫn là giao diện mẫu, chưa nối database.
+          Địa điểm, bản nháp, gửi duyệt, lượt nghe và phản hồi dùng database
+          chung. Phản hồi được tiếp nhận qua hệ thống bên ngoài; trang này quản
+          lý trạng thái.
         </p>
         <Link to="/analytics?source=mock">
           Mở giao diện thống kê và phản hồi giả lập
         </Link>
-      </section>
+      </details>
     </>
   );
 }

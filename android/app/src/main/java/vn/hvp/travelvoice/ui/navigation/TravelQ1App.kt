@@ -36,6 +36,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.CancellationException
 import vn.hvp.travelvoice.BuildConfig
 import vn.hvp.travelvoice.R
@@ -51,8 +55,10 @@ import vn.hvp.travelvoice.ui.screens.*
 fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit, () -> Unit) -> Unit)? = null) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("travelq1-settings", Context.MODE_PRIVATE) }
-    val base = BuildConfig.API_BASE_URL
-    val repository = remember { SharedTourRepository(context.applicationContext, base) }
+    var base by rememberSaveable { mutableStateOf(prefs.getString("server", BuildConfig.API_BASE_URL)!!) }
+    val repository = remember(base) { SharedTourRepository(context.applicationContext, base) }
+    val updates = remember(repository) { PackageUpdates(repository) }
+    val appScope = rememberCoroutineScope()
     var tab by rememberSaveable { mutableStateOf("map") }
     var selected by rememberSaveable { mutableStateOf<String?>(null) }
     var query by rememberSaveable { mutableStateOf("") }
@@ -114,23 +120,50 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         }
         playbackError = runCatching { TravelPlayback.play(context, content, base, rate) }.isFailure
     }
-    LaunchedEffect(base) {
-        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            runCatching { TouristApi.post(base,"guest",org.json.JSONObject(),TouristIdentity(context).snapshot()) }
-            runCatching { PlaybackOutbox.flush(context,base) }
+    LaunchedEffect(repository, lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            launch {
+                while (isActive) {
+                    val previous = updates.available.map { it.getString("version") }
+                    updates.check()
+                    if (previous != updates.available.map { it.getString("version") }) retry()
+                    delay(30_000)
+                }
+            }
+            launch {
+                while (isActive) {
+                    try { VisitorApi.heartbeat(context, base) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { /* No connection never blocks reading. */ }
+                    try { PlaybackOutbox.flush(context, base) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { /* Pending receipts stay on disk. */ }
+                    delay(60_000)
+                }
+            }
         }
+    }
+    DisposableEffect(repository, lifecycle) {
+        val manager = context.getSystemService(android.net.ConnectivityManager::class.java)
+        val callback = object : android.net.ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: android.net.Network) { appScope.launch {
+                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) { updates.check(); retry() }
+            } }
+        }
+        manager.registerDefaultNetworkCallback(callback)
+        onDispose { manager.unregisterNetworkCallback(callback) }
     }
     fun openActiveDetails() {
         TravelPlayback.guide?.let { selected = it.locationId; language = it.languageCode; mode = it.scriptType }
         details = true
     }
-    LaunchedEffect(repository, revision) {
+    LaunchedEffect(repository, revision, language) {
         failed = false
         // Display the bundled, verified baseline immediately while refreshing online content.
-        if (locations == null) runCatching { repository.localLocations() }.onSuccess { records ->
+        if (locations == null) runCatching { repository.localLocations(language) }.onSuccess { records ->
             locations = records.also { offline = true }
         }
-        try { val result = repository.locations(); locations = result.first; offline = result.second }
+        try { val result = repository.locations(language); locations = result.first; offline = result.second }
         catch (cancelled: CancellationException) { throw cancelled }
         catch (_: Exception) { if (locations.isNullOrEmpty()) failed = true }
     }
@@ -149,16 +182,24 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
     BackHandler(enabled = tab != "map" || selected != null || showList || showSearch) {
         when { tab == "offline" -> tab = "settings"; tab != "map" -> tab = "map"; selected != null -> selected = null; showList -> showList = false; else -> { showSearch = false; query = "" } }
     }
-    Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+    Scaffold(topBar = { Column { TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
         IconButton(onClick = { profileOpen = true }) { Icon(Icons.Default.AccountCircle, stringResource(R.string.q1_profile)) }
         IconButton(onClick = ::home) { Icon(Icons.Default.Home, stringResource(R.string.q1_home)) }
-    }) }, bottomBar = {
+    })
+        if (updates.pending.isNotEmpty() && tab != "offline") Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.q1_new_packages, updates.pending.size), Modifier.weight(1f))
+                TextButton(onClick = { tab = "offline"; details = false; profileOpen = false }) { Text(stringResource(R.string.q1_view_packages)) }
+            }
+        }
+    } }, bottomBar = {
         Column {
             if (TravelPlayback.guide != null) TravelMiniPlayer(onOpen = ::openActiveDetails)
             NavigationBar {
                 NavigationBarItem(selected = tab == "map", onClick = { tab = "map" }, icon = { Icon(Icons.Default.Map, null) }, label = { Text(stringResource(R.string.q1_map)) })
                 NavigationBarItem(selected = details, onClick = { if (selected != null) details = true else openActiveDetails() }, icon = { Icon(Icons.Default.Info, null) }, label = { Text(stringResource(R.string.q1_details)) })
-                NavigationBarItem(selected = tab in listOf("settings", "offline"), onClick = { tab = "settings" }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.q1_settings)) })
+                NavigationBarItem(selected = tab == "offline", onClick = { tab = "offline" }, icon = { Icon(Icons.Default.Download, null) }, label = { Text(stringResource(R.string.q1_offline)) })
+                NavigationBarItem(selected = tab == "settings", onClick = { tab = "settings" }, icon = { Icon(Icons.Default.Settings, null) }, label = { Text(stringResource(R.string.q1_settings)) })
             }
         }
     }) { padding ->
@@ -166,7 +207,7 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
             "settings" -> TravelSettings(language, ::setLanguage, rate, ::setRate, onOffline = { tab = "offline" }, modifier = Modifier.padding(padding))
             "offline" -> LazyColumn(Modifier.padding(padding), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item { TextButton(onClick = { tab = "settings" }) { Text(stringResource(R.string.back)) }; Text(stringResource(R.string.q1_offline), style = MaterialTheme.typography.headlineSmall) }
-                item { SharedOfflineContent(repository) }
+                item { SharedOfflineContent(repository, updates, onChanged = ::retry, onOpenLocation = { id -> tab = "map"; select(id); details = true }) }
             }
             else -> BoxWithConstraints(Modifier.fillMaxSize().padding(padding)) {
                 val wide = maxWidth > maxHeight
@@ -245,7 +286,14 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
         TravelPlaceDetails(place, guide, guideFailed, language, ::setLanguage, mode, { mode = it }, onRetry = ::retry, onPlay = { guide?.let(::play) }, onRate = ::setRate)
     }
     if (details && place == null) ModalBottomSheet(onDismissRequest = { details = false }) { TravelPlayerPanel(::setRate) }
-    if (profileOpen) ModalBottomSheet(onDismissRequest = { profileOpen = false }) { TravelProfile(base) }
+    if (profileOpen) ModalBottomSheet(onDismissRequest = { profileOpen = false }) {
+        TravelProfile(base, onServer = { next ->
+            if (next != base) {
+                TravelPlayback.stop(context); prefs.edit().putString("server", next).apply(); base = next
+                locations = null; selected = null; details = false; revision++
+            }
+        }, onPackages = { profileOpen = false; tab = "offline" })
+    }
     if (playbackError) AlertDialog(onDismissRequest = { playbackError = false }, text = { Text(stringResource(R.string.q1_playback_error)) },
         confirmButton = { TextButton(onClick = { playbackError = false }) { Text(stringResource(R.string.q1_close)) } })
 }

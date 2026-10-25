@@ -14,6 +14,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [result, setResult] = useState<{
     key: string;
     config?: ContentConfig;
+    identity?: { username: string; role: "EDITOR" | "REVIEWER" };
     error?: string;
   }>({ key: "" });
   const key = `${authorization}:${attempt}`;
@@ -27,13 +28,17 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       authorization,
       { signal: abort.signal },
     )
-      .then((config) => {
+      .then(async (config) => {
+        const identity = await adminRequest<{
+          username: string;
+          role: "EDITOR" | "REVIEWER";
+        }>("/api/admin/auth/me", authorization, { signal: abort.signal });
         if (
           !Array.isArray(config.categories) ||
           !Array.isArray(config.languages)
         )
           throw new Error("Cấu hình nội dung không hợp lệ.");
-        if (active) setResult({ key, config });
+        if (active) setResult({ key, config, identity });
       })
       .catch((error) => {
         if (active)
@@ -53,6 +58,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
   }, [authorization, key]);
   function connect(value: string) {
+    if (!value && authorization)
+      void adminRequest("/api/admin/auth/logout", authorization, {
+        method: "POST",
+      }).catch(() => {});
     setAuth(value);
     setAttempt((current) => current + 1);
   }
@@ -63,6 +72,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         authorization,
         setAuthorization: connect,
         config: current?.config,
+        identity: current?.identity,
         error: current?.error,
       }}
     >

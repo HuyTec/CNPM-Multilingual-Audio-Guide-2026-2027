@@ -1,5 +1,7 @@
 # Thiết lập Docker trên Windows
 
+> Cập nhật 25/10/2026: hướng dẫn chạy hiện hành nằm ở [Docker Guide](../guide/DOCKER_GUIDE.md). `compose.yaml` hiện chạy đủ PostgreSQL, backend, Admin (3001) và Web du khách (14176), backend ở 8081. Những cổng 3000/8080 trong phần bên dưới là cấu hình lịch sử; dùng guide mới khi chạy demo.
+
 Docker Compose đóng gói Spring Boot backend, React web-admin và PostgreSQL 17 kèm PostGIS (`postgis/postgis:17-3.6-alpine`). Backend được build bằng Java 21/Maven; web-admin được build bằng Node.js 24 và phục vụ qua Nginx. Backend kết nối database `audio_guide` tại `postgres:5432` qua JDBC; Flyway tự chạy `V1__demo.sql` khi khởi động để tạo schema demo.
 
 ```text
@@ -64,17 +66,7 @@ docker compose -f compose.yaml up -d --build
 docker compose -f compose.yaml down
 ```
 
-Nhấn `Ctrl+C` để thoát chế độ theo dõi log; các container vẫn chạy. Sau khi sửa mã nguồn, dùng `up -d --build` để tạo lại image. `down` dừng và xóa các container cùng network, nhưng giữ dữ liệu PostgreSQL trong volume `postgres_data`. `down -v` xóa cả volume và dữ liệu; chỉ dùng khi chủ động muốn xóa database local.
-
-## 4. Quy ước database, migration và backup
-
-- Mỗi máy có volume/database local riêng; Git chia sẻ cấu hình và migration. `.env` chứa POSTGRES_PASSWORD, không commit mật khẩu hoặc backup. Đổi mật khẩu trong `.env` không tự đổi mật khẩu của volume đã khởi tạo.
-- Flyway tự chạy từ `backend/multi-audio-guide/src/main/resources/db/migration/`; profile `demo` thêm `db/demo/`. Tên migration `V<version>__<description>.sql` có hai dấu gạch dưới. Thống nhất số phiên bản trước merge.
-- Không sửa migration đã chạy trên DB dùng chung; tạo migration mới. CRUD dữ liệu qua ứng dụng không cần một migration cho mỗi thao tác. Không tự bật baseline để bỏ qua schema chưa kiểm tra.
-- Kiểm tra `/actuator/health` và database UP; PostGIS cần thiết cho schema tọa độ. Không trộn stack mặc định 8080/3000 với project legacy `hvp-live-demo` 8081/3001 và volume riêng.
-- Volume không thay thế backup: sao lưu DB quan trọng bằng `pg_dump` trước migration rủi ro và kiểm tra phục hồi trên DB riêng. Không đưa dump chứa dữ liệu/secret lên Git.
-
-Tra cứu schema và thứ tự migration trong [review backend/Android](BACKEND_ANDROID_CODE_REVIEW.md#database).
+Nhấn `Ctrl+C` để thoát chế độ theo dõi log; các container vẫn chạy. Sau khi sửa mã nguồn, dùng `up -d --build` để tạo lại image. `down` dừng và xóa các container cùng network, nhưng giữ dữ liệu PostgreSQL trong volume `postgres_data`. `down -v` xóa cả volume và dữ liệu; chỉ dùng khi chủ động muốn xóa database local. Volume không thay thế backup; xem quy ước migration và backup tại [GUILD.md](../../GUILD.md).
 
 Nếu báo không kết nối được Docker daemon, mở Docker Desktop và kiểm tra `docker version`. Nếu tải dependency báo `Unknown host` hoặc `Connection reset`, kiểm tra DNS/mạng, proxy trong Docker Desktop rồi build lại. Nếu cổng 3000 hoặc 8080 đã bị chiếm, giải phóng cổng hoặc đổi số cổng bên trái dấu `:` trong `compose.yaml`.
 

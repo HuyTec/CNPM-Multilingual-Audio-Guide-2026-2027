@@ -1,4 +1,4 @@
-# TravelQ1 — Android 1.0.0
+# TravelQ1 — Android 1.1.0
 
 Ứng dụng khám phá địa điểm và nghe thuyết minh bằng Kotlin/Jetpack Compose. Package phát hành: `vn.hvp.travelvoice`; Android 8.0+ (minSdk 26). Bản phát hành đầu tiên dùng backend local theo cấu hình của dự án.
 
@@ -6,16 +6,16 @@
 
 - Bản đồ là màn chính; tìm kiếm, danh sách, Home và nút về vị trí hiện tại. Chỉ xin quyền vị trí khi người dùng chọn chức năng cần vị trí.
 - Chi tiết có ngôn ngữ thuyết minh và FULL/SHORT. Audio thu sẵn được ưu tiên; TTS đọc đúng nội dung đã duyệt, tạo WAV để tua theo thời gian thực.
-- Hồ sơ là tùy chọn: khách dùng ngay, đăng nhập email qua OTP Gmail khi máy chủ được cấu hình. Không cần đăng nhập để đọc/nghe.
+- Hồ sơ khách đồng nhất với Web user: không cần tài khoản/OTP, có UUID lượt cài đặt, đổi máy chủ và đồng bộ lượt nghe. Android kiểm tra gói foreground mỗi 30 giây, heartbeat khách mỗi 60 giây.
 - Ngôn ngữ giao diện Tiếng Việt/English độc lập với 6 ngôn ngữ thuyết minh. Có sáng/tối/theo hệ thống, lưu lựa chọn trên thiết bị.
 - Gói BASE có 7 địa điểm thật và 84 bài; dữ liệu công khai và gói offline cùng hợp đồng backend. Các điểm hư cấu cũ được thu hồi bằng ID có chữ ký.
 - Cache guide 60 giây/32 mục và TTS tối đa 50 MB; gói offline được xác minh, cài nguyên tử và quản lý riêng. Mini-player tiếp tục khi đổi màn. Thông báo điều khiển xuất hiện khi nghe ở nền và được gỡ khi trở lại app.
 
 ## Backend local
 
-Khởi động backend/PostGIS theo [hướng dẫn backend](../backend/README.md). Giữ backend tại `127.0.0.1:8080`; Android Emulator truy cập qua `http://10.0.2.2:8080/`. Điện thoại thật cần backend trong cùng mạng LAN và build với địa chỉ phù hợp; APK phát hành lần này dành cho cấu hình emulator nêu trên.
+Khởi động stack theo [Docker Guide](../docs/guide/DOCKER_GUIDE.md). Build trực tiếp mặc định dùng emulator tại `http://10.0.2.2:8081/`. APK tải trên Web được build với URL Cloudflare hiện hành qua `scripts/prepare-android-download.ps1`; có thể đổi URL trong Profile khi tunnel thay đổi. Điện thoại thật dùng HTTPS hoặc IP LAN truy cập được.
 
-Cấu hình Gmail chỉ ở máy chủ theo [backend README](../backend/README.md#gmail-otp). Khi chưa cấu hình tài khoản gửi, OTP trả thông báo chưa sẵn sàng và người dùng vẫn dùng được với tư cách khách. Hợp đồng identity và luồng lưu session nằm trong [review backend/Android](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Giao thư Gmail thật cần kiểm tra riêng.
+Luồng Profile/khách, polling, APK trỏ Cloudflare và QR hiện hành: [Android Guide](../docs/guide/ANDROID_GUIDE.md). Bản APK tải trên Web có thể đổi máy chủ trong Profile nếu tunnel thay đổi; không gọi API OTP không có trong backend hiện tại.
 
 ## Google Maps
 
@@ -54,9 +54,9 @@ keyPassword=<local secret>
 Build bản dùng backend local đã được người dùng chọn:
 
 ```powershell
-.\gradlew.bat :app:assembleRelease :app:lintRelease '-PbuildOutputDir=.verification-build' '-PtravelApiBaseUrl=http://10.0.2.2:8080/' '-PallowLocalBackend=true' '-Pkotlin.incremental=false' '-Pkotlin.compiler.execution.strategy=in-process' --no-daemon --no-configuration-cache
+.\gradlew.bat :app:assembleRelease :app:lintRelease '-PbuildOutputDir=.verification-build' '-PtravelApiBaseUrl=http://10.0.2.2:8081/' '-PallowLocalBackend=true' '-Pkotlin.incremental=false' '-Pkotlin.compiler.execution.strategy=in-process' --no-daemon --no-configuration-cache
 ```
 
 Output: `.verification-build/app/outputs/apk/release/app-release.apk`. Release không debuggable, dùng R8/resource shrinking và khóa ký riêng. HTTP chỉ được cho phép với các host loopback/emulator trong cấu hình release này; các host khác cần HTTPS. Khi chuyển sang server online, build lại với `-PtravelApiBaseUrl=https://your-api-origin/` và bỏ cờ local.
 
-Hồ sơ thiết kế: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Đọc [review từng file và luồng backend/Android](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md), bao gồm kết quả kiểm tra ngày 22/10/2026 và các device test còn bám giao diện cũ. Prototype không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.
+Hồ sơ thiết kế: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Đọc [hướng dẫn Android](../docs/guide/ANDROID_GUIDE.md), bao gồm kết quả kiểm tra ngày 22/10/2026 và các device test còn bám giao diện cũ. Prototype không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.

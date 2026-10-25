@@ -1,5 +1,5 @@
 import { daysAgo } from "../lib/format";
-export type ContentStatus = "DRAFT" | "PENDING_REVIEW" | "APPROVED";
+export type ContentStatus = "DRAFT" | "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "PUBLISHED";
 export type FeedbackStatus = "NEW" | "IN_REVIEW" | "RESOLVED";
 export type Asset = {
   locationId: string;
@@ -14,6 +14,9 @@ export type Asset = {
 export type Location = {
   id: string;
   name: string;
+  names?: Record<string, string>;
+  imageUrl?: string;
+  reviewerComment?: string;
   category: string;
   latitude: string;
   longitude: string;
@@ -22,7 +25,7 @@ export type Location = {
   packageVersion: string;
   assets: Record<string, Asset>;
   updatedAt?: string;
-  published?: { version: string; name: string; assets: Record<string, Asset> };
+  published?: { version: string; name: string; assets: Record<string, Asset>; names?: Record<string,string>; category?:string; latitude?:string; longitude?:string; radius?:string };
 };
 export type Feedback = {
   id: string;

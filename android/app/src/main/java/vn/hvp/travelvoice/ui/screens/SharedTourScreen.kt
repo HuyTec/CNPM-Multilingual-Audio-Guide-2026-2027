@@ -156,7 +156,7 @@ private fun SharedNarration(guide: ServerGuide, base: String) {
     val context = LocalContext.current.applicationContext; val lifecycle = LocalLifecycleOwner.current.lifecycle
     val scope = rememberCoroutineScope(); var receipt by remember { mutableStateOf("") }
     val narrator = remember(guide.contentId, base, lifecycle) { SharedNarrator(context, lifecycle, guide) { event ->
-        scope.launch { runCatching { PlaybackOutbox.enqueueAndFlush(context, base, event, guide.contentId) }
+        scope.launch { runCatching { PlaybackOutbox.enqueueAndFlush(context, base, event, guide.contentId, guide.offline || !vn.hvp.travelvoice.data.remote.VisitorApi.isOnline(context)) }
             .onFailure { receipt = "Lượt nghe đã lưu, sẽ đồng bộ khi có mạng." } }
     } }
     DisposableEffect(narrator) { onDispose { narrator.close() } }
@@ -186,22 +186,24 @@ private fun SharedNarration(guide: ServerGuide, base: String) {
 }
 
 @Composable
-internal fun SharedOfflineContent(repository: SharedTourRepository) {
+internal fun SharedOfflineContent(repository: SharedTourRepository,
+                                  updates: PackageUpdates = remember(repository) { PackageUpdates(repository) },
+                                  onChanged: () -> Unit = {}, onOpenLocation: (String) -> Unit = {}) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
-    var installed by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }
-    var available by remember(repository) { mutableStateOf<List<JSONObject>>(emptyList()) }
+    val installed = updates.installed
+    val available = updates.available
     var message by remember { mutableStateOf(context.getString(vn.hvp.travelvoice.R.string.q1_package_checking)) }
     var busy by remember { mutableStateOf(false) }
     var confirm by remember { mutableStateOf<JSONObject?>(null) }
     var deleting by remember { mutableStateOf(false) }
     var job by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-    LaunchedEffect(repository) { runCatching { repository.installed() }.onSuccess { installed = it; message = if (it.isEmpty()) context.getString(vn.hvp.travelvoice.R.string.q1_package_none) else context.getString(vn.hvp.travelvoice.R.string.q1_package_ready) }.onFailure { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_error) } }
+    LaunchedEffect(updates) { updates.check(); message = context.getString(if (updates.error) vn.hvp.travelvoice.R.string.q1_package_check_error else vn.hvp.travelvoice.R.string.q1_package_checked) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
         OutlinedButton(enabled = !busy, onClick = { scope.launch {
             busy = true
-            try { available = repository.available(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_checked) }
+            try { updates.check(); message = context.getString(if (updates.error) vn.hvp.travelvoice.R.string.q1_package_check_error else vn.hvp.travelvoice.R.string.q1_package_checked) }
             catch (cancelled: CancellationException) { throw cancelled }
             catch (_: Exception) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_check_error) }
             finally { busy = false }
@@ -210,7 +212,7 @@ internal fun SharedOfflineContent(repository: SharedTourRepository) {
             val current = installed.firstOrNull { it.getJSONObject("manifest").getString("scope") == manifest.getString("scope") }
             val same = current?.getJSONObject("manifest")?.getString("version") == manifest.getString("version")
             Text(if (manifest.getBoolean("isBase")) context.getString(vn.hvp.travelvoice.R.string.q1_package_base) else context.getString(vn.hvp.travelvoice.R.string.q1_package_optional))
-            Text(manifest.getString("version"), style = MaterialTheme.typography.bodySmall)
+            Text(manifest.getString("version").take(24) + "…", style = MaterialTheme.typography.bodySmall)
             Text(if (same) context.getString(vn.hvp.travelvoice.R.string.q1_package_latest) else context.getString(vn.hvp.travelvoice.R.string.q1_package_available))
             if (!same) Button(enabled = !busy, onClick = { confirm = manifest }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_download)) }
         }
@@ -219,18 +221,32 @@ internal fun SharedOfflineContent(repository: SharedTourRepository) {
             Text(if (manifest.getBoolean("isBase")) context.getString(vn.hvp.travelvoice.R.string.q1_package_protected) else context.getString(vn.hvp.travelvoice.R.string.q1_package_installed))
             if (!manifest.getBoolean("isBase")) OutlinedButton(enabled = !busy, onClick = { deleting = true }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_remove)) }
         }
+        var places by remember { mutableStateOf<List<ServerLocation>>(emptyList()) }
+        LaunchedEffect(installed) { places = repository.localLocations() }
+        if (places.isNotEmpty()) Text(context.getString(vn.hvp.travelvoice.R.string.q1_installed_places), style = MaterialTheme.typography.titleMedium)
+        places.forEach { place -> TextButton(onClick = { onOpenLocation(place.id) }) { Text(place.name) } }
         Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_offline_hint))
-        if (busy && job != null) OutlinedButton(onClick = { job?.cancel() }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_cancel)) }
+        if (busy && job != null) {
+            LinearProgressIndicator(Modifier.fillMaxWidth())
+            OutlinedButton(onClick = { job?.cancel() }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_cancel)) }
+            if (vn.hvp.travelvoice.platform.audio.PackagePlaybackGate.busy()) TextButton(onClick = { vn.hvp.travelvoice.platform.audio.TravelPlayback.stop(context) }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_stop_and_install)) }
+        }
     }
     confirm?.let { manifest -> AlertDialog(onDismissRequest = { confirm = null }, title = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm)) },
         text = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_size, manifest.getLong("sizeBytes"))) },
         confirmButton = { TextButton(onClick = { confirm = null; busy = true; job = scope.launch {
-            try { repository.download(manifest) { message = it }; installed = repository.installed(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_downloaded) }
+            try { updates.download(manifest) { message = it }; onChanged(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_downloaded) }
             catch (cancelled: CancellationException) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_cancelled); throw cancelled }
             catch (error: Exception) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_download_error) }
             finally { busy = false; job = null }
         } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm_download)) } }, dismissButton = { TextButton(onClick = { confirm = null }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_cancel)) } }) }
     if (deleting) AlertDialog(onDismissRequest = { deleting = false }, title = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_confirm_remove)) }, text = { Text(context.getString(vn.hvp.travelvoice.R.string.q1_package_remove_hint)) },
-        confirmButton = { TextButton(onClick = { deleting = false; scope.launch { repository.deleteOptional(); installed = repository.installed() } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_delete)) } },
+        confirmButton = { TextButton(onClick = { deleting = false; scope.launch {
+            busy = true
+            try { updates.deleteOptional(); onChanged(); message = context.getString(vn.hvp.travelvoice.R.string.q1_package_removed) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { message = context.getString(vn.hvp.travelvoice.R.string.q1_package_error) }
+            finally { busy = false }
+        } }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_delete)) } },
         dismissButton = { TextButton(onClick = { deleting = false }) { Text(context.getString(vn.hvp.travelvoice.R.string.q1_cancel)) } })
 }

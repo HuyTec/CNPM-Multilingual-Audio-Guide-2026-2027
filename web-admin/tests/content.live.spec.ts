@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import type { Page } from "@playwright/test";
+import type { APIRequestContext, Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
@@ -16,17 +16,19 @@ function recordOwned(id: string) {
   mkdirSync("test-results-content", { recursive: true });
   writeFileSync("test-results-content/owned-ids.json", JSON.stringify(owned));
 }
-const auth = () =>
-  `Basic ${Buffer.from(`${process.env.DEMO_ADMIN_USERNAME || "admin"}:${process.env.DEMO_ADMIN_PASSWORD}`).toString("base64")}`;
+async function auth(request: APIRequestContext) {
+  const result=await request.post("/api/admin/auth/login",{data:{username:process.env.DEMO_EDITOR_USERNAME||"editor",password:process.env.DEMO_EDITOR_PASSWORD||"EditorDemo!2026"}});
+  expect(result.ok()).toBeTruthy();return `Bearer ${(await result.json()).token}`;
+}
 async function login(page: Page) {
   await expect(page.locator('input[name="password"]')).toBeVisible();
   await page
     .locator('input[name="username"]')
-    .fill(process.env.DEMO_ADMIN_USERNAME || "admin");
+    .fill(process.env.DEMO_EDITOR_USERNAME || "editor");
   // An uncontrolled password field is populated without putting the value in action logs.
   await page.locator('input[name="password"]').evaluate((input, password) => {
     (input as HTMLInputElement).value = password;
-  }, process.env.DEMO_ADMIN_PASSWORD!);
+  }, process.env.DEMO_EDITOR_PASSWORD || "EditorDemo!2026");
   await page.getByRole("button", { name: "Đăng nhập", exact: true }).click();
 }
 test("real catalog and all twelve stored variants match the Tourist API", async ({
@@ -84,6 +86,7 @@ test("save incomplete draft, upload actual WAV, submit and reopen persisted serv
   const script =
     "Texte de test sauvegardé dans la base commune, en attente de validation.";
   await page.locator("#script").fill(script);
+  await page.getByText("Audio thu sẵn (tùy chọn)", { exact: true }).click();
   const upload = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&
@@ -111,7 +114,7 @@ test("save incomplete draft, upload actual WAV, submit and reopen persisted serv
   );
   const storedResponse = await request.get(
     `/api/admin/content/locations/${saved.id}`,
-    { headers: { Authorization: auth() } },
+    { headers: { Authorization: await auth(request) } },
   );
   expect(storedResponse.status()).toBe(200);
   const stored = await storedResponse.json();
@@ -148,7 +151,7 @@ test("shared admin session reads actual playback statistics", async ({
   const params = new URL(page.url()).searchParams;
   const response = await request.get(
     `/api/admin/analytics?from=${params.get("from")}&to=${params.get("to")}`,
-    { headers: { Authorization: auth() } },
+    { headers: { Authorization: await auth(request) } },
   );
   expect(response.status()).toBe(200);
   const data = await response.json();

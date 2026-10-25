@@ -42,22 +42,25 @@ public class PlaybackService {
     /** Same event UUID is safe to resend; reuse for a different content revision is rejected. */
     @Transactional
     public PlaybackReceipt record(PlaybackRequest request) {
-        return record(request, null);
-    }
-
-    @Transactional
-    public PlaybackReceipt record(PlaybackRequest request, UUID listener) {
         if (request.eventId() == null || request.contentId() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu eventId hoặc contentId.");
         }
+        if ((request.installationId() == null) != (request.platform() == null))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "installationId và platform phải đi cùng nhau.");
         var existing = playbacks.contentForEvent(request.eventId());
         if (existing.isPresent()) {
             requireSameContent(existing.get(), request.contentId());
             return new PlaybackReceipt(request.eventId(), false);
         }
+        Instant occurredAt = request.occurredAt() == null ? Instant.now() : request.occurredAt();
+        if (occurredAt.isAfter(Instant.now().plusSeconds(300))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thời điểm nghe nằm trong tương lai. Hãy kiểm tra đồng hồ thiết bị.");
+        }
         GuideContent guide = guides.findPublicById(request.contentId()).orElseThrow(() -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Nội dung không khả dụng để ghi nhận lượt nghe."));
-        boolean created = playbacks.insert(request.eventId(), guide, listener);
+        boolean created = playbacks.insert(request.eventId(), guide, occurredAt, Boolean.TRUE.equals(request.offline()));
+        if (created && request.installationId() != null)
+            playbacks.attribute(request.eventId(), request.installationId(), request.platform().name());
         if (!created) requireSameContent(playbacks.contentForEvent(request.eventId()).orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.CONFLICT, "eventId đã được sử dụng.")), request.contentId());
         return new PlaybackReceipt(request.eventId(), created);

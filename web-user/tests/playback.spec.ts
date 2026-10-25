@@ -36,7 +36,7 @@ async function setup(page: Page, options: { language?: string; missingVoice?: bo
   }, { options });
   const receipts: string[] = [];
   await page.route('**/api/**', async route => {
-    if (route.request().method() === 'POST') { receipts.push(route.request().postData()!); return route.fulfill({ json: { created: true } }); }
+    if (route.request().method() === 'POST') { receipts.push(route.request().postData()!); return route.fulfill({ json: { eventId: route.request().postDataJSON().eventId, created: true } }); }
     const query = new URL(route.request().url()).searchParams;
     await route.fulfill({ json: { contentId: '31000000-0000-0000-0000-000000000001', locationId: location,
       locationName: 'Dinh Độc Lập', languageCode: options.language || query.get('language'), scriptType: query.get('scriptType'),
@@ -47,6 +47,22 @@ async function setup(page: Page, options: { language?: string; missingVoice?: bo
 async function speechData(page: Page) {
   return page.evaluate(() => (window as unknown as { testSpeech: { spoken: { text: string; lang: string; rate: number }[]; cancels: number } }).testSpeech);
 }
+
+test('failed playback receipt retries the same eventId without restarting media', async ({ page }) => {
+  await setup(page);
+  const receipts: string[] = [];
+  await page.route('**/api/playbacks', route => {
+    receipts.push(route.request().postData()!);
+    return receipts.length === 1 ? route.fulfill({ status: 503 }) : route.fulfill({ json: { eventId: route.request().postDataJSON().eventId, created: false } });
+  });
+  await page.goto(`/locations/${location}`);
+  await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
+  await page.getByRole('button', { name: 'Gửi lại lượt nghe' }).click();
+  await expect(page.getByRole('button', { name: 'Gửi lại lượt nghe' })).toHaveCount(0);
+  expect(receipts).toHaveLength(2);
+  expect(receipts[1]).toBe(receipts[0]);
+  expect((await speechData(page)).spoken).toHaveLength(1);
+});
 test('TTS starts only on click, preserves exact text chunks, pause/resume/seek/rate do work and count once', async ({ page }) => {
   const receipts = await setup(page);
   await page.goto(`/locations/${location}?language=VI&scriptType=FULL`);

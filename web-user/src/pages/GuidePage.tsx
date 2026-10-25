@@ -4,6 +4,7 @@ import { languageName, languagePattern, supportedLanguages, uuidPattern } from '
 import { GuidePlayer } from '../components/GuidePlayer';
 import type { Selection } from '../lib/guide';
 import { useGuide } from '../lib/useGuide';
+import { PublishedLocationPhoto } from '../components/PublishedLocationPhoto';
 
 function GuideReader({ selection, retry }: { selection: Selection; retry: () => void }) {
   const state = useGuide(selection);
@@ -31,11 +32,12 @@ function GuideReader({ selection, retry }: { selection: Selection; retry: () => 
     <p className="eyebrow">Câu chuyện nơi bạn đến</p>
     <h1 id="location-name">{guide.locationName}</h1>
     <p className="reading-meta">{languageName(guide.languageCode)}<span aria-hidden="true"> / </span>{guide.scriptType === 'FULL' ? 'Bài đầy đủ' : 'Bài ngắn gọn'}</p>
+    <PublishedLocationPhoto id={guide.locationId} name={guide.locationName} />
     {state.offline && <p className="fallback-note" role="status">Đang đọc từ gói offline đã xác minh. Giọng đọc offline còn tùy thiết bị.</p>}
     <p role="status" className={fallback ? 'fallback-note' : 'sr-only'}>{fallback
       ? `Chưa có bản ${languageName(selection.language)} cho lựa chọn này. Đang hiển thị bản ${languageName(guide.languageCode)}; giữ nguyên ${guide.scriptType === 'FULL' ? 'bài đầy đủ' : 'bài ngắn gọn'}.`
       : 'Đã tải bài thuyết minh.'}</p>
-    <GuidePlayer key={guide.contentId} guide={guide} />
+    <GuidePlayer key={guide.contentId} guide={guide} offline={state.offline} />
     <div className="script-text" lang={guide.languageCode.toLowerCase()}>{guide.scriptText}</div>
     <p className="reader-end" aria-hidden="true">— Hết bài thuyết minh —</p>
   </article>;

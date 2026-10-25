@@ -23,22 +23,26 @@ public class PlaybackRepository {
     public PlaybackRepository(NamedParameterJdbcTemplate jdbc) { this.jdbc = jdbc; }
 
     public boolean insert(UUID eventId, GuideContent guide) {
-        return insert(eventId, guide, null);
+        return insert(eventId, guide, Instant.now(), false);
     }
 
-    public boolean insert(UUID eventId, GuideContent guide, UUID listener) {
-        var params = new java.util.HashMap<String,Object>();
-        params.put("id",eventId);params.put("content",guide.contentId());params.put("location",guide.locationId());params.put("language",guide.languageCode());params.put("listener",listener);
+    public boolean insert(UUID eventId, GuideContent guide, Instant occurredAt, boolean offline) {
         return jdbc.update("""
-                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline, listener_id)
-                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', FALSE, :listener)
+                INSERT INTO analytics_events(id, content_id, location_id, language_code, event_type, is_offline, occurred_at)
+                VALUES (:id, :content, :location, :language, 'PLAYBACK_STARTED', :offline, :occurred)
                 ON CONFLICT (id) DO NOTHING
-                """, params) == 1;
+                """, Map.of("id", eventId, "content", guide.contentId(), "location", guide.locationId(), "language", guide.languageCode(),
+                        "offline", offline, "occurred", Timestamp.from(occurredAt))) == 1;
     }
 
     public Optional<UUID> contentForEvent(UUID eventId) {
         return jdbc.query("SELECT content_id FROM analytics_events WHERE id = :id",
                 Map.of("id", eventId), (rs, row) -> rs.getObject(1, UUID.class)).stream().filter(java.util.Objects::nonNull).findFirst();
+    }
+
+    public void attribute(UUID eventId, UUID installationId, String platform) {
+        jdbc.update("UPDATE analytics_events SET installation_id=:installation, client_platform=:platform WHERE id=:id",
+                Map.of("id", eventId, "installation", installationId, "platform", platform));
     }
 
     public long count(Instant start, Instant end, boolean offline) {

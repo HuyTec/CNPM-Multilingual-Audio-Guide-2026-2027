@@ -104,16 +104,16 @@ The term **Tourist Application** denotes both Tourist Web and Android. Presentat
 
 ## **2.2. Out of Scope & Requirements**
 
-* Content approval and publication workflow (UC-06 only saves DRAFT / PENDING\_REVIEW).  
+* EDITOR/REVIEWER approval and verified package publication are in scope under the UC-06 scope decision below.
 * Tourist Application analytics event capture and tourist feedback submission (UC-07 only consumes this data).
-* Admin authentication and account management.  
+* Account-management UI; database authentication and EDITOR/REVIEWER authorization are in scope.
 * Auto-loading guide content or auto-playing audio as part of the notification action. Selecting a notification only opens the Location Details Screen; UC-02 then loads the content through its own trigger.   
 * Turn-by-turn navigation to a location.  
 * User accounts, payments, and social features.
 
 ## **2.3. Actors**
 
-The system has three primary actors. Platform and service dependencies support their interactions as listed below; their responsibilities are detailed in Section 6.4.
+The system includes the REVIEWER actor in addition to the existing primary actors. Platform and service dependencies support their interactions as listed below; their responsibilities are detailed in Section 6.4.
 
 | Actor | Type  | Description | Related UC |
 | :---- | :---- | :---- | :---- |
@@ -125,8 +125,8 @@ The system has three primary actors. Platform and service dependencies support t
 | **Platform Notification** | Platform dependency | Platform dependency. Description: Displays system notifications and opens the Tourist Application using locationId | UC-05 |
 | **Platform Audio & Text-to-Speech** | Platform dependency | Provides audio playback, audio-focus handling, and device TTS fallback. | UC-03 |
 | **Content Server / CDN** | Infrastructure dependency | Supplies APPROVED guide content, audio assets, and content packages. | UC-02, UC-03, UC-04 |
-| **Content Publication Service** | External dependency | Performs review and publication, assigns package versions, and executes ARCHIVED transitions. Content Approver is the external review role within this dependency, not an additional in-scope primary actor or use case | UC-04, UC-06. |
-| **Admin Authentication** | External dependency | Authenticates and authorizes Web Admin users; account management is out of scope. | UC-06, UC-07. |
+| **Content Reviewer (REVIEWER)** | Primary | Reviews pending POIs, compares published content, rejects with comments or approves a durable publication job. | UC-06 |
+| **Admin Authentication** | Internal component | Database accounts, BCrypt hashes, bearer sessions and EDITOR/REVIEWER checks; account-management UI remains out of scope. | UC-06, UC-07 |
 
 # **Naming aliases:** Content Admin/Editor, Content Administrator, and Administrators/Content Editors refer to Content Admin (Editor). System Administrators/Product Owners refers to System Admin / Product Owner. “Admin” in UC-06 means Content Admin (Editor); “Admin” or “Administrator” in UC-07 means System Admin / Product Owner.
 
@@ -404,13 +404,19 @@ Support service and content improvement through basic usage analytics and manage
 
 ## **4.6. USECASE 6: Manage Location Content & Audio Assets**
 
+**Scope decision — 25 October 2026 (supersedes the former external-approval/authentication boundary):** Web Admin has EDITOR and REVIEWER roles authenticated by database accounts with BCrypt password hashes and revocable bearer sessions. EDITOR creates/edits POIs, manually enters names and FULL/SHORT scripts or translates source text to selected configured languages, edits translated text, uploads audio, saves incomplete DRAFTs and submits PENDING_REVIEW. Field provenance is MANUAL, AUTO_TRANSLATED or EDITED_AFTER_TRANSLATE. Coordinates/radius are entered and confirmed manually. Translation does not generate audio; provider failure preserves entered data and manual entry.
+
+Additional scope decision — 25 October 2026: EDITOR uploads a shared POI cover image (JPEG/PNG), previews and saves it with the draft; publication exposes the approved image atomically with the POI. The form explicitly offers manual entry or automatic translation. Client-side TTS reads approved text when no prerecorded audio is supplied; uploading audio remains optional.
+
+REVIEWER compares pending and current public content, approves or rejects with a mandatory rejection comment. States: DRAFT → PENDING_REVIEW → APPROVED or REJECTED; REJECTED can be edited/resubmitted. Approval persists a resumable database publication job. Promotion and verified package publication commit atomically; only then the workspace becomes PUBLISHED. BUILDING/READY/FAILED package versions retain checksum, signature, byte size, timestamps and errors. Failure preserves previous public rows and READY packages and permits retry. Historical content IDs remain available for offline playback receipts. Tourist Web/Android poll the manifest on opening/foreground, reconnection and periodically while active, with ETag/304; users choose downloads and installation waits for playback to end. Push while the app is closed and account-management UI remain outside scope. Older diagrams describing an external approver/authenticator require synchronization with this decision; they do not override it.
+
 | Attributes | Description |  |
 | :---- | :---- | :---- |
 | **UC ID** | UC-06 |  |
 | **UC Name** | **Manage Location Content & Audio Assets** |  |
 | **Type** | Web Admin Dashboard |  |
 | **Goal** | Allow the Content Admin to create or edit location information, multilingual guide content, and the corresponding audio assets, and save them as a draft or submit them for review. |  |
-| **Primary Actor** | Content Admin / Editor |  |
+| **Primary Actor** | Content Admin / EDITOR and Content Reviewer / REVIEWER |  |
 | **Secondary Actor** | None |  |
 | **Precondition** | The Admin is authenticated and authorized to manage content. |  |
 | **Postcondition** | **Success:** the location data, guide content, and audio assets are saved with DRAFT or PENDING\_REVIEW status. When an approved version is edited, the current published version remains available to the Tourist Application while the replacement waits for review. **Otherwise:** nothing is submitted. The Admin remains on the form with the entered data preserved (E1, E2). |  |
@@ -421,15 +427,15 @@ Support service and content improvement through basic usage analytics and manage
 |  | **7\.** The Admin uploads the corresponding audio asset for each language and script type. | **8**. The system validates the file format and stores the audio asset. |
 |  | **9**. The Admin previews the audio and reviews the entered content.  | **10**. The system provides an audio preview and displays the entered data. |
 |  | **11\.** The Admin selects Submit for Review. | **12\.** The system validates all required fields. |
-|  |   | **13\.** If the data is valid, the system saves the content and changes its status to PENDING\_REVIEW. If an approved version exists, the system preserves that published version until the external approval and publication dependency completes. |
+|  |   | **13\.** If the data is valid, the system saves the content and changes its status to PENDING\_REVIEW. If an approved version exists, the system preserves that published version until the internal REVIEWER publication job completes successfully. |
 | **Alternative Paths** | **A1: Save as Draft.** If the content is incomplete, the Admin selects Save Draft instead of Submit for Review. The system saves the data with DRAFT status without requiring all mandatory fields. The content is not available to the Tourist Application. |  |
 |  | **A2: Edit Existing Location.** At step 1, the Admin selects an existing location. The system loads the existing data into the form, and the Admin edits one or more items such as the name, coordinates, guide content, or audio. The Admin may also replace the audio of a single language only; the system then updates that audio asset and preserves all other data. Changes are saved as DRAFT or submitted as PENDING\_REVIEW (steps 11–13, A1), and the published version remains protected (BR4). Content returned with REJECTED status is edited in the same way and then saved as a draft or resubmitted for review. |  |
 | **Exception Paths** | **E1: Invalid Audio File or Upload Failed.** At step 8, if the audio file uses an unsupported format, cannot be processed, or the upload fails, the system rejects the file, displays an error, and preserves the current form data. The Admin selects another file or retries the upload. |  |
 |  | **E2: Missing Required Location Data.** At step 12, if required information such as the location name, category, latitude, longitude, or geofence radius is missing, the system prevents submission and highlights the fields to be completed. The Admin returns to the form. |  |
 | **Extension Points** | N/A |  |
 | **Triggers** | **User-Initiated:** The Admin opens Location Management and chooses to create or edit a location. |  |
-| **Assumptions** | The Web Admin has an Internet connection. The system supports storing guide text and audio assets. The Admin prepares the guide content and audio before or during editing. Supported languages and location categories have already been configured in the system. Approval, publication, and Tourist Application synchronization are handled by the external content publication dependency described above; this use case does not publish content. |  |
-| **Reference: Business Rule** | **BR1 – Required Location Information:** To be submitted for review, each location must contain at least a valid name, category, GPS coordinates, and geofence radius. A DRAFT may be saved with incomplete data. **BR2 – Content Status:** This use case may save content only with DRAFT or PENDING\_REVIEW status. Content becomes available to the Tourist Application only after external approval and publication. **BR3 – Content Mapping:** Each script and audio asset must be associated with at least a locationId, languageCode, scriptType so that UC-02 and UC-03 can identify matching content and audio; the package version is assigned later by the external publication dependency. **BR4 – Approved Content Protection:** Editing previously approved content must not remove the version currently available to the Tourist Application until the replacement has been approved and published. |  |
+| **Assumptions** | The Web Admin has an Internet connection. The system supports storing guide text and audio assets. The Admin prepares the guide content and audio before or during editing. Supported languages and location categories have already been configured in the system. REVIEWER approval and verified package publication are included in this use case under the scope decision above. |  |
+| **Reference: Business Rule** | **BR1 – Required Location Information:** To be submitted for review, each location must contain at least a valid name, category, GPS coordinates, and geofence radius. A DRAFT may be saved with incomplete data. **BR2 – Content Status:** EDITOR saves DRAFT/PENDING_REVIEW; REVIEWER decides APPROVED/REJECTED, and successful package publication assigns PUBLISHED. Public content remains APPROVED for backward API compatibility. **BR3 – Content Mapping:** Each script and audio asset must be associated with at least a locationId, languageCode, scriptType so that UC-02 and UC-03 can identify matching content and audio; the package version is assigned later by the external publication dependency. **BR4 – Approved Content Protection:** Editing previously approved content must not remove the version currently available to the Tourist Application until the replacement has been approved and published. |  |
 | **Author(s)** |   |  |
 | **Date** |   |  |
 | **Activities Diagram** | See UC06\_activity.drawio |  |

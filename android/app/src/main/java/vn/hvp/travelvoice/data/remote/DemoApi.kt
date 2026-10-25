@@ -13,7 +13,8 @@ import java.util.concurrent.TimeUnit
 data class ServerLocation(val id: String, val name: String, val latitude: Double? = null,
                           val longitude: Double? = null, val category: String = "", val categoryId: String = "")
 data class ServerGuide(val contentId: String, val locationName: String, val languageCode: String,
-                       val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "")
+                       val scriptType: String, val scriptText: String, val audioUrl: String?, val locationId: String = "",
+                       val offline: Boolean = false)
 class GuideApiException(val status: Int, message: String) : IllegalStateException(message)
 
 object DemoApi {
@@ -22,18 +23,21 @@ object DemoApi {
 
     fun normalizeBaseUrl(value: String): String {
         val uri = URI(value.trim())
-        require(uri.scheme in listOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null && uri.query == null && uri.fragment == null) {
+        require(uri.scheme in listOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null && uri.query == null && uri.fragment == null
+            && (uri.rawPath.isNullOrEmpty() || uri.rawPath == "/")) {
             "Nhập địa chỉ http:// hoặc https:// hợp lệ, không chứa tài khoản hay query."
         }
         return value.trim().trimEnd('/') + "/"
     }
 
-    suspend fun locations(base: String): List<ServerLocation> = withContext(Dispatchers.IO) {
+    suspend fun locations(base: String, language: String = "VI"): List<ServerLocation> = withContext(Dispatchers.IO) {
         val result = mutableListOf<ServerLocation>(); var page = 0
         do {
             val data = json(Request.Builder().url(base + "api/locations?size=50&page=$page").build())
             val array = data.getJSONArray("items")
-            repeat(array.length()) { i -> array.getJSONObject(i).let { result.add(ServerLocation(it.getString("locationId"), it.getString("name"),
+            repeat(array.length()) { i -> array.getJSONObject(i).let { result.add(ServerLocation(it.getString("locationId"),
+                it.optJSONObject("names")?.optString(language.lowercase())?.takeIf(String::isNotBlank)
+                    ?: it.optJSONObject("names")?.optString("vi")?.takeIf(String::isNotBlank) ?: it.getString("name"),
                 it.optDouble("latitude").takeIf(Double::isFinite), it.optDouble("longitude").takeIf(Double::isFinite),
                 it.optString("categoryName"), it.optString("categoryId"))) } }
             page++
@@ -56,12 +60,15 @@ object DemoApi {
             data.getString("scriptType"), data.getString("scriptText"), audio, data.getString("locationId"))
     }
 
-    suspend fun playback(base: String, eventId: String, contentId: String, identity: JSONObject? = null) = withContext(Dispatchers.IO) {
-        val payload = JSONObject().put("eventId", eventId).put("contentId", contentId).toString()
+    suspend fun playback(base: String, eventId: String, contentId: String, identity: JSONObject? = null,
+                         occurredAt: String? = null, offline: Boolean = false) = withContext(Dispatchers.IO) {
+        val payload = JSONObject().put("eventId", eventId).put("contentId", contentId).put("offline", offline)
+        occurredAt?.let { payload.put("occurredAt", it) }
+        identity?.optString("installation")?.takeIf { runCatching { java.util.UUID.fromString(it) }.isSuccess }
+            ?.let { payload.put("installationId", it).put("platform", "ANDROID") }
         val builder = Request.Builder().url(base + "api/playbacks")
         identity?.optString("installation")?.takeIf { it.isNotBlank() }?.let { builder.header("X-Installation-Key",it) }
-        identity?.optString("token")?.takeIf { it.isNotBlank() }?.let { builder.header("Authorization","Bearer $it") }
-        json(builder.post(payload.toRequestBody("application/json".toMediaType())).build())
+        json(builder.post(payload.toString().toRequestBody("application/json".toMediaType())).build())
         Unit
     }
 

@@ -1,0 +1,2 @@
+# VPS scripts must keep Unix line endings when checked out from Windows.
+deploy/vps/*.sh text eol=lf

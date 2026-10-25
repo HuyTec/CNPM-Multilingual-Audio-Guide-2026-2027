@@ -1,10 +1,11 @@
 import type { Feedback } from "../mocks/data";
+export type ExportFeedback = Omit<Feedback, "rating"> & { rating: number | null };
 /** Create a real workbook for the supplied period, including every feedback row in that period. */
 export async function exportReport(
   from: string,
   to: string,
   metrics: [string, string | number][],
-  feedback: Feedback[],
+  feedback: ExportFeedback[],
   source = "Dữ liệu giả lập",
 ) {
   const { Workbook } = await import("exceljs");

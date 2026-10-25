@@ -30,11 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("demo")
 @EnabledIfEnvironmentVariable(named = "TEST_DATABASE_URL", matches = "jdbc:postgresql:.*")
 @Transactional
-@org.springframework.test.context.jdbc.Sql("/restore-discovery-fixtures.sql")
 class PlaybackIntegrationTest {
     private static final String LOCATION = "20000000-0000-0000-0000-000000000001";
     private static final String CONTENT = "30000000-0000-0000-0000-000000000001";
-    private static final String AUTH = "Basic " + Base64.getEncoder().encodeToString("test-admin:test-only-password".getBytes(StandardCharsets.UTF_8));
+    private String AUTH;
+    @Autowired com.application.service.AdminAuthService authService;
+    @org.junit.jupiter.api.BeforeEach void authenticate() {
+        AUTH="Bearer "+authService.login(new com.application.dto.AdminAuthDto.Login("editor","EditorDemo!2026")).token();
+    }
     @Autowired MockMvc mvc;
     @Autowired JdbcTemplate jdbc;
 
@@ -67,6 +70,20 @@ class PlaybackIntegrationTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(false));
         assertThat(jdbc.queryForObject("SELECT count(*) FROM analytics_events WHERE id=?", Long.class, event)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT language_code FROM analytics_events WHERE id=?", String.class, event)).isEqualTo("VI");
+    }
+
+    @Test void offlineSyncPreservesOriginalReportingDayAndDeduplicates() throws Exception {
+        UUID event = UUID.randomUUID();
+        String time = "2026-01-01T10:00:00Z";
+        String json = body(event, CONTENT).replace("}", ",\"occurredAt\":\"" + time + "\",\"offline\":true}");
+        mvc.perform(post("/api/playbacks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(true));
+        mvc.perform(post("/api/playbacks").contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.created").value(false));
+        assertThat(jdbc.queryForObject("SELECT occurred_at FROM analytics_events WHERE id=?", Timestamp.class, event).toInstant()).isEqualTo(Instant.parse(time));
+        assertThat(jdbc.queryForObject("SELECT is_offline FROM analytics_events WHERE id=?", Boolean.class, event)).isTrue();
+        mvc.perform(get("/api/admin/analytics").header(HttpHeaders.AUTHORIZATION, AUTH).param("from", "2026-01-01").param("to", "2026-01-01"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.offlinePlaybacks").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
     }
 
     @Test void replayIsANewEventButReusingIdForOtherContentIsAConflict() throws Exception {

@@ -1,86 +1,103 @@
-# Backend — Spring Boot / PostgreSQL / PostGIS
+# Backend
 
-Source: `multi-audio-guide/`, Java 21, Spring Boot 4.1.1, Spring JDBC và Flyway. Android/Web gọi HTTP; backend không dùng JPA/Redis/JWT trong snapshot này.
+**Luồng nghe/thống kê thật:** profile `demo` có SHORT guide, WAV tiếng Việt, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. V3/V3.1 bổ sung liên kết revision/sự kiện và seed ba bài ngắn, không seed lượt nghe. Xem [LIVE_DEMO_SETUP](../docs/vi/LIVE_DEMO_SETUP.md).
 
-Hợp đồng HTTP, từng file, schema, luồng Android và finding review tập trung tại [Review Backend và Android](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md). Yêu cầu: [PRD EN](../docs/en/PRD_Report.md).
+Spring Boot API cho nội dung hướng dẫn, quy trình duyệt và quản trị. Mã nguồn ở `multi-audio-guide/`, dùng Java 21, Spring Boot 4.1.1 và Maven Wrapper 3.3.4 (Maven 3.9.9).
 
-## Chạy bằng Docker Compose
+## Cài đặt và chạy trên Windows
 
-Cần Docker Desktop đang chạy. Từ repository root, sao chép `.env.example` thành `.env` và đặt POSTGRES_PASSWORD local. Để Android dùng đủ playback, package và Admin workspace, thêm vào file env ignored:
-
-```dotenv
-SPRING_PROFILES_ACTIVE=demo
-DEMO_ADMIN_USERNAME=admin
-DEMO_ADMIN_PASSWORD=<mat_khau_admin_local>
-```
+Cài JDK 21 (nếu máy có `winget`):
 
 ```powershell
-docker compose up -d --build backend postgres
-docker compose ps
-Invoke-RestMethod 'http://localhost:8080/actuator/health'
+winget install --id EclipseAdoptium.Temurin.21.JDK -e
+java -version
+javac -version
 ```
 
-Backend mặc định bind loopback cổng 8080; DB `audio_guide` chỉ ở mạng Compose `postgres:5432`. Android Emulator gọi `http://10.0.2.2:8080/`. Web Admin có thể chạy thêm qua `docker compose up -d --build web-admin` (cổng 3000).
+Mở lại PowerShell sau khi cài; `java` và `javac` phải hiển thị phiên bản 21. Đặt `JAVA_HOME` trỏ tới JDK 21 nếu máy có nhiều phiên bản Java.
 
-Profile default chỉ có catalog/guide và tourist identity, không có playback/package/Admin content controller. Profile demo thêm fixture và các controller đó. Chi tiết [bảng profile và API](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Không đổi profile trên volume đã có demo history để giả lập DB production sạch.
-
-Thiết lập Docker, migration/backup/volume: [DOCKER_SETUP](../docs/vi/DOCKER_SETUP.md). Script legacy 8081/3001 được giải thích riêng trong [LIVE_DEMO_SETUP](../docs/vi/LIVE_DEMO_SETUP.md).
-
-## Build và test trên Windows
-
-Cài JDK 21; Maven Wrapper sẽ tải Maven 3.9.9 khi cần. Từ module backend:
+Mở PowerShell tại thư mục gốc repository, rồi chạy:
 
 ```powershell
-cd backend/multi-audio-guide
-$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11'
+cd .\backend\multi-audio-guide
 .\mvnw.cmd --version
+.\mvnw.cmd test
+.\mvnw.cmd package
+```
+
+`test` tải dependency và chạy các test hiện có; `package` tạo JAR trong `target/`. Không cần cài Maven toàn hệ thống: Maven Wrapper tự tải Maven 3.9.9 vào cache người dùng trong lần đầu. Lần chạy đầu cần kết nối Maven Central.
+
+## Chạy backend với PostgreSQL
+
+Dùng [Docker Compose](../docs/vi/DOCKER_SETUP.md) tại thư mục gốc: sao chép `.env.example` thành `.env`, đặt mật khẩu local, rồi chạy `docker compose up -d --build`. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Xem thêm [quy ước dùng chung](../GUILD.md).
+
+Nếu chạy `spring-boot:run` ngoài Docker, phải có database truy cập được từ máy host và tự đặt `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` phù hợp. Tên host `postgres` chỉ dùng trong mạng Compose.
+
+## Flyway và schema demo
+
+Flyway tự chạy migration khi backend khởi động, dùng cùng datasource PostgreSQL. Migration đầu tiên là [`V1__demo.sql`](multi-audio-guide/src/main/resources/db/migration/V1__demo.sql); tên có **hai dấu gạch dưới** giữa phiên bản và mô tả.
+
+Migration tạo 9 bảng theo trang **Database** của [`SE.drawio (1).xml`](../docs/en/SE.drawio%20%281%29.xml): `categories`, `languages`, `locations`, `guide_content_revisions`, `audio_assets`, `content_packages`, `content_package_items`, `feedbacks`, `analytics_events`. Đây là schema demo vật lý trong sơ đồ, chưa phải mô hình PRD hoàn chỉnh; không chèn dữ liệu mẫu. Thông tin địa điểm và script text cho phép thiếu khi lưu DRAFT; các trường bắt buộc phải được kiểm tra khi gửi duyệt.
+
+`locations.coordinates` dùng PostGIS `GEOGRAPHY(Point,4326)` và GiST index. Compose dùng PostgreSQL 17 kèm PostGIS (`postgis/postgis:17-3.6-alpine`); nếu dùng PostgreSQL ngoài Docker, cần cài PostGIS và cấp quyền tạo extension cho tài khoản chạy migration, hoặc nhờ quản trị viên bật extension trước.
+
+Sau khi chuẩn bị `.env` theo hướng dẫn ở trên, chạy từ thư mục gốc:
+
+```powershell
+docker compose up -d --build
+docker compose logs --tail 100 backend
+docker compose exec postgres psql -U audio_guide -d audio_guide -c 'SELECT version, description, success FROM flyway_schema_history ORDER BY installed_rank;'
+```
+
+Kết quả mong đợi: có phiên bản `1` (`demo`) và `2` (`location discovery`), `success = t`; profile demo có thêm `2.1` (`seed discovery demo`); luồng lượt nghe bổ sung `3` (`playback content reference`) và demo `3.1` (`seed short guides`). Không sửa migration sau khi đã áp dụng; tạo phiên bản tiếp theo để thay đổi schema. Với DB đã có bảng ứng dụng nhưng chưa có lịch sử Flyway, cần đối chiếu schema trước khi baseline; không tự bật `baseline-on-migrate` để bỏ qua V1.
+
+## Chạy demo US-02 và US-03
+
+Luồng xử lý: `LocationController -> LocationDiscoveryService -> LocationRepository / CategoryRepository -> PostgreSQL`. Model giữ dữ liệu truy vấn, Mapper chuyển sang DTO trả về. Backend dùng JDBC hiện có, không cần thêm JPA.
+
+| API | Mục đích |
+| --- | --- |
+| `GET /api/categories` | Danh mục đang hoạt động, kèm số địa điểm APPROVED; có cả danh mục rỗng |
+| `GET /api/locations?keyword=...&categoryId=...&page=0&size=20` | Tìm tên và/hoặc lọc danh mục, không cần GPS |
+| `GET /api/locations/{locationId}` | Lấy đúng thông tin địa điểm đã chọn; chưa tải script/audio |
+
+`keyword` được bỏ khoảng trắng đầu/cuối, tối đa 255 ký tự; tìm literal không phân biệt hoa/thường, vẫn phân biệt dấu. Thứ tự: tên khớp hoàn toàn, tiền tố, chứa từ khóa; sau đó tên và UUID để phân trang ổn định. `page` bắt đầu từ 0; `size` từ 1 đến 50. Từ khóa trống trả danh sách công khai. Đây là quy ước demo; các điểm cần chốt cho sản phẩm được ghi tại Jira HVP-1.
+
+Response danh sách có `items`, `page`, `size`, `totalElements`, `totalPages`, `message`, `suggestedCategories`. Không khớp trả HTTP 200, `items=[]`, thông báo và các danh mục khác đang có dữ liệu; không tự suy đoán địa điểm phổ biến. Danh mục/địa điểm không tồn tại hoặc không công khai trả 404; tham số sai trả 400; lỗi truy cập DB trả 503 với thông báo thử lại. Các lỗi có dạng Problem Details (`status`, `title`, `detail`).
+
+V2 thêm `locations.status`, mặc định DRAFT cho dữ liệu cũ; chỉ APPROVED thuộc danh mục đang bật được công khai. Profile `demo` nạp thêm migration `V2_1__seed_discovery_demo.sql` chứa địa điểm **hư cấu**, gồm danh mục có/rỗng, DRAFT, PENDING_REVIEW và danh mục đã tắt. Dùng database riêng cho demo và giữ profile demo khi dùng lại database đó, vì lịch sử Flyway có các migration demo 2.1/3.1. Profile mặc định chạy V1/V2/V3 và không nạp fixtures.
+
+Chạy từ thư mục gốc, sau khi chuẩn bị mật khẩu local theo hướng dẫn Docker:
+
+```powershell
+$env:SPRING_PROFILES_ACTIVE = 'demo'
+docker compose -p hvp-us02-demo up -d --build
+```
+
+Tên project `hvp-us02-demo` tạo volume riêng. Demo dùng các cổng 8080/3000 như Compose hiện có. Gọi thử trong PowerShell:
+
+```powershell
+Invoke-RestMethod 'http://localhost:8080/api/categories'
+$keyword = [uri]::EscapeDataString('Bảo tàng')
+Invoke-RestMethod "http://localhost:8080/api/locations?keyword=$keyword"
+Invoke-RestMethod 'http://localhost:8080/api/locations?categoryId=10000000-0000-0000-0000-000000000003'
+Invoke-RestMethod 'http://localhost:8080/api/locations/20000000-0000-0000-0000-000000000001'
+```
+
+Public discovery giữ trường name tương thích và bổ sung names đa ngôn ngữ. Editor UC-06 có names theo ngôn ngữ trong workspace JSONB và bảng location_translations cho dữ liệu published; sửa nháp không thay dữ liệu đang phục vụ. Offline package, phân lớp và API phản hồi hiện tại được mô tả trong [DEMO_CODE_GUIDE.md](../docs/guide/DEMO_CODE_GUIDE.md). Không dùng snapshot mô tả demo cũ để kết luận các luồng mới chưa có.
+
+### Kiểm thử
+
+`mvnw.cmd verify` chạy kiểm thử HTTP/service với repository giả lập. Integration test đi qua HTTP, service, JDBC và Flyway thật khi có `TEST_DATABASE_URL`; nếu thiếu biến này, nhóm integration được báo skipped. CI backend đã cấu hình PostGIS riêng để chạy cả hai nhóm; cần xem lần chạy GitHub Actions thực tế để xác nhận CI.
+
+Để chạy integration test local, trỏ các biến sau tới **database PostgreSQL/PostGIS kiểm thử riêng** (test sẽ áp dụng V1/V2/V3 và fixtures demo):
+
+```powershell
+$env:TEST_DATABASE_URL = 'jdbc:postgresql://localhost:5432/discovery_test'
+$env:TEST_DATABASE_USERNAME = 'audio_guide'
+$env:TEST_DATABASE_PASSWORD = 'mat_khau_database_kiem_thu'
+cd .\backend\multi-audio-guide
 .\mvnw.cmd -B -ntp verify
 ```
 
-JAR tại `target/multi-audio-guide-0.0.1-SNAPSHOT.jar`. Nếu dùng `spring-boot:run` ngoài Docker, phải tự cung cấp SPRING_DATASOURCE_URL/USERNAME/PASSWORD tới PostgreSQL/PostGIS truy cập được từ máy host; tên `postgres` của Compose không phải hostname dùng ngoài mạng container.
-
-Integration test chỉ chạy khi TEST_DATABASE_URL có giá trị jdbc:postgresql. Dùng **database kiểm thử riêng**, vì Flyway cài schema/fixture và test có UPDATE/DELETE trong transaction:
-
-```powershell
-$env:TEST_DATABASE_URL = 'jdbc:postgresql://localhost:5432/audio_guide_test'
-$env:TEST_DATABASE_USERNAME = '<test user>'
-$env:TEST_DATABASE_PASSWORD = '<test password>'
-.\mvnw.cmd -B -ntp verify
-```
-
-Thiếu biến DB, các integration test bị skipped; controller/service test mock không chứng minh SQL/runtime. CI cấu hình PostGIS riêng tại [ci.yml](../.github/workflows/ci.yml); kết quả GitHub Actions cần xem từng run.
-
-## Kiểm tra nội dung
-
-Profile demo hiện có 7 địa điểm / 84 scripts / 6 ngôn ngữ, không có audio thu sẵn cho 7 điểm. Sáu địa điểm hư cấu trước đây được ARCHIVED ở V4.1; không dùng museum fixture cũ làm ví dụ API public hiện hành.
-
-```powershell
-Invoke-RestMethod 'http://localhost:8080/api/locations?size=50'
-Invoke-RestMethod 'http://localhost:8080/api/locations/20000000-0000-0000-0000-000000000101/guide?language=VI&scriptType=FULL'
-# Từ backend/multi-audio-guide:
-node scripts/generate-tour-fixture.mjs --check
-```
-
-Không sửa migration đã chạy. `--check` chỉ đối chiếu source content với V3_3; script không ghi lại migration khi có cờ đó. Đọc [danh sách SQL và script](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#database).
-
-<a id="gmail-otp"></a>
-
-## Gmail OTP
-
-Tourist dùng được khi chưa login. OTP là tùy chọn; mật khẩu Gmail chỉ được cấu hình ở server, không đưa vào APK/source.
-
-Trong file env Compose đã được ignore, thêm GMAIL_USERNAME là địa chỉ gửi và GMAIL_APP_PASSWORD là App Password. Có thể dùng SMTP_HOST/SMTP_PORT nếu cấu hình SMTP khác; Compose mặc định smtp.gmail.com:587, bắt buộc STARTTLS và authentication. TOURIST_MAIL_FROM lấy từ GMAIL_USERNAME. Không thay bằng mật khẩu đăng nhập Google thông thường.
-
-Sau khi điền env, dùng đúng file env/project/volume đang vận hành để rebuild backend, ví dụ stack mặc định:
-
-```powershell
-docker compose --env-file .env up -d --build backend
-```
-
-Nếu dùng các file ignored `.env.demo.local` và `.env.admin.local` đã có, tiếp tục dùng đúng thứ tự các env-file cùng project/port của stack đó; không tạo stack khác rồi nhầm dữ liệu. Khi mailer/from chưa có hoặc gửi mail lỗi, OTP trả 503 và app vẫn dùng với tư cách khách. Automated auth tests mock mail transport; nhận Gmail thật cần kiểm tra riêng bằng tài khoản đã cấu hình.
-
-API identity và quy tắc rate-limit/token/outbox: [review mục 3.5 và 4.5](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#api). Admin Basic Auth dùng DEMO_ADMIN_* riêng; tourist bearer token không có quyền Admin.
-
-## Giới hạn triển khai
-
-Workspace chỉ lưu DRAFT/PENDING_REVIEW; chưa có approve/publish API. Package dùng khóa ký theo tiến trình và snapshot động. Feedback backend chưa có API; offline playback metadata cần bổ sung để báo cáo đúng ngày/online-offline. Các giới hạn và vị trí code được ghi trong [finding review](../docs/vi/BACKEND_ANDROID_CODE_REVIEW.md#findings).
+Các thay đổi dữ liệu trong từng test được rollback; schema và fixtures Flyway vẫn còn để chạy lại. Bộ integration kiểm tra tìm kiếm, danh mục rỗng, phân trang, tọa độ, ẩn dữ liệu chưa duyệt, ký tự LIKE/SQL và việc migration không chạy lặp.

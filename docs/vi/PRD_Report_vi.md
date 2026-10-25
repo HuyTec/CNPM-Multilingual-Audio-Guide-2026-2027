@@ -107,16 +107,16 @@ Thuật ngữ **Ứng dụng du khách (Tourist Application)** bao gồm Web du 
 
 ## **2.2. Ngoài phạm vi**
 
-* Quy trình phê duyệt và xuất bản nội dung (UC-06 chỉ lưu DRAFT / PENDING_REVIEW).
+* Duyệt/xuất bản theo vai trò EDITOR/REVIEWER nay thuộc UC-06, theo quyết định phạm vi ngày 25/10/2026.
 * Thu thập sự kiện phân tích và gửi phản hồi từ ứng dụng du khách (UC-07 chỉ sử dụng dữ liệu này).
-* Xác thực quản trị viên và quản lý tài khoản.
+* UI quản lý tài khoản; xác thực DB và phân quyền EDITOR/REVIEWER nay nằm trong phạm vi.
 * Tự tải nội dung hướng dẫn hoặc tự phát âm thanh như một phần của thao tác thông báo. Chọn thông báo chỉ mở màn hình Chi tiết địa điểm; sau đó UC-02 tải nội dung bằng trigger riêng.
 * Chỉ đường từng chặng đến địa điểm.
 * Tài khoản người dùng, thanh toán và tính năng mạng xã hội.
 
 ## **2.3. Tác nhân**
 
-Hệ thống có ba tác nhân chính. Các phụ thuộc nền tảng và dịch vụ hỗ trợ tương tác như bảng dưới; trách nhiệm được mô tả chi tiết tại mục 6.4.
+Hệ thống bổ sung REVIEWER bên cạnh các tác nhân chính hiện có. Các phụ thuộc nền tảng và dịch vụ hỗ trợ tương tác như bảng dưới; trách nhiệm được mô tả chi tiết tại mục 6.4.
 
 | Tác nhân | Loại | Mô tả | UC liên quan |
 | :---- | :---- | :---- | :---- |
@@ -128,8 +128,8 @@ Hệ thống có ba tác nhân chính. Các phụ thuộc nền tảng và dịc
 | **Thông báo nền tảng (Platform Notification)** | Phụ thuộc nền tảng | Hiển thị thông báo hệ thống và mở ứng dụng du khách bằng locationId. | UC-05 |
 | **Âm thanh và TTS của nền tảng (Platform Audio & Text-to-Speech)** | Phụ thuộc nền tảng | Cung cấp phát âm thanh, xử lý quyền ưu tiên âm thanh (audio focus) và TTS dự phòng trên thiết bị. | UC-03 |
 | **Máy chủ nội dung / CDN (Content Server / CDN)** | Phụ thuộc hạ tầng | Cung cấp nội dung hướng dẫn APPROVED, tài nguyên âm thanh và các gói nội dung. | UC-02, UC-03, UC-04 |
-| **Dịch vụ xuất bản nội dung (Content Publication Service)** | Phụ thuộc bên ngoài | Thực hiện duyệt và xuất bản, cấp phiên bản gói và chuyển trạng thái ARCHIVED. Content Approver là vai trò duyệt bên ngoài thuộc phụ thuộc này, không phải tác nhân chính hay use case bổ sung trong phạm vi. | UC-04, UC-06 |
-| **Xác thực quản trị viên (Admin Authentication)** | Phụ thuộc bên ngoài | Xác thực và phân quyền người dùng Web Admin; quản lý tài khoản nằm ngoài phạm vi. | UC-06, UC-07 |
+| **Người duyệt nội dung (REVIEWER)** | Chính | So sánh bản chờ duyệt với bản công khai; từ chối kèm nhận xét hoặc chấp thuận tác vụ xuất bản gói đã xác minh. | UC-06 |
+| **Xác thực quản trị viên (Admin Authentication)** | Thành phần nội bộ | Tài khoản DB, BCrypt, phiên bearer và kiểm quyền EDITOR/REVIEWER; UI quản lý tài khoản ngoài phạm vi. | UC-06, UC-07 |
 
 **Tên gọi tương đương:** Content Admin/Editor, Content Administrator và Administrators/Content Editors đều chỉ Quản trị viên nội dung (Content Admin / Editor). System Administrators/Product Owners chỉ Quản trị viên hệ thống/Chủ sản phẩm. “Admin” trong UC-06 là Quản trị viên nội dung; “Admin” hoặc “Administrator” trong UC-07 là Quản trị viên hệ thống/Chủ sản phẩm.
 
@@ -407,13 +407,19 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 
 ## **4.6. USE CASE 6: Quản lý nội dung địa điểm và tài nguyên âm thanh**
 
+**Bổ sung theo yêu cầu người dùng ngày 25/10/2026:** EDITOR tải ảnh đại diện POI JPEG/PNG, xem trước và lưu cùng bản nháp; ảnh chỉ công khai cùng POI sau khi duyệt. Form có hai lựa chọn nhập thủ công / dịch tự động rõ ràng, giữ dữ liệu khi chuyển cách nhập. Web/Android dùng TTS đọc nội dung khi không có audio thu sẵn; tải audio lên là tùy chọn.
+
+**Quyết định phạm vi ngày 25/10/2026 — thay thế ranh giới duyệt/xuất bản và xác thực bên ngoài trước đây:** Web Admin có EDITOR và REVIEWER, xác thực tài khoản trong DB bằng mật khẩu băm BCrypt và phiên bearer có thể thu hồi. EDITOR tạo/sửa POI, nhập tay hoặc dịch tên và kịch bản FULL/SHORT từ một ngôn ngữ nguồn sang các ngôn ngữ được cấu hình; mọi ô đều sửa tay được. Mỗi trường có nguồn MANUAL, AUTO_TRANSLATED hoặc EDITED_AFTER_TRANSLATE. Tọa độ/bán kính do người biên tập xác nhận; dịch không sinh audio, audio upload thủ công. Lỗi dịch giữ dữ liệu và không chặn nhập tay.
+
+Luồng: DRAFT → PENDING_REVIEW → APPROVED hoặc REJECTED; REJECTED sửa rồi gửi lại. REVIEWER so sánh với bản công khai, chấp thuận hoặc từ chối kèm nhận xét bắt buộc. Chấp thuận lưu tác vụ bền trong PostgreSQL; chuyển dữ liệu công khai và công bố gói đã xác minh trong cùng transaction. Bản biên tập chỉ thành PUBLISHED sau thành công. Gói BUILDING/READY/FAILED lưu checksum, chữ ký, kích thước, thời gian và lỗi; lỗi giữ dữ liệu/gói READY cũ và cho thử lại. Giữ contentId của phiên bản cũ để nhận lượt nghe offline. Web/Android polling khi mở/foreground, có mạng lại và định kỳ khi hoạt động, hỗ trợ ETag/304; người dùng chọn tải, chỉ thay gói sau lượt nghe. Push khi đóng app và UI quản lý tài khoản ngoài phạm vi. Sơ đồ cũ mô tả phụ thuộc duyệt/xác thực bên ngoài cần đồng bộ theo quyết định này, không được dùng để ghi đè quyết định mới.
+
 | Thuộc tính | Mô tả | |
 | :---- | :---- | :---- |
 | **Mã UC** | UC-06 | |
 | **Tên UC** | **Quản lý nội dung địa điểm và tài nguyên âm thanh** | |
 | **Loại** | Web Admin Dashboard | |
 | **Mục tiêu** | Cho phép Quản trị viên nội dung tạo hoặc chỉnh sửa thông tin địa điểm, nội dung hướng dẫn đa ngôn ngữ và tài nguyên âm thanh tương ứng, rồi lưu nháp hoặc gửi duyệt. | |
-| **Tác nhân chính** | Quản trị viên nội dung / Biên tập viên (Content Admin / Editor) | |
+| **Tác nhân chính** | EDITOR (biên tập) và REVIEWER (duyệt/xuất bản) | |
 | **Tác nhân phụ** | Không có | |
 | **Tiền điều kiện** | Quản trị viên đã được xác thực và được phân quyền quản lý nội dung. | |
 | **Hậu điều kiện** | **Thành công:** Dữ liệu địa điểm, nội dung hướng dẫn và tài nguyên âm thanh được lưu với trạng thái DRAFT hoặc PENDING_REVIEW. Khi chỉnh sửa phiên bản đã được phê duyệt, bản đang xuất bản vẫn sẵn có cho ứng dụng du khách trong khi bản thay thế chờ duyệt. **Trường hợp khác:** Không gửi dữ liệu. Quản trị viên vẫn ở biểu mẫu và dữ liệu đã nhập được giữ nguyên (E1, E2). | |
@@ -424,15 +430,15 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **7.** Quản trị viên tải lên tài nguyên âm thanh tương ứng cho từng ngôn ngữ và loại kịch bản. | **8.** Hệ thống kiểm tra định dạng và lưu tài nguyên âm thanh. |
 | | **9.** Quản trị viên nghe thử âm thanh và rà soát nội dung đã nhập. | **10.** Hệ thống cung cấp phần nghe thử và hiển thị dữ liệu đã nhập. |
 | | **11.** Quản trị viên chọn Gửi duyệt (Submit for Review). | **12.** Hệ thống kiểm tra tất cả trường bắt buộc. |
-| | | **13.** Nếu dữ liệu hợp lệ, hệ thống lưu nội dung và chuyển sang PENDING_REVIEW. Nếu có bản đã được phê duyệt, hệ thống giữ bản đang xuất bản cho đến khi phụ thuộc phê duyệt và xuất bản bên ngoài hoàn tất. |
+| | | **13.** Nếu dữ liệu hợp lệ, hệ thống lưu nội dung và chuyển sang PENDING_REVIEW. Nếu có bản đã được phê duyệt, hệ thống giữ bản đang xuất bản cho đến khi tác vụ xuất bản do REVIEWER chấp thuận hoàn tất thành công. |
 | **Luồng thay thế** | **A1: Lưu nháp.** Nếu nội dung chưa hoàn chỉnh, quản trị viên chọn Lưu nháp (Save Draft) thay cho Gửi duyệt. Hệ thống lưu DRAFT mà không yêu cầu điền đủ các trường bắt buộc. Nội dung không được cung cấp cho ứng dụng du khách. | |
 | | **A2: Sửa địa điểm hiện có.** Tại bước 1, quản trị viên chọn địa điểm hiện có. Hệ thống tải dữ liệu vào biểu mẫu; quản trị viên sửa một hoặc nhiều mục như tên, tọa độ, nội dung hướng dẫn hoặc âm thanh. Có thể chỉ thay âm thanh của một ngôn ngữ; khi đó hệ thống cập nhật tài nguyên đó và giữ nguyên dữ liệu khác. Thay đổi được lưu DRAFT hoặc gửi PENDING_REVIEW (bước 11–13, A1), đồng thời bảo vệ bản đang xuất bản (BR4). Nội dung được trả về với trạng thái REJECTED được chỉnh sửa tương tự, rồi lưu nháp hoặc gửi duyệt lại. | |
 | **Luồng ngoại lệ** | **E1: Tệp âm thanh không hợp lệ hoặc tải lên thất bại.** Tại bước 8, nếu định dạng không được hỗ trợ, tệp không xử lý được hoặc tải lên lỗi, hệ thống từ chối tệp, hiển thị lỗi và giữ nguyên dữ liệu biểu mẫu. Quản trị viên chọn tệp khác hoặc thử tải lại. | |
 | | **E2: Thiếu dữ liệu địa điểm bắt buộc.** Tại bước 12, nếu thiếu thông tin như tên, danh mục, vĩ độ, kinh độ hoặc bán kính geofence, hệ thống chặn gửi và đánh dấu các trường cần hoàn thiện. Quản trị viên quay lại biểu mẫu. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Quản trị viên mở Quản lý địa điểm và chọn tạo hoặc sửa địa điểm. | |
-| **Giả định** | Web Admin có Internet. Hệ thống hỗ trợ lưu văn bản hướng dẫn và tài nguyên âm thanh. Quản trị viên chuẩn bị nội dung và âm thanh trước hoặc trong khi chỉnh sửa. Ngôn ngữ hỗ trợ và danh mục địa điểm đã được cấu hình. Phê duyệt, xuất bản và đồng bộ ứng dụng du khách do phụ thuộc xuất bản nội dung bên ngoài mô tả ở trên đảm nhiệm; use case này không xuất bản nội dung. | |
-| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Thông tin địa điểm bắt buộc:** Để gửi duyệt, mỗi địa điểm phải có ít nhất tên hợp lệ, danh mục, tọa độ GPS và bán kính geofence. Có thể lưu DRAFT khi dữ liệu chưa đầy đủ. **BR2 – Trạng thái nội dung:** Use case này chỉ lưu DRAFT hoặc PENDING_REVIEW. Nội dung chỉ được cung cấp cho ứng dụng du khách sau khi được phê duyệt và xuất bản bên ngoài. **BR3 – Ánh xạ nội dung:** Mỗi kịch bản và tài nguyên âm thanh phải gắn với ít nhất locationId, languageCode, scriptType để UC-02 và UC-03 xác định nội dung và âm thanh khớp nhau; phiên bản gói được phụ thuộc xuất bản bên ngoài cấp sau. **BR4 – Bảo vệ nội dung đã duyệt:** Chỉnh sửa nội dung đã được phê duyệt không được xóa phiên bản hiện đang cung cấp cho ứng dụng du khách cho đến khi bản thay thế được phê duyệt và xuất bản. | |
+| **Giả định** | Web Admin có Internet. Hệ thống hỗ trợ lưu văn bản hướng dẫn và tài nguyên âm thanh. Quản trị viên chuẩn bị nội dung và âm thanh trước hoặc trong khi chỉnh sửa. Ngôn ngữ hỗ trợ và danh mục địa điểm đã được cấu hình. REVIEWER phê duyệt và hệ thống xuất bản gói đã xác minh theo quyết định phạm vi mới ở trên. | |
+| **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Thông tin địa điểm bắt buộc:** Để gửi duyệt, mỗi địa điểm phải có ít nhất tên hợp lệ, danh mục, tọa độ GPS và bán kính geofence. Có thể lưu DRAFT khi dữ liệu chưa đầy đủ. **BR2 – Trạng thái nội dung:** EDITOR lưu DRAFT/PENDING_REVIEW; REVIEWER quyết định APPROVED/REJECTED, xuất bản gói thành công mới chuyển bản biên tập sang PUBLISHED. Dữ liệu công khai giữ APPROVED để tương thích API. **BR3 – Ánh xạ nội dung:** Mỗi kịch bản và tài nguyên âm thanh phải gắn với ít nhất locationId, languageCode, scriptType để UC-02 và UC-03 xác định nội dung và âm thanh khớp nhau; phiên bản gói được phụ thuộc xuất bản bên ngoài cấp sau. **BR4 – Bảo vệ nội dung đã duyệt:** Chỉnh sửa nội dung đã được phê duyệt không được xóa phiên bản hiện đang cung cấp cho ứng dụng du khách cho đến khi bản thay thế được phê duyệt và xuất bản. | |
 | **Tác giả** | | |
 | **Ngày** | | |
 | **Sơ đồ hoạt động** | Xem UC06_activity.drawio | |

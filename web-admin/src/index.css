@@ -86,6 +86,19 @@
   input[type="file"] {
     padding: 8px;
   }
+  input[type="radio"], input[type="checkbox"] {
+    width: auto;
+    padding: 0;
+    margin-inline-end: 8px;
+    accent-color: #08766d;
+  }
+  .content-entry-options label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    cursor: pointer;
+  }
   textarea {
     resize: vertical;
     max-height: 480px;
@@ -1248,3 +1261,6 @@ dialog::backdrop {
     gap: 8px 16px;
   }
 }
+
+.editor-fields { border:0; padding:0; min-width:0; }
+.card details { overflow-wrap:anywhere; }

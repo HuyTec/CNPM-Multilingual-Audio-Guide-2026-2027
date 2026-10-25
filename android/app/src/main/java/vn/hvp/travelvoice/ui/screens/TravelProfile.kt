@@ -14,76 +14,47 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
-import org.json.JSONObject
 import vn.hvp.travelvoice.R
 import vn.hvp.travelvoice.data.remote.*
 
+/** The public product is anonymous on both platforms; no unsupported OTP endpoint is offered. */
 @Composable
-fun TravelProfile(base: String) {
+fun TravelProfile(base: String, onServer: (String) -> Unit = {}, onPackages: () -> Unit = {}) {
     val context = LocalContext.current
-    val store = remember { TouristIdentity(context) }
     val scope = rememberCoroutineScope()
-    var session by remember { mutableStateOf<JSONObject?>(null) }
-    var ready by remember { mutableStateOf(false) }
-    var email by rememberSaveable { mutableStateOf("") }
-    var code by remember { mutableStateOf("") }
-    var challenge by rememberSaveable { mutableStateOf<String?>(null) }
-    var retryAt by rememberSaveable { mutableLongStateOf(0L) }
-    var remaining by remember { mutableLongStateOf(0L) }
+    var server by rememberSaveable(base) { mutableStateOf(base) }
+    var message by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
-    var error by remember { mutableIntStateOf(0) }
-    LaunchedEffect(store) {
-        try { session = withContext(Dispatchers.IO) { store.session() }; ready = true }
-        catch (_: Exception) { error = R.string.q1_account_error; ready = true }
-    }
-    LaunchedEffect(retryAt) {
-        do { remaining = ((retryAt - System.currentTimeMillis()) / 1000).coerceAtLeast(0); if (remaining > 0) delay(1000) } while (remaining > 0)
-    }
-    fun run(action: suspend () -> Unit) { if (!busy) scope.launch {
-        busy = true; error = 0
-        try { action() }
-        catch (cancelled: CancellationException) { throw cancelled }
-        catch (failure: Exception) { error = when ((failure as? GuideApiException)?.status) {
-            429 -> R.string.q1_otp_limit; 400 -> R.string.q1_otp_invalid; 503 -> R.string.q1_mail_unavailable; else -> R.string.q1_account_error
-        } }
-        finally { busy = false }
-    } }
+    var invalid by remember { mutableStateOf(false) }
+    val visitor = remember { TouristIdentity(context).installation().take(8) }
     Column(Modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text(stringResource(R.string.q1_profile),style = MaterialTheme.typography.headlineSmall)
-        if (!ready) { CircularProgressIndicator() }
-        else if (session != null) {
-            Text(stringResource(R.string.q1_signed_in)); Text(session!!.getString("email"), style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.q1_account_hint))
-            OutlinedButton(enabled = !busy, onClick = { run {
-                // Acknowledge queued events before revoking the credential they were recorded under.
-                PlaybackOutbox.flush(context,base)
-                TouristApi.post(base,"logout",JSONObject(),withContext(Dispatchers.IO) { store.snapshot() })
-                withContext(Dispatchers.IO) { store.signedOut() }; session = null; challenge = null; code = ""
-            } }) { Text(stringResource(R.string.q1_sign_out)) }
-        } else {
-            Text(stringResource(R.string.q1_guest),style = MaterialTheme.typography.titleMedium)
-            Text(stringResource(R.string.q1_guest_hint))
-            OutlinedTextField(email,{ email = it; challenge = null; code = "" },Modifier.fillMaxWidth(),singleLine = true,enabled = !busy,
-                label = { Text(stringResource(R.string.q1_email)) },keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email))
-            Button(enabled = !busy && remaining == 0L,onClick = { run {
-                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) { error = R.string.q1_email_invalid; return@run }
-                val result = TouristApi.post(base,"otp/request",JSONObject().put("email",email.trim()),withContext(Dispatchers.IO) { store.snapshot() })
-                challenge = result.getString("challengeId"); retryAt = System.currentTimeMillis() + result.getLong("retryAfterSeconds") * 1000; code = ""
-            } },modifier = Modifier.fillMaxWidth()) {
-                Text(if (remaining > 0) stringResource(R.string.q1_resend_wait,remaining) else stringResource(if (challenge == null) R.string.q1_send_otp else R.string.q1_resend_otp))
-            }
-            if (challenge != null) {
-                Text(stringResource(R.string.q1_otp_sent),Modifier.semantics { liveRegion = LiveRegionMode.Polite })
-                OutlinedTextField(code,{ code = it },Modifier.fillMaxWidth(),singleLine = true,enabled = !busy,
-                    label = { Text(stringResource(R.string.q1_otp)) },keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword))
-                Button(enabled = !busy,onClick = { run {
-                    if (!code.matches(Regex("[0-9]{6}"))) { error = R.string.q1_otp_invalid; return@run }
-                    val result = TouristApi.post(base,"otp/verify",JSONObject().put("challengeId",challenge).put("code",code),withContext(Dispatchers.IO) { store.snapshot() })
-                    withContext(Dispatchers.IO) { store.signedIn(result) }; session = result; challenge = null; code = ""
-                } },modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.q1_verify)) }
-            }
-        }
-        if (busy) { LinearProgressIndicator(Modifier.fillMaxWidth()); Text(stringResource(R.string.q1_processing)) }
-        if (error != 0) Text(stringResource(error),Modifier.semantics { liveRegion = LiveRegionMode.Polite },color = MaterialTheme.colorScheme.error)
+        Text(stringResource(R.string.q1_profile), style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(R.string.q1_guest), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.q1_anonymous_hint))
+        Text(stringResource(R.string.q1_visitor_code, visitor))
+        Text(stringResource(R.string.q1_server), style = MaterialTheme.typography.titleMedium)
+        OutlinedTextField(server, { server = it; invalid = false }, Modifier.fillMaxWidth(), enabled = !busy,
+            singleLine = true, isError = invalid, label = { Text(stringResource(R.string.q1_server)) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+            supportingText = { Text(stringResource(if (invalid) R.string.q1_server_invalid else R.string.q1_server_hint)) })
+        Button(enabled = !busy, onClick = {
+            val normalized = runCatching { DemoApi.normalizeBaseUrl(server) }.getOrNull()
+            if (normalized == null) { invalid = true; return@Button }
+            onServer(normalized)
+            message = context.getString(R.string.q1_server_saved)
+        }) { Text(stringResource(R.string.q1_save_server)) }
+        OutlinedButton(enabled = !busy, onClick = { scope.launch {
+            busy = true
+            try {
+                VisitorApi.heartbeat(context, base)
+                val pending = PlaybackOutbox.flush(context, base)
+                message = context.getString(R.string.q1_sync_done, pending)
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { message = context.getString(R.string.q1_sync_error) }
+            finally { busy = false }
+        } }) { Text(stringResource(R.string.q1_sync_now)) }
+        OutlinedButton(onClick = onPackages) { Text(stringResource(R.string.q1_offline)) }
+        if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+        if (message.isNotBlank()) Text(message, Modifier.semantics { liveRegion = LiveRegionMode.Polite })
     }
 }

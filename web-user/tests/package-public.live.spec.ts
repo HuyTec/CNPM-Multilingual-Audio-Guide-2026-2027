@@ -1,0 +1,33 @@
+import { test, expect } from '@playwright/test';
+
+test.skip(!process.env.PUBLIC_PACKAGE_URL, 'Requires an explicitly supplied public demo URL and existing point A');
+test('public point A downloads into the browser and its actual narration opens offline', async ({ page, context, request }, info) => {
+  test.setTimeout(180000);
+  const origin = process.env.PUBLIC_PACKAGE_URL!;
+  const catalog = await (await request.get(`${origin}/api/locations?size=50`)).json() as { items: { locationId: string; name: string; categoryId: string; latitude: number; longitude: number }[] };
+  const poi = catalog.items.find(item => item.name === 'A')!;
+  expect(poi).toBeTruthy(); expect(poi.latitude).toBe(1); expect(poi.longitude).toBe(1);
+  const guide = await (await request.get(`${origin}/api/locations/${poi.locationId}/guide?language=VI&scriptType=FULL`)).json() as { scriptText: string };
+  expect(guide.scriptText).toMatch(/con chó/i);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${origin}/offline`);
+  await page.evaluate(async () => { await navigator.serviceWorker.ready; });
+  await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
+  await page.getByRole('button', { name: 'Kiểm tra cập nhật', exact: true }).click();
+  const card = page.locator('.package-list').first().getByRole('listitem').filter({ has: page.getByRole('heading', { name: 'Nội dung bổ sung', exact: true }) });
+  await card.getByRole('button', { name: 'Tải gói', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Xác nhận tải nội dung?' })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('confirm-download-mobile.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+  await expect(page.getByText(/Đã cài nội dung được xác minh/)).toBeVisible({ timeout: 90000 });
+  await page.getByText(/Xem \d+ địa điểm trong gói/).click();
+  await expect(page.getByRole('link', { name: 'A', exact: true })).toBeVisible();
+  await page.screenshot({ path: info.outputPath('point-a-installed.png'), fullPage: true });
+  await page.getByRole('link', { name: 'A', exact: true }).click();
+  await expect(page.locator('.script-text')).toHaveText(guide.scriptText);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.locator('.script-text')).toHaveText(guide.scriptText);
+  await expect(page.getByText(/Đang đọc từ gói offline đã xác minh/)).toBeVisible();
+  await page.screenshot({ path: info.outputPath('point-a-reader-offline.png'), fullPage: true });
+});

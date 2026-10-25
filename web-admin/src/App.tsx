@@ -14,7 +14,13 @@ import {
   Headphones,
   FlaskConical,
   ChevronRight,
+  BookOpen,
+  ShieldCheck,
+  LogOut,
 } from "lucide-react";
+import "./admin-workspace.css";
+import AdminHelp from "./pages/AdminHelp";
+import ReviewQueue from "./pages/ReviewQueue";
 import LocationList from "./pages/LocationList";
 import LocationForm from "./pages/LocationForm";
 import AnalyticsFeedback from "./pages/AnalyticsFeedback";
@@ -23,7 +29,7 @@ import { useAdminSession } from "./lib/admin-content";
 function Layout() {
   const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const { authorization, setAuthorization } = useAdminSession();
+  const { authorization, setAuthorization, identity } = useAdminSession();
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main">
@@ -48,9 +54,19 @@ function Layout() {
             <MapPin size={18} aria-hidden="true" />
             Địa điểm
           </NavLink>
+          {identity?.role === "REVIEWER" && (
+            <NavLink to="/reviews">
+              <ShieldCheck size={18} aria-hidden="true" />
+              Duyệt và xuất bản
+            </NavLink>
+          )}
           <NavLink to="/analytics">
             <BarChart3 size={18} aria-hidden="true" />
             Thống kê & phản hồi
+          </NavLink>
+          <NavLink to="/help">
+            <BookOpen size={18} aria-hidden="true" />
+            Hướng dẫn sử dụng
           </NavLink>
         </nav>
         <div className="sidebar-bottom">
@@ -61,13 +77,19 @@ function Layout() {
           <p>
             Thống kê lấy từ database.
             <br />
-            Biên tập lưu vào DB chung; phản hồi còn giả lập.
+            Biên tập và phản hồi lưu vào DB chung.
           </p>
           <div className="profile">
             <span className="avatar">AD</span>
             <div>
-              <strong>Quản trị viên</strong>
-              <small>Quản trị demo có xác thực</small>
+              <strong>{identity?.username || "Quản trị viên"}</strong>
+              <small>
+                {identity?.role === "EDITOR"
+                  ? "Biên tập viên"
+                  : identity?.role === "REVIEWER"
+                    ? "Người duyệt nội dung"
+                    : "Chưa đăng nhập"}
+              </small>
             </div>
           </div>
         </div>
@@ -80,27 +102,43 @@ function Layout() {
             <strong>
               {location.pathname.startsWith("/analytics")
                 ? "Thống kê & phản hồi"
-                : "Địa điểm"}
+                : location.pathname.startsWith("/reviews")
+                  ? "Duyệt và xuất bản"
+                  : location.pathname.startsWith("/help")
+                    ? "Hướng dẫn sử dụng"
+                    : "Địa điểm"}
             </strong>
+          </div>
+          <div className="topbar-actions">
+            <Link to="/help" aria-label="Mở hướng dẫn quản trị">
+              <BookOpen size={17} aria-hidden="true" />
+              <span>Hướng dẫn</span>
+            </Link>
+            {authorization && (
+              <button
+                className="button secondary"
+                type="button"
+                onClick={() => setAuthorization("")}
+              >
+                <LogOut size={15} aria-hidden="true" />
+                Đăng xuất quản trị
+              </button>
+            )}
           </div>
         </header>
         <main id="main" tabIndex={-1}>
-          {authorization && (
-            <button
-              className="button secondary"
-              type="button"
-              onClick={() => setAuthorization("")}
-            >
-              Đăng xuất quản trị
-            </button>
-          )}
-          {location.pathname.startsWith("/locations") ? (
-            <AdminContentGate>
+          <div
+            className={`admin-page ${location.pathname.startsWith("/analytics") ? "admin-analytics" : ""}`}
+          >
+            {location.pathname.startsWith("/locations") ||
+            location.pathname.startsWith("/reviews") ? (
+              <AdminContentGate>
+                <Outlet />
+              </AdminContentGate>
+            ) : (
               <Outlet />
-            </AdminContentGate>
-          ) : (
-            <Outlet />
-          )}
+            )}
+          </div>
         </main>
         {location.pathname.startsWith("/analytics") &&
           params.get("source") === "mock" && (
@@ -153,8 +191,10 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate replace to="/locations" /> },
       { path: "/locations", element: <LocationList /> },
       { path: "/locations/new", element: <LocationForm key="new" /> },
+      { path: "/help", element: <AdminHelp /> },
       { path: "/locations/:id/edit", element: <ExistingForm /> },
       { path: "/analytics", element: <AnalyticsFeedback /> },
+      { path: "/reviews", element: <ReviewQueue /> },
       {
         path: "*",
         element: (

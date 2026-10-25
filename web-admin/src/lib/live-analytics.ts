@@ -13,9 +13,6 @@ export type Analytics = {
   languages: CountItem[];
 };
 
-export function basicCredentials(username: string, password: string) {
-  return `Basic ${btoa(String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)))}`;
-}
 
 export function useLiveAnalytics(
   authorization: string,

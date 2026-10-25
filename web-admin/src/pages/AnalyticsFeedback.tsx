@@ -113,7 +113,7 @@ function MockAnalyticsFeedback() {
           ...locations.map(([k, v]): [string, number] => [`Địa điểm: ${k}`, v]),
           ...langs.map(([k, v]): [string, number] => [`Ngôn ngữ: ${k}`, v]),
         ],
-        periodFeedback,
+        rows,
       );
       setAnnouncement("Đã xuất báo cáo XLSX cho kỳ đang chọn.");
     } catch {

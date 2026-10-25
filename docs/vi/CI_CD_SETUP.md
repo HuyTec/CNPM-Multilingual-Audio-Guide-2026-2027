@@ -4,13 +4,13 @@
 
 - CI đã có tại `.github/workflows/ci.yml`. Workflow chạy khi push, mở/cập nhật pull request và khi kích hoạt thủ công.
 - Job backend dùng JDK 21 và Maven Wrapper để chạy `verify` (biên dịch, test, đóng gói); từ 19/10/2026 có thêm service PostgreSQL 17/PostGIS riêng và các biến `TEST_DATABASE_*` để chạy integration test US-02/US-03 cùng Flyway. Job web-admin dùng Node.js 24, `npm ci`, lint và build.
-- Lịch sử ngày 07/10/2026: backend `verify` đạt 1 test; web-admin lint/build đạt. Đây là snapshot cũ, không phải số test hiện tại. Kết quả backend/Android ngày 22/10/2026 ở [báo cáo review](BACKEND_ANDROID_CODE_REVIEW.md#verification); chưa kiểm tra run GitHub Actions trong lượt đó.
+- Ngày 07/10/2026, các lệnh tương ứng chạy thành công cục bộ: backend `verify` đạt 1 test; web-admin lint và build đạt. Chưa có bằng chứng workflow đã chạy trên GitHub vì các file hiện chưa được commit/push.
 - Dockerfile cho backend/web-admin và `compose.yaml` đã có; build image và chạy hai container cục bộ thành công ngày 07/10/2026. Xem [cách cài và chạy Docker](./DOCKER_SETUP.md).
 - CD lên máy chủ chưa được thiết lập: chưa chốt nơi triển khai, biến môi trường vận hành, registry hoặc workflow phát hành. CI xanh và Compose chạy cục bộ chưa chứng minh ứng dụng đã được triển khai.
 
 ## Bật CI trên GitHub
 
-1. Khi thay đổi CI, commit/push đầy đủ `.github/workflows/ci.yml`, cấu hình build và dependency liên quan. Workflow hiện được quản lý trong repository; phần này mô tả cách vận hành, không xác nhận đã chạy trên GitHub.
+1. Commit và push cùng nhau `.github/workflows/ci.yml`, `backend/multi-audio-guide/pom.xml`, `backend/multi-audio-guide/mvnw*`, `backend/multi-audio-guide/.mvn/wrapper/maven-wrapper.properties`, `web-admin/package.json` và `web-admin/package-lock.json`. Workflow sẽ không chạy đúng nếu thiếu một trong các file build này.
 2. Mở pull request vào `main`. Trong tab **Actions**, kiểm tra hai job **Backend / Maven verify** và **Web admin / lint and build** đều xanh. Có thể chạy thủ công bằng **Actions → CI → Run workflow** sau khi workflow có trên nhánh mặc định.
 3. Sau lần chạy đầu, cấu hình bảo vệ nhánh `main` trong **Settings → Rules → Rulesets** (hoặc **Branches** nếu repo dùng branch protection): yêu cầu pull request, review và hai status check trên trước khi merge. Chỉ chọn tên check đã xuất hiện trong một lần chạy thực tế.
 4. Khi CI lỗi, mở job tương ứng và sửa lỗi ở nguồn; không dùng `-DskipTests` hoặc bỏ lint chỉ để có trạng thái xanh.

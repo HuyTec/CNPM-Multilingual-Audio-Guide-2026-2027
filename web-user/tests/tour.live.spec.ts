@@ -4,10 +4,23 @@ import AxeBuilder from '@axe-core/playwright';
 test.describe('District tour — live data', () => {
   test.skip(process.env.LIVE_GUIDE_API !== '1', 'Requires real backend');
   test('catalog opens exact selected location and all six languages / two modes', async ({ page, request }, info) => {
+    const calls: number[] = [];
+    page.on('response', response => { if (/\/api\/(locations\?|categories)/.test(response.url())) calls.push(response.status()); });
+    const catalog = await (await request.get('/api/locations?size=50')).json() as { items: unknown[] };
     await page.goto('/');
+    await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(catalog.items.length);
+    await expect(page.locator('.guide-map-icon')).toHaveCount(catalog.items.length);
+    expect(calls).not.toContain(400);
+    const categories = await request.get('/api/categories');
+    expect(categories.status()).toBe(200);
+    await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('');
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(catalog.items.length);
+    await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('10000000-0000-0000-0000-000000000101');
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
     await page.locator('select[name="language"]').selectOption('FR');
-    await page.getByRole('link', { name: /Dinh Độc Lập/ }).click();
+    await page.locator('.place-select').filter({ hasText: 'Dinh Độc Lập' }).click();
+    await page.getByRole('link', { name: 'Mở bài thuyết minh' }).click();
     await expect(page.getByRole('heading', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
     for (const language of ['VI', 'EN', 'FR', 'JA', 'ZH', 'RU']) for (const type of ['FULL', 'SHORT']) {
       await page.getByLabel('Ngôn ngữ yêu cầu').selectOption(language);
@@ -21,19 +34,5 @@ test.describe('District tour — live data', () => {
     await page.screenshot({ path: info.outputPath('six-language-reader.png'), fullPage: true });
     const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(axe.violations).toEqual([]);
-  });
-  test('Google map is configured or honestly reports missing key', async ({ page }, info) => {
-    test.skip(process.env.LIVE_GOOGLE_MAPS !== '1', 'Live Google SDK has its own opt-in verification; guide data checks do not prove map authorization');
-    await page.goto('/?view=map');
-    await expect(page.getByRole('heading', { name: 'Bản đồ Google Maps · Quận 1' })).toBeVisible();
-    if (!await page.locator('.tour-map').count()) {
-      await expect(page.getByText('Bản đồ Google Maps chưa được cấu hình.', { exact: false })).toBeVisible();
-      return; // Configuration state only; does not assert live Google tiles.
-    }
-    await expect(page.getByText('Bản đồ đã sẵn sàng.', { exact: true })).toBeVisible({ timeout: 25_000 });
-    await expect(page.locator('.map-marker')).toHaveCount(4);
-    await page.screenshot({ path: info.outputPath('tour-map.png'), fullPage: true });
-    await page.getByRole('link', { name: 'Mở Dinh Độc Lập', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Dinh Độc Lập', exact: true })).toBeVisible();
   });
 });

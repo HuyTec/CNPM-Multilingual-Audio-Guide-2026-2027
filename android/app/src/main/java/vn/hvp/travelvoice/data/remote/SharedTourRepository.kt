@@ -33,6 +33,7 @@ class SharedTourRepository(private val context: Context, val base: String) {
     }
     fun invalidateCache() { synchronized(guideCache) { guideCache.clear() } }
     companion object {
+        private val storageLock = Any()
         val languages = listOf("VI", "EN", "FR", "JA", "ZH", "RU")
         const val TOUR_CATEGORY = "10000000-0000-0000-0000-000000000101"
         fun sha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
@@ -59,7 +60,8 @@ class SharedTourRepository(private val context: Context, val base: String) {
     private fun file(scope: String): AtomicFile {
         require(scope in listOf("BASE", "OPTIONAL")); return AtomicFile(File(directory, "$scope.json"))
     }
-    private fun readRecords(): List<Pair<JSONObject, JSONObject>> {
+    private fun readRecords(): List<Pair<JSONObject, JSONObject>> = synchronized(storageLock) { readRecordsUnlocked() }
+    private fun readRecordsUnlocked(): List<Pair<JSONObject, JSONObject>> {
         val records = listOf("BASE", "OPTIONAL").mapNotNull { scope ->
         val record = runCatching {
             JSONObject(file(scope).openRead().bufferedReader().use { it.readText() })
@@ -86,21 +88,22 @@ class SharedTourRepository(private val context: Context, val base: String) {
         }
     }
     suspend fun installed(): List<JSONObject> = withContext(Dispatchers.IO) { readRecords().map { it.first } }
-    suspend fun localLocations(): List<ServerLocation> = withContext(Dispatchers.IO) {
+    suspend fun localLocations(language: String = "VI"): List<ServerLocation> = withContext(Dispatchers.IO) {
         readRecords().flatMap { (_,payload) ->
             val items = payload.getJSONArray("locations")
             List(items.length()) { i -> val item = items.getJSONObject(i)
-                ServerLocation(item.getString("locationId"),item.getString("name"),item.optDouble("latitude"),item.optDouble("longitude"),item.optString("categoryName"),item.optString("categoryId")) }
+                ServerLocation(item.getString("locationId"),item.optJSONObject("names")?.optString(language.lowercase())?.takeIf(String::isNotBlank)
+                    ?: item.optJSONObject("names")?.optString("vi")?.takeIf(String::isNotBlank) ?: item.getString("name"),item.optDouble("latitude"),item.optDouble("longitude"),item.optString("categoryName"),item.optString("categoryId")) }
         }.distinctBy { it.id }
     }
 
-    suspend fun locations(): Pair<List<ServerLocation>, Boolean> {
-        try { return DemoApi.locations(base) to false }
+    suspend fun locations(language: String = "VI"): Pair<List<ServerLocation>, Boolean> {
+        try { return DemoApi.locations(base, language) to false }
         catch (cancelled: CancellationException) { throw cancelled }
         catch (error: GuideApiException) { if (error.status < 500) throw error }
         catch (_: IOException) { /* Fall back only to verified installed/bundled content. */ }
         return withContext(Dispatchers.IO) {
-            val locations = localLocations()
+            val locations = localLocations(language)
             require(locations.isNotEmpty()) { "Chưa có gói cơ bản đã xác minh. Cần chuẩn bị nội dung khi có mạng." }
             locations to true
         }
@@ -134,13 +137,21 @@ class SharedTourRepository(private val context: Context, val base: String) {
                         val target = File(context.cacheDir, "${sha(bytes)}.wav"); target.writeBytes(bytes); audio = target.absolutePath
                     }
                     return@withContext ServerGuide(guide.getString("contentId"), guide.getString("locationName"), lang, mode,
-                        guide.getString("scriptText"), audio, id) to true
+                        guide.getString("scriptText"), audio, id, offline = true) to true
                 }
             }
             error("Nội dung đang được cập nhật; chưa có bản đã duyệt trong gói đã lưu.")
         }
     }
-    private suspend fun get(path: String): ByteArray = suspendCancellableCoroutine { continuation ->
+    private suspend fun get(path: String): ByteArray {
+        repeat(3) { attempt ->
+            try { return getOnce(path) }
+            catch (cancelled: CancellationException) { throw cancelled }
+            catch (failure: IOException) { if (attempt == 2) throw failure; kotlinx.coroutines.delay(500L * (attempt + 1)) }
+        }
+        error("Không tải được tài nguyên")
+    }
+    private suspend fun getOnce(path: String): ByteArray = suspendCancellableCoroutine { continuation ->
         require(path.startsWith("/api/content-packages") || path.matches(Regex("/demo-audio/[a-z-]+\\.wav"))
             || path.matches(Regex("/api/content-audio/[0-9a-f-]{36}\\.(mp3|wav|ogg)")))
         val call = client.newCall(Request.Builder().url(base.trimEnd('/') + path).build())
@@ -161,7 +172,9 @@ class SharedTourRepository(private val context: Context, val base: String) {
     }
     suspend fun available(): List<JSONObject> {
         val list = JSONArray(get("/api/content-packages").toString(Charsets.UTF_8))
-        return List(list.length()) { list.getJSONObject(it) }
+        return List(list.length()) { list.getJSONObject(it).also { item ->
+            require(item.getString("status") == "APPROVED" && item.getString("scope") in listOf("BASE", "OPTIONAL"))
+        } }
     }
     suspend fun download(manifest: JSONObject, progress: (String) -> Unit) = withContext(Dispatchers.IO) {
         val scope = manifest.getString("scope"); require(scope in listOf("BASE", "OPTIONAL"))
@@ -181,11 +194,19 @@ class SharedTourRepository(private val context: Context, val base: String) {
             downloaded.put(JSONObject().put("url", asset.getString("url")).put("data", Base64.encodeToString(bytes, Base64.NO_WRAP)))
         }
         record.put("downloadedAssets", downloaded); currentCoroutineContext().ensureActive()
-        val target = file(scope); val stream = target.startWrite()
-        try { stream.write(record.toString().toByteArray(Charsets.UTF_8)); target.finishWrite(stream) }
-        catch (error: Exception) { target.failWrite(stream); throw error }
+        vn.hvp.travelvoice.platform.audio.PackagePlaybackGate.install(
+            waiting = { progress(message(vn.hvp.travelvoice.R.string.q1_package_wait_playback)) }
+        ) {
+            currentCoroutineContext().ensureActive()
+            synchronized(storageLock) {
+                val target = file(scope); val stream = target.startWrite()
+                try { stream.write(record.toString().toByteArray(Charsets.UTF_8)); target.finishWrite(stream) }
+                catch (error: Exception) { target.failWrite(stream); throw error }
+            }
+            invalidateCache()
+        }
     }
-    suspend fun deleteOptional() = withContext(Dispatchers.IO) { file("OPTIONAL").delete() }
+    suspend fun deleteOptional() = withContext(Dispatchers.IO) { synchronized(storageLock) { file("OPTIONAL").delete() } }
     private fun message(id: Int, vararg arguments: Any): String {
         val language = context.getSharedPreferences("travelq1-settings",Context.MODE_PRIVATE).getString("app-language","vi")!!
         val configuration = android.content.res.Configuration(context.resources.configuration).apply { setLocale(java.util.Locale.forLanguageTag(language)) }

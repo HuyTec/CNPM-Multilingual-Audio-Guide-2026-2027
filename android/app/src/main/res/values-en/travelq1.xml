@@ -136,4 +136,20 @@
     <string name="q1_package_size">Text size: %1$d bytes, plus audio. The installed version is replaced only after verification.</string>
     <string name="q1_package_downloading">Downloading and verifying content…</string>
     <string name="q1_package_audio">Downloading audio %1$d/%2$d…</string>
+    <string name="q1_anonymous_hint">Explore, download and listen without signing in. A random installation ID counts Android visitors; no email or hardware identifier is collected.</string>
+    <string name="q1_visitor_code">Visitor code on this device: %1$s</string>
+    <string name="q1_server">Server connection</string>
+    <string name="q1_server_hint">Use the Tourist Web HTTPS URL or a LAN/emulator backend address.</string>
+    <string name="q1_server_invalid">Enter a valid HTTP(S) URL without credentials or query parameters.</string>
+    <string name="q1_save_server">Save server</string>
+    <string name="q1_server_saved">Server saved. Content will refresh.</string>
+    <string name="q1_sync_now">Sync listening events now</string>
+    <string name="q1_sync_done">Connected and synced. %1$d listening events remain queued.</string>
+    <string name="q1_sync_error">Cannot connect. Saved listening events will retry when online.</string>
+    <string name="q1_new_packages">%1$d new or uninstalled content packages</string>
+    <string name="q1_view_packages">View packages</string>
+    <string name="q1_installed_places">Places saved on this device</string>
+    <string name="q1_package_wait_playback">Verified. Stop the current narration to install, or cancel to keep the previous package.</string>
+    <string name="q1_stop_and_install">Stop listening and install</string>
+    <string name="q1_package_removed">Optional content removed. Base content is preserved.</string>
 </resources>

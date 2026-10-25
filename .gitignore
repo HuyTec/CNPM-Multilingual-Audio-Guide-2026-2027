@@ -36,3 +36,5 @@ android/.cxx/
 # Logs and temporary files
 *.log
 *.tmp
+.local-tools/
+web-user/public/downloads/

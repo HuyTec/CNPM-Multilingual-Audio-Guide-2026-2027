@@ -12,17 +12,21 @@ import org.json.JSONObject
 object PlaybackOutbox {
     private val mutex = Mutex()
 
-    suspend fun enqueueAndFlush(context: Context, base: String, eventId: String, contentId: String): Int =
-        withContext(Dispatchers.IO) { mutex.withLock {
+    suspend fun enqueueAndFlush(context: Context, base: String, eventId: String, contentId: String,
+                                offline: Boolean = !VisitorApi.isOnline(context)): Int {
+        val occurredAt = java.time.Instant.now().toString()
+        return withContext(Dispatchers.IO) { mutex.withLock {
             val preferences = context.applicationContext.getSharedPreferences("playback-outbox", Context.MODE_PRIVATE)
             val store = TouristIdentity(context)
             val pending = JSONArray(store.read("events") ?: preferences.getString("events", "[]"))
             if ((0 until pending.length()).none { pending.getJSONObject(it).getString("eventId") == eventId }) {
-                pending.put(JSONObject().put("base", base).put("eventId", eventId).put("contentId", contentId).put("identity",store.snapshot()))
+                pending.put(JSONObject().put("base", base).put("eventId", eventId).put("contentId", contentId).put("identity",store.snapshot())
+                    .put("occurredAt",occurredAt).put("offline",offline))
                 store.write("events",pending.toString()); preferences.edit().remove("events").commit()
             }
             flushLocked(context, base)
         } }
+    }
 
     suspend fun flush(context: Context, base: String): Int = withContext(Dispatchers.IO) {
         mutex.withLock { flushLocked(context, base) }
@@ -38,10 +42,8 @@ object PlaybackOutbox {
         for (id in ids) {
             val event = (0 until pending.length()).map { pending.getJSONObject(it) }.first { it.getString("eventId") == id }
             val identity = event.optJSONObject("identity")
-            val current = store.session()
-            // Refresh only for the same authenticated account; never move an old play to a new user.
-            if (current != null && identity?.optString("userId") == current.getString("userId")) identity.put("token",current.getString("accessToken"))
-            DemoApi.playback(base, id, event.getString("contentId"),identity)
+            DemoApi.playback(base, id, event.getString("contentId"),identity,
+                event.optString("occurredAt").takeIf { it.isNotBlank() }, event.optBoolean("offline"))
             val next = JSONArray()
             (0 until pending.length()).map { pending.getJSONObject(it) }.filter { it.getString("eventId") != id }.forEach(next::put)
             store.write("events",next.toString()); preferences.edit().remove("events").commit()

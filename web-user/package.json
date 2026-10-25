@@ -8,9 +8,13 @@
     "build": "tsc -b && vite build",
     "lint": "eslint src vite.config.ts tests playwright.config.ts",
     "preview": "vite preview",
+    "serve:public": "node scripts/public-server.mjs",
+    "test:gateway": "node --test scripts/public-server.test.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "leaflet": "^1.9.4",
+    "qrcode-generator": "2.0.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4"
@@ -20,6 +24,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@types/leaflet": "^1.9.22",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

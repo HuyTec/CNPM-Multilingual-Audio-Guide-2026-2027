@@ -21,7 +21,7 @@ import vn.hvp.travelvoice.ui.theme.TravelVoiceTheme
 
 /** Injects only the native map surface; catalog still comes from the real bundled signed baseline. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], qualifiers = "w390dp-h844dp-xhdpi")
+@Config(sdk = [28], qualifiers = "w390dp-h844dp-xhdpi", application = OfflineTestApplication::class)
 class TravelQ1UxTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
     @Before fun openMap() {
@@ -51,18 +51,19 @@ class TravelQ1UxTest {
         compose.onNodeWithText("Đọc giới thiệu").assertDoesNotExist()
         compose.onNodeWithTag(tag).assertExists()
     }
-    @Test fun offlineIsASettingsDestinationRatherThanABottomTab() {
-        compose.onNodeWithText("Ngoại tuyến").assertDoesNotExist()
+    @Test fun offlineIsAvailableFromNavigationAndSettings() {
+        compose.onNodeWithText("Ngoại tuyến").assertExists()
         compose.onNodeWithText("Cài đặt").performClick()
         compose.onNodeWithText("Ngôn ngữ thuyết minh").assertExists()
-        compose.onNodeWithText("Ngoại tuyến").performScrollTo().performClick()
+        compose.onAllNodesWithText("Ngoại tuyến").onLast().performClick()
         compose.onNodeWithText("Kiểm tra cập nhật").performScrollTo().assertExists()
         compose.onNodeWithText("Kết nối máy chủ").assertDoesNotExist()
     }
     @Test fun profileIsOptionalAndSettingsSeparateAppAndNarrationLanguages() {
         compose.onNodeWithContentDescription("Hồ sơ").performClick()
         compose.onNodeWithText("Bạn đang dùng với tư cách khách").assertExists()
-        compose.onNodeWithText("Email").assertExists()
+        compose.onNodeWithText("Email").assertDoesNotExist()
+        compose.onNodeWithText("Lưu máy chủ").assertExists()
         compose.runOnUiThread { compose.activity.onBackPressedDispatcher.onBackPressed() }
         compose.onNodeWithText("Cài đặt").performClick()
         compose.onNodeWithText("Ngôn ngữ giao diện").assertExists()
