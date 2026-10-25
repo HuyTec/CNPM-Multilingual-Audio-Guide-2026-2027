@@ -1,4 +1,5 @@
-type Receipt = { eventId: string; contentId: string; occurredAt: string; offline: boolean };
+import { installationId } from './visitor';
+type Receipt = { eventId: string; contentId: string; occurredAt: string; offline: boolean; installationId?: string; platform?: 'WEB' };
 type StoredReceipt = Receipt & { rejected: boolean; nextAttempt: number; leaseUntil: number };
 type Core = { enqueue: (receipt: Receipt) => Promise<void>; listReceipts: () => Promise<StoredReceipt[]>;
   flushReceipts: (force?: boolean) => Promise<{ pending: number }> };
@@ -45,6 +46,8 @@ const unsaved = new Map<string, Receipt>();
 let persisting: Promise<void> | undefined;
 export async function recordPlayback(contentId: string, offline = !navigator.onLine) {
   const receipt: Receipt = { eventId: crypto.randomUUID(), contentId, occurredAt: new Date().toISOString(), offline };
+  const id = installationId();
+  if (id) { receipt.installationId = id; receipt.platform = 'WEB'; }
   unsaved.set(receipt.eventId, receipt);
   await persistUnsaved();
   if (unsaved.has(receipt.eventId) && !state.error) await persistUnsaved();

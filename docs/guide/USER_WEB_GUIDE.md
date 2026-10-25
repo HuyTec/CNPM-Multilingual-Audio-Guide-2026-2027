@@ -72,3 +72,7 @@ Trên điện thoại thật, sau khi cài APK demo, mở **Kết nối máy ch�
 Kiểm tra thủ công và polling dùng chung store phiên bản; kiểm tra thủ công không khóa danh sách ở snapshot cũ. Xác nhận tải dùng dialog modal có focus vào Hủy và hỗ trợ Escape. Sau cài có danh sách liên kết địa điểm trong gói; dữ liệu nằm trong IndexedDB, không phải file Downloads. Catalog mặc định không ép danh mục tuyến demo, cho phép tìm POI mới ngoài tuyến. Tọa độ (1,1) hợp lệ nhưng ở xa vùng bản đồ ban đầu; tìm theo tên hoặc mở từ gói để đọc. QR và nút APK lấy cùng URL, mặc định theo origin hiện tại; dưới QR có tên miền tải và nút lưu mã GIF. Không hard-code link tunnel trong source.
 
 Tải từng tài nguyên có timeout và thử lại tối đa 3 lần khi đường truyền gián đoạn; checksum/chữ ký vẫn được kiểm trước khi lưu. Không coi lỗi mạng là gói đã cài. Gói hỏng vẫn bị từ chối và giữ bản cũ.
+
+## Thống kê khách vãng lai
+
+VisitorPresence gửi UUID ngẫu nhiên theo hồ sơ trình duyệt tới /api/visitors/heartbeat lúc mở/online/hiện tab và mỗi 60 giây khi tab hiện. Không gửi vị trí, email hay ID phần cứng. Nhiều tab dùng chung ID; nếu chặn localStorage thì không tạo ID tạm mới cho mỗi heartbeat. Receipt lượt nghe nhận thêm installationId/platform=WEB khi có ID, vẫn được gửi theo cơ chế cũ nếu không có. Android dùng cùng API với platform=ANDROID; Admin xem tổng lượt cài đặt/hồ sơ đã dùng và hoạt động trong 5 phút. Đây không phải số người duy nhất hoặc số lần tải APK.

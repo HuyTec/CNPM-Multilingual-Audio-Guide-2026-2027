@@ -1,6 +1,6 @@
 # Danh sách API dùng chung
 
-Đối chiếu trực tiếp annotation controller ngày 25/10/2026: **32 method/path**. Các chức năng admin/package/playback trong profile demo, còn discovery/guide có ở profile mặc định. Base URL tùy chạy local/Compose; đường dẫn dưới đây chưa gồm host. Response thành công mặc định HTTP 200; manifest có thể 304. Body lỗi do controller là ProblemDetail (status/detail); filter có thể trả lỗi servlet 401/403, client không được giả định mọi lỗi đều cùng JSON.
+Đối chiếu trực tiếp annotation controller ngày 25/10/2026: **34 method/path**. Các chức năng admin/package/playback trong profile demo, còn discovery/guide có ở profile mặc định. Base URL tùy chạy local/Compose; đường dẫn dưới đây chưa gồm host. Response thành công mặc định HTTP 200; manifest có thể 304. Body lỗi do controller là ProblemDetail (status/detail); filter có thể trả lỗi servlet 401/403, client không được giả định mọi lỗi đều cùng JSON.
 
 Admin gửi Authorization: Bearer <token> sau login; không còn Basic Auth cấu hình. Vai trò được backend kiểm trên từng request; thiếu/hết hạn/thu hồi token → 401, trái vai trò → 403. Không gửi admin token từ client du khách.
 
@@ -15,6 +15,8 @@ Admin gửi Authorization: Bearer <token> sau login; không còn Basic Auth cấ
 | Guide | GET | /api/locations/{id}/guide | language=VI; scriptType=FULL | GuideContent | Public | useGuide; DemoApi.guide | 400/404/503 |
 | Playback | POST | /api/playbacks | PlaybackRequest | PlaybackReceipt | Public | playbackOutbox; PlaybackOutbox | 400/404/409/503 |
 | Analytics | GET | /api/admin/analytics | from?, to? (ISO date) | AnalyticsResponse | EDITOR/REVIEWER | useLiveAnalytics | 400/401/403/503 |
+| Visitors | POST | /api/visitors/heartbeat | VisitorHeartbeat: installationId UUID, platform WEB/ANDROID | 204 no body | Public | VisitorPresence; VisitorApi | 400/503 |
+| Visitors | GET | /api/admin/visitors | — | VisitorStats: generatedAt, activeWindowMinutes=5, platforms | EDITOR/REVIEWER | VisitorStats | 401/403/503 |
 | Editor | GET | /api/admin/content/config | — | AdminContentDto.Config | EDITOR/REVIEWER | AdminProvider | 401/403/503 |
 | Editor | GET | /api/admin/content/locations | — | List<AdminContentDto.LocationDetail> | EDITOR/REVIEWER | LocationList | 401/403/503 |
 | Editor | GET | /api/admin/content/locations/{id} | UUID path | AdminContentDto.LocationDetail | EDITOR/REVIEWER | LocationForm | 400/401/403/404/503 |
@@ -120,3 +122,8 @@ Ví dụ lỗi controller: `{"type":"about:blank","title":"Conflict","status":40
 ## Static và vận hành
 
 Actuator health không phải controller ứng dụng; tùy cấu hình Actuator. Audio fixture /demo-audio/*.wav là static classpath. /downloads/android-release.json và /downloads/travelvoice.apk là static Web User được script chuẩn bị, không phải API Spring. Metadata gồm url/version/sizeBytes/sha256. Không nhầm endpoint static APK với gói dữ liệu offline của ứng dụng.
+
+
+## Khách vãng lai và nền tảng lượt nghe
+
+PlaybackRequest nhận thêm installationId (UUID) và platform (WEB/ANDROID), tùy chọn nhưng phải đi cùng nhau. Client cũ không gửi vẫn hoạt động. Metadata chỉ được gắn vào sự kiện được tạo lần đầu; retry cùng eventId không thay attribution hay tăng số đếm. VisitorStats là số liệu tích lũy từ lúc bật heartbeat, độc lập kỳ báo cáo lượt nghe; active là last_seen_at trong 5 phút gần nhất theo giờ server. Không công khai danh sách ID khách, không thu email/hardware ID, không coi tải APK là đã mở app.

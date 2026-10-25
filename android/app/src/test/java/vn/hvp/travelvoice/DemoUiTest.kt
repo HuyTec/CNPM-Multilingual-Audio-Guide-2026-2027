@@ -25,7 +25,7 @@ import java.io.File
 
 /** Host-side interaction/render checks; these do not replace device/TalkBack checks. */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28], qualifiers = "w390dp-h844dp-xhdpi")
+@Config(sdk = [28], qualifiers = "w390dp-h844dp-xhdpi", application = OfflineTestApplication::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class DemoUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()

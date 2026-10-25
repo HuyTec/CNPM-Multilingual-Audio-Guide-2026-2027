@@ -45,6 +45,15 @@ test('phone gateway serves only the built app and public backend routes', async 
       assert.equal((await fetch(origin + path, { headers: { cookie: 'test=private', authorization: 'Bearer private', range: 'bytes=0-20' } })).status, 200);
     assert.ok(seen.every(item => !item.cookie && !item.auth)); assert.equal(seen[0].range, 'bytes=0-20');
     const receipt = { eventId: '30000000-0000-0000-0000-000000000001', contentId: '31000000-0000-0000-0000-000000000001' };
+    const installationId = '40000000-0000-0000-0000-000000000001';
+    const heartbeat = { installationId, platform: 'ANDROID' };
+    assert.equal((await fetch(origin + '/api/visitors/heartbeat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(heartbeat) })).status, 200);
+    assert.deepEqual(JSON.parse(seen.at(-1).body), heartbeat);
+    assert.equal((await fetch(origin + '/api/admin/visitors')).status, 404);
+    assert.equal((await fetch(origin + '/api/visitors/heartbeat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ installationId, platform: 'OTHER' }) })).status, 400);
+    const phoneReceipt = { ...receipt, installationId, platform: 'ANDROID' };
+    assert.equal((await fetch(origin + '/api/playbacks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(phoneReceipt) })).status, 200);
+    assert.deepEqual(JSON.parse(seen.at(-1).body), phoneReceipt);
     assert.equal((await fetch(origin + '/api/playbacks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(receipt) })).status, 200);
     const offline = { ...receipt, occurredAt: '2026-01-01T10:00:00Z', offline: true };
     assert.equal((await fetch(origin + '/api/playbacks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(offline) })).status, 200);

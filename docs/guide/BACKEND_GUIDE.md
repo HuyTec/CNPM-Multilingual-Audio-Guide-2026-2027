@@ -117,3 +117,7 @@ $env:SPRING_PROFILES_ACTIVE='demo'
 ## Ảnh POI và TTS trong Admin
 
 Migration V8__location_images.sql thêm location_image_uploads và locations.image_url. LocationImageController → LocationImageService → LocationImageRepository xử lý upload/preview/public, chỉ nhận JPEG/PNG với giới hạn byte/dimensions, re-encode PNG loại metadata. AdminContentService xác nhận ảnh thuộc location; PublicationRepository.promote công bố image_url cùng transaction dữ liệu/gói. Ảnh nháp chỉ preview có auth, ảnh công khai phải đang được locations APPROVED tham chiếu. Payload gói có imageUrl nhưng chưa đóng byte ảnh để dùng offline. Không có pipeline sinh MP3: TTS vẫn chạy tại client; upload audio là tùy chọn.
+
+## Khách vãng lai Web/Android (migration V9)
+
+VisitorController → VisitorService → VisitorRepository → visitor_installations. POST /api/visitors/heartbeat nhận DTO VisitorHeartbeat (UUID installationId, platform WEB/ANDROID), upsert first/last seen theo giờ server; GET /api/admin/visitors yêu cầu bearer EDITOR/REVIEWER, trả VisitorStats với tổng và hoạt động trong 5 phút theo nền tảng. Không trả danh sách ID ra public. V9 bổ sung installation_id/client_platform vào analytics_events; PlaybackRequest nhận cặp trường này tùy chọn, giữ client cũ. Attribution chỉ ghi khi insert sự kiện mới, cùng transaction; retry eventId không tăng đếm hay thay metadata. Đây là đo lượt cài đặt/hồ sơ trình duyệt đã dùng, chưa chống bot hoặc suy ra số người/máy vật lý duy nhất.

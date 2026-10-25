@@ -26,9 +26,9 @@ android {
         applicationId = "vn.hvp.travelvoice"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
-        val serverUrl = providers.gradleProperty("travelApiBaseUrl").orElse("http://10.0.2.2:8080/").get()
+        versionCode = 2
+        versionName = "1.1.0"
+        val serverUrl = providers.gradleProperty("travelApiBaseUrl").orElse("http://10.0.2.2:8081/").get()
         require(serverUrl.matches(Regex("https?://[a-zA-Z0-9.:-]+/?"))) { "travelApiBaseUrl must be an HTTP(S) origin" }
         buildConfigField("String", "API_BASE_URL", "\"${serverUrl.trimEnd('/')}/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -428,3 +428,12 @@
   .admin-analytics .period input { min-width: 0; width: 100%; }
   .admin-analytics .period .button { width: 100%; margin: 0; }
 }
+/* Platform visitor totals are independent of the playback reporting period. */
+.visitor-stats-card { padding: 1.25rem; margin-block: 1rem; }
+.visitor-stats-card h2 { margin: 0 0 .5rem; }
+.visitor-platform-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-block: 1rem; }
+.visitor-platform-card { min-width: 0; padding: 1rem; border: 1px solid #dce7e8; border-radius: 12px; background: #f5faf9; }
+.visitor-platform-card h3 { margin: 0 0 .75rem; }
+.visitor-platform-card p { margin: .5rem 0; }
+.visitor-total strong { display: block; margin-top: .25rem; font-size: 1.75rem; line-height: 1.2; }
+@media (max-width: 540px) { .visitor-platform-grid { grid-template-columns: minmax(0, 1fr); } }

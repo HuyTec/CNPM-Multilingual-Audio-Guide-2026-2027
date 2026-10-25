@@ -108,8 +108,8 @@
     <string name="q1_package_checked">Đã kiểm tra phiên bản; chỉ tải khi bạn xác nhận.</string>
     <string name="q1_package_check_error">Chưa kiểm tra được. Nội dung đã cài vẫn được giữ.</string>
     <string name="q1_check_updates">Kiểm tra cập nhật</string>
-    <string name="q1_package_base">Gói cơ bản · 7 điểm / 6 ngôn ngữ</string>
-    <string name="q1_package_optional">Gói bổ sung · bộ cũ có audio</string>
+    <string name="q1_package_base">Gói cơ bản</string>
+    <string name="q1_package_optional">Gói bổ sung</string>
     <string name="q1_package_latest">Đã mới nhất</string>
     <string name="q1_package_available">Có nội dung chưa cài hoặc bản cập nhật</string>
     <string name="q1_package_download">Tải gói</string>
@@ -130,4 +130,20 @@
     <string name="q1_package_size">Kích thước văn bản: %1$d byte, audio tải kèm. Chỉ thay phiên bản cũ sau khi xác minh.</string>
     <string name="q1_package_downloading">Đang tải và xác minh nội dung…</string>
     <string name="q1_package_audio">Đang tải audio %1$d/%2$d…</string>
+    <string name="q1_anonymous_hint">Bạn có thể khám phá, tải gói và nghe mà không đăng nhập. Mã ngẫu nhiên của lượt cài đặt giúp thống kê khách Android; không thu thập email hay mã phần cứng.</string>
+    <string name="q1_visitor_code">Mã khách trên máy này: %1$s</string>
+    <string name="q1_server">Kết nối máy chủ</string>
+    <string name="q1_server_hint">Dùng URL HTTPS của Web du khách hoặc địa chỉ backend LAN/emulator.</string>
+    <string name="q1_server_invalid">Nhập URL http:// hoặc https:// hợp lệ, không chứa tài khoản hay query.</string>
+    <string name="q1_save_server">Lưu máy chủ</string>
+    <string name="q1_server_saved">Đã lưu máy chủ. Nội dung sẽ được làm mới.</string>
+    <string name="q1_sync_now">Đồng bộ lượt nghe ngay</string>
+    <string name="q1_sync_done">Đã kết nối và đồng bộ. Còn %1$d lượt nghe chờ gửi.</string>
+    <string name="q1_sync_error">Chưa kết nối được. Lượt nghe đã lưu sẽ được gửi lại khi có mạng.</string>
+    <string name="q1_new_packages">Có %1$d gói nội dung mới hoặc chưa cài</string>
+    <string name="q1_view_packages">Xem gói</string>
+    <string name="q1_installed_places">Địa điểm đã lưu trên máy</string>
+    <string name="q1_package_wait_playback">Đã xác minh. Hãy dừng bài đang nghe để cài gói; có thể hủy để giữ phiên bản cũ.</string>
+    <string name="q1_stop_and_install">Dừng nghe để cài gói</string>
+    <string name="q1_package_removed">Đã xóa gói bổ sung. Gói cơ bản được giữ.</string>
 </resources>

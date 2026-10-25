@@ -12,6 +12,7 @@ import { daysAgo, today, number, percent, dateTime } from "../lib/format";
 import { exportReport } from "../lib/export";
 import { feedbackForExport, feedbackQuery } from "../lib/feedback";
 import { LiveFeedback } from "../components/LiveFeedback";
+import { VisitorStats } from "../components/VisitorStats";
 
 export default function LiveAnalytics() {
   const [params, setParams] = useSearchParams();
@@ -163,6 +164,7 @@ export default function LiveAnalytics() {
             <LoadingState />
           ) : (
             <>
+              <VisitorStats authorization={authorization} />
               <p className="muted" role="status" aria-live="polite">
                 Cập nhật: {dateTime(data.generatedAt)} · Một lượt = một phiên
                 bắt đầu phát, không phải lượt nghe hết.

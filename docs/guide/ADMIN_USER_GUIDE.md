@@ -84,6 +84,10 @@ Admin quản lý phản hồi đã có trong hệ thống; không thay thế ch�
 
 Trang chủ Web du khách có nút APK và QR cùng đường dẫn. Mở **đúng link Cloudflare hiện tại** trước khi quét hoặc bấm **Lưu mã QR**; dưới mã hiển thị tên miền tải APK. Nếu tunnel đổi địa chỉ, lưu/quét QR mới từ link mới. QR mặc định lấy tên miền website đang mở, trừ khi nhóm vận hành đã cấu hình nơi lưu APK riêng.
 
-APK hiện là bản debug demo. Tải APK khác với tải gói nội dung. Cài app xong cần cấu hình **Kết nối máy chủ** theo địa chỉ Web du khách được cấp. Điện thoại thật không dùng `localhost` hoặc địa chỉ máy ảo `10.0.2.2` để kết nối máy tính từ Internet.
+APK hiện là bản debug demo. Tải APK khác với tải gói nội dung. APK 1.1.0-dev được build với URL Cloudflare lúc phát hành. Nếu tunnel đổi, vào **Hồ sơ → Kết nối máy chủ** để lưu địa chỉ Web du khách mới. Điện thoại thật không dùng `localhost` hoặc địa chỉ máy ảo `10.0.2.2` để kết nối máy tính từ Internet.
 
 Khi báo lỗi, ghi trang đang dùng, tên địa điểm, vai trò tài khoản, thao tác vừa làm và thông báo lỗi; không gửi mật khẩu/token. Nếu chưa thấy bài mới, kiểm tra lần lượt: gửi duyệt → chấp thuận → tác vụ READY → đúng link → đúng gói → đã xác nhận tải → danh sách địa điểm trong gói.
+
+## Khách vãng lai Web và Android
+
+Trong **Thống kê & phản hồi**, khối **Khách vãng lai dùng ứng dụng** hiển thị tổng lượt cài đặt Android/hồ sơ trình duyệt đã mở và số hoạt động trong 5 phút gần nhất, tách hai nền tảng. Khối này độc lập kỳ báo cáo lượt nghe. Nhiều tab cùng trình duyệt tính một; xóa dữ liệu hoặc cài lại có thể tạo ID mới. Tải APK mà chưa mở app chưa được tính. Lượt nghe điện thoại cũng được cộng vào tổng lượt phát; nghe offline được gửi lại khi có mạng, giữ thời điểm nghe gốc và không đếm trùng khi gửi lại.

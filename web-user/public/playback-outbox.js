@@ -55,10 +55,10 @@ export async function flushReceipts(force = false) {
     attempted.add(item.eventId);
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
-    const { eventId, contentId, occurredAt, offline } = item;
+    const { eventId, contentId, occurredAt, offline, installationId, platform } = item;
     try {
       const response = await fetch('/api/playbacks', { method: 'POST', signal: controller.signal,
-        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId, contentId, occurredAt, offline }) });
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ eventId, contentId, occurredAt, offline, installationId, platform }) });
       if (!response.ok) {
         const terminal = response.status >= 400 && response.status < 500 && ![408, 425, 429].includes(response.status);
         await settle(item, terminal ? 'reject' : 'retry', response.status);

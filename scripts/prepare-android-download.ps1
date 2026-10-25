@@ -1,10 +1,19 @@
-param([switch]$SkipBuild)
+param([switch]$SkipBuild, [string]$ApiBaseUrl)
 $ErrorActionPreference = 'Stop'
 $downloadRoot = Split-Path -Parent $PSScriptRoot
 if (-not $SkipBuild) {
+    if (-not $ApiBaseUrl) {
+        $tunnelState = Join-Path $downloadRoot '.local-tools/docker-web-share.json'
+        if (Test-Path -LiteralPath $tunnelState) { $ApiBaseUrl = (Get-Content -LiteralPath $tunnelState -Raw | ConvertFrom-Json).url }
+        if (-not $ApiBaseUrl) { $ApiBaseUrl = 'http://10.0.2.2:8081/' }
+    }
+    $backendUri = [Uri]$ApiBaseUrl
+    if (-not $backendUri.IsAbsoluteUri -or $backendUri.Scheme -notin @('http','https') -or $backendUri.UserInfo -or $backendUri.Query -or $backendUri.Fragment -or $backendUri.AbsolutePath -ne '/') {
+        throw 'ApiBaseUrl must be an HTTP(S) origin without credentials, path or query.'
+    }
     Push-Location (Join-Path $downloadRoot 'android')
     try {
-        & .\gradlew.bat :app:assembleDebug '-PdemoBuildDir=.verification-build'
+        & .\gradlew.bat :app:assembleDebug '-PdemoBuildDir=.verification-build' "-PtravelApiBaseUrl=$ApiBaseUrl"
         if ($LASTEXITCODE -ne 0) { throw 'Android build failed.' }
     } finally { Pop-Location }
 }
@@ -15,11 +24,12 @@ New-Item -ItemType Directory -Path $downloadDir -Force | Out-Null
 $apkTarget = Join-Path $downloadDir 'travelvoice.apk'
 Copy-Item -LiteralPath $apkSource -Destination $apkTarget -Force
 $release = Get-Content -LiteralPath (Join-Path $downloadRoot 'android/.verification-build/app/outputs/apk/debug/output-metadata.json') -Raw | ConvertFrom-Json
+$apkHash = (Get-FileHash -LiteralPath $apkTarget -Algorithm SHA256).Hash.ToLowerInvariant()
 $metadata = [ordered]@{
-    url = '/downloads/travelvoice.apk'
+    url = '/downloads/travelvoice.apk?v=' + $apkHash.Substring(0,12)
     version = $release.elements[0].versionName
     sizeBytes = (Get-Item -LiteralPath $apkTarget).Length
-    sha256 = (Get-FileHash -LiteralPath $apkTarget -Algorithm SHA256).Hash.ToLowerInvariant()
+    sha256 = $apkHash
 }
 $metadataTarget=Join-Path $downloadDir 'android-release.json'
 $metadataTemporary=Join-Path $downloadDir ('android-release.'+[Guid]::NewGuid().ToString('N')+'.tmp')

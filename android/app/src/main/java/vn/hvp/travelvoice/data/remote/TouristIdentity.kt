@@ -12,15 +12,13 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.security.KeyStore
-import java.security.SecureRandom
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-/** Device-bound AES-GCM storage. Tokens and queued identity snapshots are excluded from backup. */
+/** Anonymous installation ID; the existing AES-GCM store preserves queued listening events. */
 class TouristIdentity(context: Context) {
     private companion object { val lock = Any() }
     private val prefs = context.applicationContext.getSharedPreferences("tourist-secure-v1", Context.MODE_PRIVATE)
@@ -43,29 +41,29 @@ class TouristIdentity(context: Context) {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding"); cipher.init(Cipher.ENCRYPT_MODE,key())
         check(prefs.edit().putString(storageName(name),Base64.encodeToString(cipher.iv + cipher.doFinal(value.toByteArray()),Base64.NO_WRAP)).commit())
     }
-    fun installation(): String = synchronized(lock) { read("installation") ?: Base64.encodeToString(ByteArray(32).also { SecureRandom().nextBytes(it) },Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING).also { write("installation",it) } }
-    fun session(): JSONObject? = synchronized(lock) {
-        val current = read("session")?.let(::JSONObject) ?: return@synchronized null
-        if (Instant.parse(current.getString("expiresAt")).isAfter(Instant.now())) return@synchronized current
-        signedOut(); null
+    fun installation(): String = synchronized(lock) {
+        val anonymous = contextPreferences()
+        anonymous.getString("id", null) ?: java.util.UUID.randomUUID().toString().also {
+            check(anonymous.edit().putString("id", it).commit())
+        }
     }
+    private val anonymousPrefs = context.applicationContext.getSharedPreferences("anonymous-visitor-v1", Context.MODE_PRIVATE)
+    private fun contextPreferences() = anonymousPrefs
     fun snapshot(): JSONObject {
-        val current = session()
-        return JSONObject().put("installation",installation()).also { record -> current?.let { record.put("token",it.getString("accessToken")).put("userId",it.getString("userId")) } }
+        return JSONObject().put("installation",installation())
     }
-    fun signedIn(session: JSONObject) = synchronized(lock) { write("session",session.toString()) }
-    fun signedOut() = synchronized(lock) { write("session",null); write("installation",null) }
 }
 
-object TouristApi {
-    private val client = OkHttpClient.Builder().connectTimeout(5,TimeUnit.SECONDS).callTimeout(25,TimeUnit.SECONDS).build()
-    suspend fun post(base: String,path: String,body: JSONObject,identity: JSONObject): JSONObject = withContext(Dispatchers.IO) {
-        val builder = Request.Builder().url(base + "api/tourist/" + path).header("X-Installation-Key",identity.getString("installation"))
-        identity.optString("token").takeIf { it.isNotBlank() }?.let { builder.header("Authorization","Bearer $it") }
-        client.newCall(builder.post(body.toString().toRequestBody("application/json".toMediaType())).build()).execute().use { response ->
-            val raw = response.body?.string().orEmpty()
-            if (!response.isSuccessful) throw GuideApiException(response.code,"Identity request failed")
-            if (raw.isBlank()) JSONObject() else JSONObject(raw)
-        }
+object VisitorApi {
+    private val client = OkHttpClient.Builder().connectTimeout(5,TimeUnit.SECONDS).callTimeout(15,TimeUnit.SECONDS).build()
+    fun isOnline(context: Context): Boolean {
+        val manager = context.getSystemService(android.net.ConnectivityManager::class.java)
+        return manager.getNetworkCapabilities(manager.activeNetwork)?.hasCapability(android.net.NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+    suspend fun heartbeat(context: Context, base: String) = withContext(Dispatchers.IO) {
+        val payload = JSONObject().put("installationId", TouristIdentity(context).installation()).put("platform", "ANDROID")
+        val request = Request.Builder().url(base + "api/visitors/heartbeat")
+            .post(payload.toString().toRequestBody("application/json".toMediaType())).build()
+        client.newCall(request).execute().use { check(it.isSuccessful) { "Chưa đồng bộ trạng thái khách" } }
     }
 }

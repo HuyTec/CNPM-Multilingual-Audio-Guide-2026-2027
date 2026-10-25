@@ -35,10 +35,11 @@ export function createPublicServer({ dist, backend }) {
     const publicApi = locationRoute.test(path) || imageRoute.test(path) || audioRoute.test(path) || packageRoute.test(path)
       || path === '/api/categories' || /^\/demo-audio\/[a-z-]+\.wav$/.test(path);
     const playback = path === '/api/playbacks' && req.method === 'POST';
-    if (publicApi || playback) {
-      if (!read && !playback) { reply(res, 405, 'Method not allowed'); return; }
+    const heartbeat = path === '/api/visitors/heartbeat' && req.method === 'POST';
+    if (publicApi || playback || heartbeat) {
+      if (!read && !playback && !heartbeat) { reply(res, 405, 'Method not allowed'); return; }
       let body;
-      if (playback) {
+      if (playback || heartbeat) {
         if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) { reply(res, 415, 'JSON required'); return; }
         try {
           const chunks = []; let length = 0;
@@ -49,11 +50,19 @@ export function createPublicServer({ dist, backend }) {
           }
           const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
           const validId = new RegExp(`^${uuid}$`);
+          if (heartbeat) {
+            if (!data || !validId.test(data.installationId) || !['WEB', 'ANDROID'].includes(data.platform)) throw new Error();
+            body = JSON.stringify({ installationId: data.installationId, platform: data.platform });
+          } else {
           if (!data || typeof data.eventId !== 'string' || typeof data.contentId !== 'string'
             || !validId.test(data.eventId) || !validId.test(data.contentId)) throw new Error();
           if (data.offline !== undefined && typeof data.offline !== 'boolean') throw new Error();
           if (data.occurredAt !== undefined && (typeof data.occurredAt !== 'string' || !Number.isFinite(Date.parse(data.occurredAt)))) throw new Error();
-          body = JSON.stringify({ eventId: data.eventId, contentId: data.contentId, offline: data.offline, occurredAt: data.occurredAt });
+          if ((data.installationId !== undefined || data.platform !== undefined)
+              && (!validId.test(data.installationId) || !['WEB','ANDROID'].includes(data.platform))) throw new Error();
+          body = JSON.stringify({ eventId: data.eventId, contentId: data.contentId, offline: data.offline, occurredAt: data.occurredAt,
+            installationId: data.installationId, platform: data.platform });
+          }
         } catch { reply(res, 400, 'Invalid playback receipt'); return; }
       }
       const headers = { accept: req.headers.accept || '*/*' };
