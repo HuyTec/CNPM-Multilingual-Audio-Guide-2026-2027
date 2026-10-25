@@ -1,6 +1,6 @@
 # TravelVoice · Web Admin
 
-Danh sách, biên tập và thống kê mặc định dùng PostgreSQL thật qua cùng backend cổng 8080 với Web du khách/Android. Hợp đồng: [ADMIN_CONTENT_API.md](../backend/ADMIN_CONTENT_API.md). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Phản hồi giả lập chỉ ở `/analytics?source=mock`.
+Danh sách, biên tập, thống kê và quản lý phản hồi mặc định dùng API PostgreSQL qua cùng backend với Web du khách/Android. Hợp đồng: [ADMIN_CONTENT_API.md](../backend/ADMIN_CONTENT_API.md), [hướng dẫn code/demo](../docs/vi/DEMO_CODE_GUIDE.md). Bản APPROVED tiếp tục được phục vụ khi sửa nháp hoặc gửi duyệt; chưa có hành động tự duyệt/xuất bản. Giao diện phản hồi giả lập chỉ ở `/analytics?source=mock`, không tự fallback khi API lỗi.
 
 ## Demo Web Admin UC-06 / UC-07
 
@@ -8,7 +8,11 @@ Giao diện tiếng Việt, React Router, Tailwind. Yêu cầu hiện hành: [PR
 
 - `/locations`: danh sách, tìm kiếm, trạng thái và phân trang.
 - `/locations/new`, `/locations/:id/edit`: lưu nháp, gửi duyệt, kịch bản ngôn ngữ × FULL/SHORT, audio preview/retry và cảnh báo chưa lưu. Không thay thế bản published.
-- `/analytics`: thống kê lượt nghe Web/Android thật, kỳ 30 ngày, tự cập nhật 5 giây và xuất XLSX từ API.
+- `/analytics`: thống kê lượt nghe Web/Android, kỳ 30 ngày, tự cập nhật 5 giây; phản hồi đọc API, lọc/phân trang/chi tiết/chuyển NEW → IN_REVIEW → RESOLVED. XLSX gồm thống kê và toàn bộ phản hồi đúng kỳ + bộ lọc, không cắt theo trang.
+
+Form hỗ trợ tên theo ngôn ngữ dùng chung selector với kịch bản/audio; danh sách chọn tên VI → EN → ngôn ngữ khác → legacy. REJECTED và nhận xét reviewer chỉ đọc; sửa rồi lưu nháp/gửi lại. Backend cần migration V5/V5_1; editor không tự cập nhật bảng published. Nguồn gửi feedback và quy trình reviewer/publication nằm ngoài UC-06/UC-07.
+
+Test UI mặc định dùng HTTP fixtures rõ ràng trong `tests/admin-fixture.ts`; không dùng kết quả này làm bằng chứng DB tích hợp. ExcelJS đã dynamic import khi xuất, vẫn có cảnh báo chunk ~930 kB. Ngày 25/10/2026: lint/build pass, 16 UI tests pass/5 live tests skip; DB integration chưa chạy vì Docker Desktop lỗi khởi động.
 
 Đăng nhập bằng tài khoản Basic Auth demo cấu hình tại backend. Local hiện lưu cấu hình trong `.env.admin.local` ở root (ignored); không gửi mật khẩu vào chat/commit. Phiên chỉ giữ trong bộ nhớ tab, reload cần đăng nhập lại. Form có sáu ngôn ngữ × FULL/SHORT; text và audio lưu trong DB, tải lại vẫn nghe thử được. Xung đột phiên bản trả 409 và giữ dữ liệu đang nhập. Lưu nháp cho phép thiếu trường; gửi duyệt kiểm tra tên/danh mục/tọa độ/bán kính. Audio MP3/WAV/OGG tối đa 20 MB; upload lỗi giữ text và cho thử lại.
 

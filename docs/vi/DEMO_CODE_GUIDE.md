@@ -1,770 +1,274 @@
-# Hướng dẫn đọc và tự review mã nguồn demo
+# Hướng dẫn mã nguồn và chạy demo
 
-Ngày giải thích: **19/10/2026**. Mốc source: **`9731cbe`**.
+Cập nhật theo source ngày **25/10/2026**, sau các commit phân lớp JDBC và hoàn thiện Web Admin. Đây là hướng dẫn code/setup, không phải xác nhận đã triển khai production hoặc đã chạy mọi integration test. Yêu cầu chuẩn: [PRD EN](../en/PRD_Report.md), [PRD VI](PRD_Report_vi.md); hồ sơ thiết kế/review lịch sử: [HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21). Bản hướng dẫn cũ ngày 19/10 mô tả editor/feedback mock không còn phản ánh luồng mặc định hiện tại.
 
-Tài liệu này giải thích **code hiện có**, giúp thành viên lần theo dữ liệu và tự kiểm tra trước khi sửa. Đây không phải xác nhận rằng tất cả chức năng đã hoàn thành hoặc là PRD mới.
-
-**Cập nhật hướng sản phẩm ngày 19/10/2026:** PRD §2.4 đã chốt Web du khách và Android dùng chung UC-01–UC-05, nghiệp vụ và backend/nội dung. Web Admin vẫn riêng. Source được giải thích bên dưới chưa có Web du khách hoàn chỉnh; sơ đồ source hiện tại không thay thế kiến trúc đích mới trong PRD.
-
-**Bắt đầu:** đọc mục 1–3 để hiểu hệ thống, sau đó chọn một luồng ở mục 4. Không cần đọc hết mọi file trong một buổi.
-
-Nguồn yêu cầu: [PRD EN](../en/PRD_Report.md), [PRD VI](PRD_Report_vi.md). Kết luận review và quyết định thiết kế tiếp tục quản lý tại [HVP-21 — Web](https://trannhuthuy897.atlassian.net/browse/HVP-21), [HVP-22 — Android](https://trannhuthuy897.atlassian.net/browse/HVP-22) và các Epic. Khi source thay đổi, đối chiếu lại tài liệu bằng tên hàm; không mặc định mô tả này luôn cập nhật.
-
-## 1. Bản demo hiện có những gì?
-
-Có ba ứng dụng trong cùng repository:
-
-| Phần | Chạy ở đâu? | Trách nhiệm |
-| --- | --- | --- |
-| `android/` | Điện thoại hoặc emulator | Giao diện du khách, bản đồ, nghe demo |
-| `web-admin/` | Trình duyệt | Giao diện biên tập và thống kê |
-| `backend/multi-audio-guide/` | Máy chạy Java/Docker | API, kiểm tra dữ liệu, truy vấn PostgreSQL |
-
-Android không chứa Spring Boot hoặc PostgreSQL. Web và Android gửi HTTP request tới backend; backend mới truy cập database.
+## 1. Kiến trúc và nguyên tắc phân lớp
 
 ```mermaid
 flowchart LR
-    Android[Android - Nghe demo] --> API[Spring Boot API]
-    WebLive[Web - thống kê live] --> API
-    API --> DB[(PostgreSQL / PostGIS)]
-    Android --> Audio[Audio WAV do backend phục vụ]
-    WebMock[Web - biên tập và feedback mock] --> LS[(localStorage trình duyệt)]
-    AndroidMock[Android - Explore / Detail / Player / Offline] --> Fixtures[Dữ liệu mẫu và state UI]
+    Web[Web Admin React/Vite] --> C[Controller: HTTP và DTO]
+    Tourist[Web du khách / Android] --> C
+    C --> S[Service: nghiệp vụ và transaction]
+    S --> R[Repository: SQL và row mapping]
+    R --> DB[(PostgreSQL / PostGIS)]
+    S --> Signer[PackageSigner: SHA-256 / RSA]
+    S --> Audio[AudioFileReader: nguồn audio cho phép]
+    Audio --> R
 ```
 
-**Hai khối mock không tự đồng bộ với database.** Sửa địa điểm trên Web hiện không thay nội dung tab Nghe demo hoặc Khám phá của Android.
+- Controller nhận tham số HTTP, dùng `@Valid` cho JSON lưu nội dung/chuyển trạng thái, gọi Service, trả record DTO hoặc binary audio/package. Không viết SQL hay quyết định trạng thái nghiệp vụ.
+- Service kiểm tra nghiệp vụ và điều phối, đặt `@Transactional`. Không inject JdbcTemplate và không viết SQL. Truy vấn có tham số và ánh xạ ResultSet/JSONB đều ở Repository.
+- Giữ Spring JDBC vì code/schema/PostGIS đã dùng JDBC và cần SQL rõ ràng. Repository là class cụ thể, không cần JPA/Hibernate hoặc Service Interface + Impl.
+- Các object linh hoạt có kiểu cụ thể: tên là `Map<String,String>`, biến thể là `Map<String,Asset>`. Request/response Admin và Package không còn `Map<String,Object>`.
+- Flyway quản lý schema. Không sửa migration đã áp dụng hay sửa tay database để triển khai tính năng.
 
-### 1.1 Phân biệt bốn mức hoàn thiện
+Gốc Java trong các liên kết bên dưới là `backend/multi-audio-guide/src/main/java/com/application/`.
 
-| Mức | Ví dụ trong dự án | Điều nó chứng minh |
-| --- | --- | --- |
-| Giao diện | Có nút TTS, thanh tiến độ | Có thể biểu diễn thao tác |
-| Mô phỏng logic | Timer tăng vị trí nghe | State UI thay đổi theo tình huống |
-| Tích hợp | MediaPlayer tải WAV, API ghi event | Có mã làm việc với dịch vụ thật |
-| Kiểm chứng runtime | Thiết bị phát, dashboard tăng đúng | Luồng đã chạy đúng trong điều kiện kiểm tra |
+## 2. Lần theo các luồng chính
 
-Không suy từ việc có UI, có bảng DB hoặc build thành công rằng cả luồng đã tích hợp và được kiểm chứng.
+| Luồng | Controller | Service | Repository / thành phần |
+|---|---|---|---|
+| Danh mục, tìm kiếm, chi tiết địa điểm | [LocationController](../../backend/multi-audio-guide/src/main/java/com/application/controller/LocationController.java) | [LocationDiscoveryService](../../backend/multi-audio-guide/src/main/java/com/application/service/LocationDiscoveryService.java) | [LocationRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/LocationRepository.java), [CategoryRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/CategoryRepository.java), [DiscoveryMapper](../../backend/multi-audio-guide/src/main/java/com/application/mapper/DiscoveryMapper.java) |
+| Lấy thuyết minh | [GuideController](../../backend/multi-audio-guide/src/main/java/com/application/controller/GuideController.java) | [PlaybackService](../../backend/multi-audio-guide/src/main/java/com/application/service/PlaybackService.java) | [GuideRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/GuideRepository.java) |
+| Ghi lượt bắt đầu phát và thống kê | [DemoPlaybackController](../../backend/multi-audio-guide/src/main/java/com/application/controller/DemoPlaybackController.java) | PlaybackService | GuideRepository, [PlaybackRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/PlaybackRepository.java) |
+| Cấu hình, danh sách, biên tập, upload/preview Admin | [AdminContentController](../../backend/multi-audio-guide/src/main/java/com/application/controller/AdminContentController.java) | [AdminContentService](../../backend/multi-audio-guide/src/main/java/com/application/service/AdminContentService.java) | [AdminContentRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/AdminContentRepository.java) |
+| Gói offline và public key | [ContentPackageController](../../backend/multi-audio-guide/src/main/java/com/application/controller/ContentPackageController.java) | [ContentPackageService](../../backend/multi-audio-guide/src/main/java/com/application/service/ContentPackageService.java) | [ContentPackageRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/ContentPackageRepository.java), [PackageSigner](../../backend/multi-audio-guide/src/main/java/com/application/component/PackageSigner.java), [AudioFileReader](../../backend/multi-audio-guide/src/main/java/com/application/component/AudioFileReader.java) |
+| Phản hồi: danh sách, lọc, chi tiết, trạng thái, dữ liệu xuất | [FeedbackController](../../backend/multi-audio-guide/src/main/java/com/application/controller/FeedbackController.java) | [FeedbackService](../../backend/multi-audio-guide/src/main/java/com/application/service/FeedbackService.java) | [FeedbackRepository](../../backend/multi-audio-guide/src/main/java/com/application/repository/FeedbackRepository.java) |
 
-### 1.2 Ba bộ dữ liệu cần nhận diện
+Danh sách Admin: trước đây `list()` lấy ID rồi gọi `detail()` từng ID: **1 + 2N + P SELECT**, N là số ID, P là số ID có hàng trong locations (có thêm truy vấn assets). Nếu cả N đều có locations thì 1 + 3N. Hiện `workspaces(null)` lấy metadata/draft/tên bằng một SELECT và assets bằng một SELECT batch: **2 SELECT khi có dữ liệu, 1 khi rỗng**, không tăng theo N. Đây là số câu query trong code; test đo trên JDBC thật ở AdminWorkflowIntegrationTest chưa chạy trong phiên này vì DB không sẵn sàng. Config/login là request khác, không được tính vào hai query danh sách.
 
-| Nguồn | Địa điểm mẫu | Ngôn ngữ mẫu |
-| --- | --- | --- |
-| Web `src/mocks/data.ts` | Sáu địa điểm TP.HCM | `vi`, `en`, `fr` |
-| Android `DemoData.kt` | Sáu địa điểm Hà Nội | `VI`, `EN`, `JA` |
-| Backend demo seed | Ba địa điểm Demo | Ba guide `VI/SHORT` có WAV |
+## 3. Hợp đồng API
 
-Web dùng ID như `loc-1`; Android mock dùng `ngoc-son`; backend dùng UUID. Không ghép chúng thành một địa điểm chỉ dựa trên tên hiển thị.
+API nằm dưới `/api`. Mã thành công là 200. `Admin` trong cột Auth nghĩa HTTP Basic qua [DemoAdminFilter](../../backend/multi-audio-guide/src/main/java/com/application/config/DemoAdminFilter.java). Thiếu/sai credentials → 401; server chưa cấu hình mật khẩu → 503. Không có đăng ký/tạo tài khoản Admin trong phạm vi này.
 
-## 2. Từ điển để đọc code
+| Method / đường dẫn | Request / response | Auth | Lỗi chính |
+|---|---|---|---|
+| GET `/api/categories` | Không body → [CategoryResponse](../../backend/multi-audio-guide/src/main/java/com/application/dto/CategoryResponse.java)[] | Public | 503 |
+| GET `/api/locations` | `keyword`, `categoryId`, `page=0`, `size=20` → [LocationSearchResponse](../../backend/multi-audio-guide/src/main/java/com/application/dto/LocationSearchResponse.java) | Public | 400,404,503 |
+| GET `/api/locations/{locationId}` | UUID → [LocationResponse](../../backend/multi-audio-guide/src/main/java/com/application/dto/LocationResponse.java) | Public | 400,404,503 |
+| GET `/api/locations/{id}/guide` | `language=VI`, `scriptType=FULL` → [GuideContent](../../backend/multi-audio-guide/src/main/java/com/application/model/GuideContent.java) | Public | 400,404,503 |
+| POST `/api/playbacks` | [PlaybackRequest](../../backend/multi-audio-guide/src/main/java/com/application/dto/PlaybackRequest.java): eventId, contentId, occurredAt?, offline? → [PlaybackReceipt](../../backend/multi-audio-guide/src/main/java/com/application/dto/PlaybackReceipt.java) | Public, profile demo | 400,404,409,503 |
+| GET `/api/admin/analytics` | from/to ISO date, mặc định 30 ngày → [AnalyticsResponse](../../backend/multi-audio-guide/src/main/java/com/application/dto/AnalyticsResponse.java) | Admin, demo | 400,401,503 |
+| GET `/api/admin/content/config` | Không body → AdminContentDto.Config | Admin, demo | 401,503 |
+| GET `/api/admin/content/locations` | Không body → AdminContentDto.LocationDetail[] | Admin, demo | 401,503 |
+| GET `/api/admin/content/locations/{id}` | UUID → AdminContentDto.LocationDetail | Admin, demo | 400,401,404,503 |
+| PUT `/api/admin/content/locations/{id}` | AdminContentDto.SaveRequest → LocationDetail | Admin, demo | 400,401,409,503 |
+| POST `/api/admin/content/audio` | Multipart: locationId, language, scriptType, file → AdminContentDto.UploadResponse | Admin, demo | 400,401,413,503 |
+| GET `/api/admin/content/audio/{id}.{format}` | UUID/format → bytes với Content-Type audio | Admin, demo | 400,401,404,503 |
+| GET `/api/content-audio/{id}.{format}` | UUID/format → audio chỉ khi được nội dung APPROVED tham chiếu | Public, demo | 400,404,503 |
+| GET `/api/content-packages/key` | Không body → ContentPackageDto.PublicKey | Public, demo | — |
+| GET `/api/content-packages` | Không body → ContentPackageDto.Manifest[] cho BASE/OPTIONAL | Public, demo | 404,503 |
+| GET `/api/content-packages/{scope}/{version}` | BASE hoặc OPTIONAL, version → JSON package bytes; header X-Content-SHA256 | Public, demo | 400,404,503 |
+| GET `/api/admin/feedback` | FeedbackDto.Query: from/to/category/status/page=1/size=10 → FeedbackDto.Page | Admin, demo | 400,401,503 |
+| GET `/api/admin/feedback/{id}` | UUID → FeedbackDto.Item | Admin, demo | 400,401,404,503 |
+| PATCH `/api/admin/feedback/{id}/status` | FeedbackDto.StatusRequest: status → Item có timestamp cập nhật | Admin, demo | 400,401,404,409,503 |
+| GET `/api/admin/feedback/export` | Cùng bộ lọc/kỳ → FeedbackDto.Item[], toàn bộ kết quả không cắt trang | Admin, demo | 400,401,503 |
 
-| Từ | Hiểu trong dự án này |
-| --- | --- |
-| Mock / fixture | Dữ liệu chuẩn bị sẵn để trình diễn hoặc test |
-| State | Giá trị quyết định UI hiện đang hiển thị gì |
-| Derived data | Kết quả tính từ state/dữ liệu khác, ví dụ danh sách sau lọc |
-| Side effect | Việc ngoài tính UI: gọi HTTP, timer, đăng ký listener, ghi storage |
-| Route | Đường dẫn mở màn hình |
-| Query parameter | Trạng thái sau dấu `?`, ví dụ `status=NEW&page=2` |
-| DTO | Dữ liệu được nhận/trả qua API |
-| Repository | Nơi thực hiện truy vấn dữ liệu |
-| Revision | Một phiên bản nội dung có ID riêng |
-| Idempotency | Gửi lại cùng sự kiện vẫn chỉ tạo một bản ghi |
-| Outbox | Danh sách sự kiện lưu trên thiết bị để gửi lại khi lỗi |
-| Audio focus | Quyền sử dụng âm thanh do hệ điều hành điều phối |
-| TTS | Chuyển văn bản thành tiếng nói; khác với phát một WAV có sẵn |
+Định nghĩa record: [AdminContentDto](../../backend/multi-audio-guide/src/main/java/com/application/dto/AdminContentDto.java), [ContentPackageDto](../../backend/multi-audio-guide/src/main/java/com/application/dto/ContentPackageDto.java), [FeedbackDto](../../backend/multi-audio-guide/src/main/java/com/application/dto/FeedbackDto.java). Endpoint feedback/export trả JSON; trình duyệt tạo XLSX bằng ExcelJS. Không có endpoint approve/publish/reject nội dung hoặc nhận feedback mới từ du khách trong UC-06/UC-07 này.
 
-## 3. Bản đồ thư mục và điểm bắt đầu
+[ApiExceptionHandler](../../backend/multi-audio-guide/src/main/java/com/application/controller/ApiExceptionHandler.java) chuyển lỗi nghiệp vụ, JSON/validation, sai kiểu tham số và lỗi truy cập DB thành ProblemDetail. Lỗi DB → 503, không trả SQL cho client. Multipart quá kích thước do Spring xử lý; không cam kết mọi lỗi container có cùng format JSON.
 
-```text
-web-admin/src/
-  main.tsx                 Gắn React vào trang HTML
-  App.tsx                  Layout và routes
-  pages/                   Các màn nghiệp vụ
-  components/ui/           Control dùng chung
-  components/locations/    Hàng địa điểm và chỉ báo ngôn ngữ
-  mocks/data.ts            Model + fixture + lưu localStorage
-  lib/                     Format, export, hook loading, live analytics
+Public discovery và guide chỉ trả nội dung được công khai. Guide fallback Selected → EN → VI, giữ nguyên FULL/SHORT. Receipt dùng eventId để chống đếm trùng; cùng eventId cho content khác → 409. Analytics đếm lượt **bắt đầu phát**, không suy ra nghe hết, và dùng giờ Asia/Ho_Chi_Minh. Kỳ báo cáo tối đa 366 ngày.
 
-android/app/src/main/java/vn/hvp/travelvoice/
-  MainActivity.kt          Điểm vào Android
-  ui/navigation/DemoApp.kt Điều hướng và các tab
-  ui/screens/              Các màn Compose
-  ui/mock/DemoData.kt      Dữ liệu mẫu Android
-  data/remote/             HTTP client và outbox lượt nghe
-  platform/audio/          MediaPlayer thật
-  platform/maps/           MapLibre và lifecycle bản đồ
-  domain/model/            Kiểu dữ liệu tọa độ/bản đồ
+## 4. Nháp, tên đa ngôn ngữ và xét duyệt
 
-backend/multi-audio-guide/src/main/
-  java/com/application/
-    controller/            HTTP endpoints và xử lý lỗi
-    service/               Kiểm tra và xử lý nghiệp vụ
-    repository/            SQL bằng Spring JDBC
-    dto/                   Hợp đồng request/response
-    mapper/                Chuyển model sang DTO
-    model/                 Kiểu dữ liệu đọc từ DB
-    config/                Basic Auth demo
-  resources/
-    db/migration/          Tạo và thay đổi schema
-    db/demo/               Dữ liệu mẫu khi bật profile demo
-    static/demo-audio/     WAV tạo sẵn
-```
+SaveRequest giữ các trường cũ `id`, `name`, `category`, `latitude`, `longitude`, `radius`, `status`, `assets`, `editVersion`; bổ sung `names` dạng `{ "vi": "Tên Việt", "en": "English name" }`. UUID trên wire vẫn là chuỗi. Category là tên danh mục cấu hình hiện hành; tọa độ/bán kính trên wire vẫn là chuỗi để nháp được trống. Assets có khóa `language:FULL|SHORT` và Asset có locationId/languageCode/scriptType/text/audioUrl/audioName. Gửi đầy đủ assets để giữ biến thể khác.
 
-Backend hiện dùng **Spring JDBC và SQL**, không phải JPA/Hibernate. Thư mục `model` không đồng nghĩa với các JPA Entity có `@Entity`.
-
-## 4. Chọn thứ tự đọc theo luồng
-
-Các thời lượng dưới đây là gợi ý chia buổi, không phải thời gian bắt buộc.
-
-| Buổi | Nội dung | Mục tiêu | Ước lượng |
-| --- | --- | --- | --- |
-| 1 | Mục 1–3 và 5 | Nắm ranh giới thật/mock và API | 20–30 phút |
-| 2 | Mục 6–8 | Theo một lượt phát từ Android tới dashboard | 30–45 phút |
-| 3 | Mục 9–11 | Theo một lần sửa/lưu địa điểm Web | 30–45 phút |
-| 4 | Mục 12–14 | Hiểu feedback, export và control dùng chung | 25–40 phút |
-| 5 | Mục 15–19 | Android mock, hạ tầng và cách kiểm chứng | 30–45 phút |
-
-Sau mỗi buổi, viết lại luồng bằng lời của mình và đánh dấu mục 20. Nếu chưa giải thích được một phần, đọc lại đúng hàm đó trước khi yêu cầu AI sửa.
-
-## 5. Backend: request đi qua những lớp nào?
+Tên trên danh sách: VI → EN → ngôn ngữ còn lại theo thứ tự mã → tên legacy. Client cũ không gửi names vẫn được hỗ trợ qua name; khi cả names và name được gửi, client mới gửi name bằng giá trị fallback hiện tại, còn sửa name độc lập được coi là chỉnh tên VI legacy. Tên theo ngôn ngữ dùng chung bộ chọn với kịch bản/audio, không phụ thuộc FULL/SHORT. Ngôn ngữ/danh mục lấy từ config DB.
 
 ```mermaid
-sequenceDiagram
-    participant Client as Android / Web
-    participant Controller
-    participant Service
-    participant Repository
-    participant DB as PostgreSQL
-    Client->>Controller: HTTP request
-    Controller->>Service: Tham số đã chuyển kiểu
-    Service->>Service: Kiểm tra quy tắc
-    Service->>Repository: Đọc hoặc ghi dữ liệu
-    Repository->>DB: SQL và tham số
-    DB-->>Repository: Kết quả
-    Repository-->>Service: Model / số lượng
-    Service-->>Controller: DTO / kết quả nghiệp vụ
-    Controller-->>Client: JSON và HTTP status
+stateDiagram-v2
+    [*] --> DRAFT
+    DRAFT --> PENDING_REVIEW: Gửi duyệt hợp lệ
+    PENDING_REVIEW --> REJECTED: Quy trình review bên ngoài
+    REJECTED --> DRAFT: Biên tập và lưu nháp
+    REJECTED --> PENDING_REVIEW: Sửa và gửi lại
+    PENDING_REVIEW --> APPROVED: Phê duyệt và xuất bản bên ngoài
 ```
 
-### 5.1 API hiện có
+- DRAFT cho phép thiếu thông tin; PENDING_REVIEW cần tên, danh mục hoạt động, lat/lng hợp lệ và bán kính nguyên dương. Frontend hiển thị lỗi cạnh trường và focus trường đầu; backend vẫn kiểm tra độc lập.
+- Tên/kịch bản bản làm việc nằm trong JSONB `admin_content_drafts.payload`; Repository chịu trách nhiệm serialize/deserialize. Tên đã công khai có bảng location_translations; editor không ghi đè bảng published này.
+- `editVersion=0` tạo bản làm việc nếu chưa có; phiên bản >0 cập nhật có điều kiện bằng version. Cập nhật thành công tăng version và ghi updatedBy/updatedAt. Không khớp → 409; frontend giữ form, không ghi đè dữ liệu mới.
+- Nếu đã có APPROVED, bản nháp/gửi duyệt nằm riêng. Public guide/location/audio/package không bị thay bởi PUT Admin. Response có published để giải thích bản vẫn đang chạy.
+- REJECTED và reviewerComment được đọc từ workspace; UI chỉ hiển thị và hướng dẫn sửa/gửi lại. PUT không cho tự đặt REJECTED/APPROVED và không nhận quyền sửa nhận xét. Reviewer bên ngoài phải tăng edit_version khi đổi kết quả review để tránh một tab cũ ghi đè; không có API reviewer trong dự án này. Nhận xét cũ được giữ sau khi resubmit cho tới khi quy trình bên ngoài thay đổi nó.
+- Upload MP3/WAV/OGG, 12 byte–20 MB, kiểm tra header phía server và khả năng decode ở trình duyệt. Upload lỗi giữ text/field và cho chọn lại/retry. Audio nháp được nghe qua endpoint Admin rồi tạo blob URL, public URL vẫn 404 trước publication.
 
-Đọc [LocationController.java](../../backend/multi-audio-guide/src/main/java/com/application/controller/LocationController.java) và [DemoPlaybackController.java](../../backend/multi-audio-guide/src/main/java/com/application/controller/DemoPlaybackController.java).
+Migration mới: [V5 feedback/localized names](../../backend/multi-audio-guide/src/main/resources/db/migration/V5__feedback_and_localized_names.sql) tạo location_translations, bổ sung category/updated_at/language_code/index cho feedbacks đã có từ V1; không tạo trùng bảng feedback. [V5_1 workspace review/names](../../backend/multi-audio-guide/src/main/resources/db/demo/V5_1__workspace_review_and_names.sql) thêm REJECTED/reviewer_comment và backfill names cho nháp cũ. Không sửa migration V1–V4 đã có.
 
-| API | Đọc/ghi | Hàm xử lý | Giới hạn cần nhớ |
-| --- | --- | --- | --- |
-| `GET /api/locations` | Đọc | `LocationDiscoveryService.search` | Keyword/category/page/size; chưa tìm GPS nearby |
-| `GET /api/locations/{id}` | Đọc | `LocationDiscoveryService.detail` | Địa điểm APPROVED, category active |
-| `GET /api/categories` | Đọc | `LocationDiscoveryService.categories` | Catalog active, có số địa điểm công khai |
-| `GET /api/locations/{id}/guide` | Đọc | `PlaybackService.guide` | Controller chỉ bật trong profile `demo` |
-| `POST /api/playbacks` | Ghi | `PlaybackService.record` | Controller demo; ghi sự kiện lượt bắt đầu phát |
-| `GET /api/admin/analytics` | Đọc | `PlaybackService.analytics` | Controller demo; Basic Auth |
+## 5. Phản hồi và xuất báo cáo
 
-Không có API trong bảng này để Web tạo địa điểm, upload audio hoặc cập nhật feedback. Những nút tương ứng trên Web hiện gọi mock/localStorage.
+FeedbackRepository đọc `feedbacks` thật, không dùng localStorage. FeedbackDto.Item có id/locationId/location/category/content/rating/status/created/updated/createdAt; rating có thể null với dữ liệu ngoại vi chưa đánh giá. Page có items/page/size/total/totalPages/categories. Trang bắt đầu **1** (khác discovery bắt đầu 0), size 1–50. Bộ lọc category/status và kỳ ngày được áp dụng trong SQL, biên ngày theo giờ Việt Nam, thứ tự created_at giảm dần rồi UUID để ổn định.
 
-`@Profile("demo")` là điều kiện để Spring đăng ký controller/filter tương ứng; nó không chỉ là nhãn giao diện. Thiếu profile này, các endpoint demo không được cung cấp bởi controller đó.
+Status chỉ tiến NEW → IN_REVIEW → RESOLVED. Service từ chối bỏ bước, lùi hoặc mở lại với 409; Repository UPDATE có điều kiện status cũ để chống hai tab cùng ghi. updated_at do database ghi. Danh sách/chi tiết không nhận quyền thay nội dung du khách đã gửi.
 
-### 5.2 Tìm địa điểm
+[LiveFeedback](../../web-admin/src/components/LiveFeedback.tsx) đồng bộ category/status/page/feedback với URL. Chi tiết lấy API riêng; loading/error/retry/empty có UI riêng, feedback dài được giới hạn ở bảng và hiển thị đầy đủ trong dialog. Cập nhật trạng thái thông báo bằng aria-live bên trong dialog.
 
-Đọc theo thứ tự:
+[LiveAnalytics](../../web-admin/src/pages/LiveAnalytics.tsx) dùng [feedbackForExport](../../web-admin/src/lib/feedback.ts) gọi export với kỳ/category/status hiện tại, bỏ pagination. [exportReport](../../web-admin/src/lib/export.ts) tạo hai sheet Analytics và Feedback. ExcelJS dùng `await import("exceljs")` bên trong thao tác xuất; không vào initial bundle. Lỗi tải dữ liệu hoặc ghi XLSX giữ filter/state và có Thử lại. Bản mock chủ đích tại `/analytics?source=mock` vẫn giữ để kiểm tra UI; không fallback âm thầm khi API lỗi. Export mock cũng áp dụng đúng filters.
 
-1. [LocationDiscoveryService.java](../../backend/multi-audio-guide/src/main/java/com/application/service/LocationDiscoveryService.java): `search`, `detail`.
-2. [LocationRepository.java](../../backend/multi-audio-guide/src/main/java/com/application/repository/LocationRepository.java): `VISIBLE_LOCATIONS`, `search`, `filters`, `parameters`.
-3. [CategoryRepository.java](../../backend/multi-audio-guide/src/main/java/com/application/repository/CategoryRepository.java).
-4. [DiscoveryMapper.java](../../backend/multi-audio-guide/src/main/java/com/application/mapper/DiscoveryMapper.java).
+## 6. Gói nội dung offline và kiểm tra cập nhật
 
-`search` bỏ khoảng trắng đầu/cuối keyword, giới hạn keyword 255 ký tự, page từ 0 và size từ 1 đến 50. Category chỉ định nhưng không khả dụng trả lỗi; không có kết quả tìm kiếm là kết quả hợp lệ kèm gợi ý, không phải lỗi server.
+ContentPackageService đọc locations và guide APPROVED trong một transaction REPEATABLE_READ. BASE hiện chọn category UUID `10000000-0000-0000-0000-000000000101`; OPTIONAL là các category khác. Đây là cấu hình demo đang có, chưa phải catalog quản trị gói hoàn chỉnh. Hai scope phải có dữ liệu khi lấy toàn bộ manifest, nếu một scope trống request hiện có thể trả 404.
 
-Repository dùng `ILIKE` để tìm không phân biệt hoa/thường trên tên đơn ngữ. Khi có keyword, ưu tiên tên khớp hoàn toàn, sau đó tiền tố, rồi chứa keyword; có thứ tự phụ để phân trang ổn định. `%`, `_`, `!` được escape để ký tự người dùng nhập không tự biến thành wildcard.
+Repository batch phần survey geofence; JSON package có schemaVersion/status/scope/isBase/locations/guides/languages/assets và geofencing khi có khảo sát hợp lệ. Không tự cấp chứng nhận survey hoặc lấy tọa độ tham khảo làm survey.
 
-SQL dùng tham số đặt tên. Mapper chuyển model sang response; mapper không quyết định một địa điểm có được công khai hay không. Điều kiện công khai nằm trong query/service.
+AudioFileReader chỉ chấp nhận classpath demo WAV hoặc audio upload trong database theo mẫu đường dẫn cho phép. PackageSigner tính SHA-256 trên JSON UTF-8 chính xác, tạo version `scope-sha256`, ký SHA256withRSA; public key trả dạng SPKI Base64. Metadata asset có URL/size/checksum; audio không nhúng vào JSON. Sai version tải → 404, client phải lấy manifest mới. Tách record có thể làm version package thay đổi theo bytes; client cần kiểm tra cập nhật bình thường.
 
-**Tự kiểm tra:** vì sao tìm được 0 địa điểm nên trả danh sách rỗng, còn ID chi tiết không tồn tại lại trả 404? Vì sao có cột tọa độ và index PostGIS vẫn chưa chứng minh đã có tìm kiếm nearby?
+Key RSA hiện tạo khi backend khởi động, chưa có key store/key rotation trust production. Không đổi chữ ký thành xác thực danh tính tin cậy chỉ vì checksum đúng.
 
-### 5.3 Xử lý lỗi HTTP
+Điểm kiểm tra client: [Web OfflinePage](../../web-user/src/pages/OfflinePage.tsx), [Web packages](../../web-user/src/lib/packages.ts), [Android SharedTourRepository](../../android/app/src/main/java/vn/hvp/travelvoice/data/remote/SharedTourRepository.kt), [Android SharedTourScreen](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/SharedTourScreen.kt). Các client có thao tác kiểm tra/tải gói; không có lịch polling package tự động chung do backend chạy. Polling **5 giây** trong [useLiveAnalytics](../../web-admin/src/lib/live-analytics.ts) là cập nhật số lượt nghe khi tab hiển thị, không phải polling nội dung offline. Phiên này không sửa/chạy lại Web Tourist hoặc Android.
 
-[ApiExceptionHandler.java](../../backend/multi-audio-guide/src/main/java/com/application/controller/ApiExceptionHandler.java) biến một số exception thành `ProblemDetail`:
+## 7. Chạy demo
 
-| Trường hợp | Hành vi |
-| --- | --- |
-| Service chủ động ném `ResponseStatusException` | Giữ status và thông điệp nghiệp vụ |
-| Tham số không chuyển được sang kiểu cần thiết | Trả 400 và tên tham số lỗi |
-| Lỗi truy cập database | Log lỗi phía server; trả 503 với thông báo chung |
+### Docker: cách dùng script có sẵn
 
-Phạm vi trên là những handler hiện có; không suy rằng mọi exception đều được xử lý bởi ba method này.
+Yêu cầu Docker Desktop/engine hoạt động. Từ root:
 
-## 6. Backend: nội dung, lượt phát và thống kê
-
-### 6.1 Lấy guide APPROVED
-
-Đọc [PlaybackService.java](../../backend/multi-audio-guide/src/main/java/com/application/service/PlaybackService.java) hàm `guide`, sau đó [GuideRepository.java](../../backend/multi-audio-guide/src/main/java/com/application/repository/GuideRepository.java).
-
-Service chuẩn hóa mã ngôn ngữ sang chữ hoa và kiểm tra loại FULL/SHORT. Repository lọc script và location APPROVED, category/language active, scriptText không rỗng. `LEFT JOIN audio_assets` cho phép có văn bản dù chưa có audio.
-
-Trong `find`, thứ tự ngôn ngữ là **đang chọn → EN → VI**, còn `scriptType` được giữ nguyên. Ví dụ yêu cầu `JA/SHORT` có thể trả `VI/SHORT`; query không chuyển sang FULL. Trong cùng ngôn ngữ ưu tiên revision mới hơn.
-
-Tên/comment “published revision” không thay thế bằng chứng publication: query hiện chưa kiểm tra membership trong package được xuất bản. Cần phân biệt điều kiện SQL thật với ý định trong comment.
-
-**Tự kiểm tra:** nếu không có EN/SHORT nhưng có EN/FULL và VI/SHORT, query lấy bản nào? Vì sao client phải dùng languageCode trong response thay vì luôn dùng ngôn ngữ đã yêu cầu?
-
-### 6.2 Ghi nhận một lượt phát
-
-Request hiện có hai định danh:
-
-```json
-{
-  "eventId": "UUID-cua-mot-lan-bat-dau-phat",
-  "contentId": "UUID-cua-revision-noi-dung"
-}
+```powershell
+.\scripts\start-live-demo.ps1
+# Chỉ khi cần cùng Wi-Fi tin cậy:
+# .\scripts\start-live-demo.ps1 -Lan
 ```
 
-Đây là minh họa tên trường, các giá trị trên không phải UUID hợp lệ để gửi nguyên vào API.
+[Script](../../scripts/start-live-demo.ps1) tạo cấu hình cá nhân `.env.demo.local` nếu chưa có, profile demo, Compose project hvp-live-demo, backend **8081**, Admin **3001**. Không đưa file env hay mật khẩu thật lên Git/chat. [compose.yaml](../../compose.yaml) có default **8080/3000**; đó là cấu hình khác khi không dùng override của script. Không trộn hai bộ cổng trong một buổi demo.
 
-| Định danh | Ý nghĩa |
-| --- | --- |
-| `locationId` | Địa điểm |
-| `contentId` | Revision nội dung cụ thể của địa điểm/ngôn ngữ/loại |
-| `eventId` | Một lần bắt đầu phát; dùng lại khi gửi lại sự kiện đó |
+Thứ tự: PostGIS healthy → backend chạy Flyway và healthy → nginx Web Admin. Mở `http://localhost:3001/locations`; đăng nhập theo DEMO_ADMIN_USERNAME/DEMO_ADMIN_PASSWORD trong file local. Username mặc định admin, mật khẩu không hard-code. Phiên giữ trong memory tab; reload cần đăng nhập lại. Endpoint Admin chỉ có khi profile demo.
 
-Đọc `PlaybackService.record` và [PlaybackRepository.java](../../backend/multi-audio-guide/src/main/java/com/application/repository/PlaybackRepository.java) hàm `insert`:
+### Backend local + Vite
 
-1. Thiếu eventId/contentId thì từ chối.
-2. Event đã tồn tại với cùng contentId: trả `created=false`, không tăng lượt.
-3. Event chưa có: kiểm tra content công khai, suy ra location/language từ content.
-4. Insert dùng `ON CONFLICT (id) DO NOTHING` để DB ngăn trùng cả khi hai request chạy gần nhau.
-5. Dùng eventId cũ cho content khác: trả conflict; không im lặng gắn lại sự kiện.
+Chuẩn bị PostgreSQL/PostGIS riêng và đặt biến môi trường local trước (không ghi giá trị thật vào tài liệu):
 
-`@Transactional` gom thao tác DB của method thành một transaction. Kiểm tra trước insert giúp diễn giải nghiệp vụ, còn ràng buộc DB xử lý trường hợp tranh chấp mà kiểm tra trước không đủ ngăn.
+```powershell
+$env:JAVA_HOME = 'C:\Program Files\Java\jdk-21.0.11' # hoặc JDK 21 của máy
+$env:SPRING_PROFILES_ACTIVE = 'demo'
+# Đặt SPRING_DATASOURCE_URL / USERNAME / PASSWORD và DEMO_ADMIN_USERNAME / PASSWORD trong môi trường cá nhân.
+Set-Location .\backend\multi-audio-guide
+.\mvnw.cmd spring-boot:run
+```
 
-**Định nghĩa lượt ở demo:** một phiên bắt đầu phát, không phải người nghe duy nhất hoặc lượt nghe hết. Pause/Resume giữ phiên; nghe lại sau kết thúc tạo phiên mới.
+Backend local mặc định 8080. Terminal khác, từ root:
 
-Query insert hiện gán `is_offline=FALSE`; thời điểm `occurred_at` mặc định ở DB là lúc nhận. Outbox chưa gửi thời điểm nghe thực tế hoặc connectivity. Đây là giới hạn quan trọng khi giải thích báo cáo và gửi lại qua ngày.
+```powershell
+Set-Location .\web-admin
+npm.cmd ci
+$env:API_PROXY_TARGET = 'http://127.0.0.1:8080'
+npm.cmd run dev -- --port 5174
+```
 
-**Tự kiểm tra:** server đã lưu nhưng response bị mất thì gửi lại UUID nào? Tại sao không tin location/language tùy ý do client khai báo?
+[Vite config](../../web-admin/vite.config.ts) proxy /api và /demo-audio. Nếu dùng backend Docker script thì đổi target thành 8081. Khi chạy Web du khách riêng, [Vite config Tourist](../../web-user/vite.config.ts) dùng cổng 5175 và cũng cần cùng API_PROXY_TARGET. `vite preview` của Admin không phải cách thay thế reverse proxy API trong Docker.
 
-### 6.3 Tính thống kê
+### Kịch bản trình diễn và kết quả mong đợi
 
-`PlaybackService.analytics` mặc định ngày kết thúc hôm nay theo `Asia/Ho_Chi_Minh`, ngày bắt đầu lùi 29 ngày: tổng cộng 30 ngày khi tính cả hai đầu.
+| Bước | Thao tác | Kết quả mong đợi |
+|---|---|---|
+| 1 | Mở locations, đăng nhập, tìm/lọc, mở địa điểm APPROVED | Danh sách từ API, trạng thái và coverage; form có tên/kịch bản/audio, thông báo bảo vệ bản published |
+| 2 | Thêm địa điểm, chỉ điền tên VI/EN rồi Lưu nháp | DRAFT lưu DB; reload/đăng nhập lại đọc đúng names. Nội dung chưa công khai cho du khách |
+| 3 | Gửi duyệt khi thiếu trường; sau đó điền danh mục/GPS/bán kính | Lần đầu lỗi inline và focus; lần sau PENDING_REVIEW. Không có nút tự duyệt/xuất bản |
+| 4 | Sửa một audio ngôn ngữ × FULL/SHORT; thử tệp sai trước | Lỗi giữ form, retry được; biến thể khác và bản published không đổi |
+| 5 | Hai tab đọc cùng editVersion; tab A lưu, tab B lưu tiếp | B nhận 409 và giữ nội dung nhập, không overwrite A |
+| 6 | Mở bản do quy trình bên ngoài trả REJECTED | Hiện nhận xét chỉ đọc; sửa/gửi lại thành PENDING_REVIEW. Không tự tạo kết quả review để giả bằng chứng |
+| 7 | Phát nội dung APPROVED trên Web/Android dùng cùng backend rồi xem analytics | Khi event lưu DB, dashboard tăng lượt bắt đầu phát; pause/resume không tự tạo event mới chỉ từ UI Admin |
+| 8 | Chọn kỳ/category/status, mở phản hồi, chuyển lần lượt hai bước | Đọc DB thật; timestamp đổi; RESOLVED không có thao tác mở lại. Nếu nguồn ngoài chưa có feedback thì EmptyState là đúng |
+| 9 | Xuất XLSX ở trang thật, kiểm tra hai sheet | Feedback đúng kỳ + filters, gồm mọi trang; không lấy fixture/mock hoặc chỉ trang hiện tại |
+| 10 | Client kiểm tra/tải gói, sau đó thay đổi chỉ bản nháp | Package published không đổi bởi nháp. Publication ngoài mới thay đổi nội dung/version |
 
-Khoảng thời gian SQL là:
+Để kiểm thử dữ liệu review/feedback mà không thêm API ngoài PRD, integration test tạo fixture trong transaction rồi rollback. Muốn trình diễn feedback thật cần chuẩn bị bản ghi từ hệ thống gửi feedback bên ngoài. Không thêm seed feedback giả vào migration production hay tự tuyên bố feedback đến từ du khách thật.
+
+## 8. Kiểm chứng và cách chạy lại
+
+| Lệnh/kiểm tra thực tế ngày 25/10 | Kết quả |
+|---|---|
+| Backend `mvnw.cmd clean verify -q` với JDK 21 | PASS: 41 test chạy thành công, 48 integration test skipped; 0 failure/error. Không coi skipped là pass DB |
+| Web Admin `npm.cmd run lint` | PASS |
+| Web Admin `npm.cmd run build` | PASS; ExcelJS chunk khoảng 929.55 kB minified (256.42 kB gzip), tải động; cảnh báo kích thước còn tồn tại |
+| `npx.cmd playwright test --workers=1` | 16 PASS, 5 SKIP cần backend thật; 42.1 giây ở lượt cuối. Đây là UI test với HTTP fixtures, không phải PostgreSQL integration |
+| Kiểm tra package service | Không còn JdbcTemplate/SQL; không còn Map<String,Object> trong service/controller Admin/Package |
+| Skills | 9 manifest YAML hợp lệ, commit ghim và 132 file hash khớp lock; chưa restart agent discovery |
+
+[Test Admin unit](../../backend/multi-audio-guide/src/test/java/com/application/service/AdminContentServiceTest.java) mock Repository, kiểm tra nháp/validation/conflict/published/names. [Test Package unit](../../backend/multi-audio-guide/src/test/java/com/application/service/ContentPackageServiceTest.java) kiểm tra JSON client fields, checksum/chữ ký và bytes ổn định. [Test Feedback unit](../../backend/multi-audio-guide/src/test/java/com/application/service/FeedbackServiceTest.java) kiểm tra thứ tự trạng thái, conflict, filter/kỳ xuất. [AdminWorkflowIntegrationTest](../../backend/multi-audio-guide/src/test/java/com/application/AdminWorkflowIntegrationTest.java) kiểm tra persistence tên/nhận xét, 2 query batch, feedback SQL/filter/export/status trên DB thật khi có env.
+
+[Test UI mới](../../web-admin/tests/admin-workflow.spec.ts), [HTTP fixtures](../../web-admin/tests/admin-fixture.ts), [test hồi quy](../../web-admin/tests/demo.spec.ts), [test danh sách](../../web-admin/tests/location-list.spec.ts) giữ phân biệt rõ fake HTTP và runtime thật. Browser test đọc lại workbook bằng ExcelJS, kiểm tra tất cả 22 phản hồi Audio/NEW dù màn hình chỉ có 10; kiểm tra không tải ExcelJS trước thao tác xuất, retry, axe và layout 390px. Test prototype cũ đã đổi sang fixture HTTP cho editor hiện hành; không thêm đường mock ngầm vào code sản phẩm.
+
+Khi PostGIS test riêng sẵn sàng, đặt TEST_DATABASE_URL/TEST_DATABASE_USERNAME/TEST_DATABASE_PASSWORD rồi chạy lại Maven clean verify. Chỉ trỏ tới DB **kiểm thử riêng**, không tới DB demo/production đang dùng. Không tự đặt cả ba biến rỗng rồi coi integration đã chạy. CI [workflow](../../.github/workflows/ci.yml) đã có PostGIS và TEST_DATABASE_*; chưa push hay xác nhận lần chạy CI mới trong phiên này.
+
+Test UI nối DB thật: [content config](../../web-admin/playwright.content-live.config.ts), [content tests](../../web-admin/tests/content.live.spec.ts), [analytics tests](../../web-admin/tests/live-analytics.spec.ts). Content config dùng Admin cổng 3000; phải chạy đúng stack, đặt LIVE_CONTENT_API=1 và credentials môi trường. Suite này tạo nháp test có tiền tố Codex UI integration và ghi ID đã tạo vào output test để dọn đúng bản ghi. Không chạy nhầm lên production.
+
+## 9. Giới hạn đã biết và việc cần làm trước demo
+
+1. Docker Desktop lần khởi động trong phiên này lỗi `dockerInference` (không truy cập được socket/file), nên chưa áp dụng V5/V5_1 vào DB thật, chưa chạy integration/migration/đo query thật. Không reset Docker hay xóa volume để né lỗi. Cần sửa môi trường hoặc chạy CI/PostGIS test riêng trước khi coi demo được nghiệm thu đầy đủ.
+2. Admin auth vẫn chỉ Basic Auth demo, updatedBy là tài khoản cấu hình chung; chưa có HTTPS/RBAC production, lịch sử reviewer đầy đủ hoặc dịch vụ publication. Key ký gói không bền qua restart. Không gọi hệ thống production-ready.
+3. UC-07 đã có API quản lý phản hồi nhưng nguồn gửi feedback từ Tourist là dependency ngoài phạm vi. DB trống phải hiện EmptyState. Chưa có cơ chế tạo feedback thật trong Web Admin.
+4. XLSX gom feedback toàn kỳ trong memory, không streaming; phù hợp demo, cần giới hạn/streaming khi dữ liệu rất lớn. Metrics và feedback xuất được lấy qua hai request riêng nên không phải snapshot transaction chung giữa cả hai tập dữ liệu.
+5. Các test UI đã chạy bằng Chromium/HTTP fixture; chưa chứng minh screen reader thật, trình duyệt khác, chất lượng nghe thực tế, Android/Web Tourist runtime, deployment hay rollback migration. Checklist giao diện theo quy tắc Vercel và axe không thay thế các kiểm chứng đó.
+
+Skills/setup của agent: [AGENT_SKILLS.md](AGENT_SKILLS.md). Các quyết định nghiệp vụ chưa rõ tiếp tục nằm ở Jira, không được suy từ fixture hoặc bài kiểm thử thành yêu cầu mới.
+
+## 10. File thay đổi theo giai đoạn
+
+Skills: commit ea4da6a, chỉ .claude và AGENT_SKILLS.md; danh sách payload/hash nằm trong lock. Các commit bên dưới chưa push.
+
+### Giai đoạn 1 — phân lớp JDBC (ee6a613, 14 file)
 
 ```text
-đầu ngày from <= occurred_at < đầu ngày sau to
+backend/multi-audio-guide/pom.xml
+backend/multi-audio-guide/src/main/java/com/application/component/AudioFileReader.java
+backend/multi-audio-guide/src/main/java/com/application/component/PackageSigner.java
+backend/multi-audio-guide/src/main/java/com/application/controller/AdminContentController.java
+backend/multi-audio-guide/src/main/java/com/application/controller/ApiExceptionHandler.java
+backend/multi-audio-guide/src/main/java/com/application/controller/ContentPackageController.java
+backend/multi-audio-guide/src/main/java/com/application/dto/AdminContentDto.java
+backend/multi-audio-guide/src/main/java/com/application/dto/ContentPackageDto.java
+backend/multi-audio-guide/src/main/java/com/application/repository/AdminContentRepository.java
+backend/multi-audio-guide/src/main/java/com/application/repository/ContentPackageRepository.java
+backend/multi-audio-guide/src/main/java/com/application/service/AdminContentService.java
+backend/multi-audio-guide/src/main/java/com/application/service/ContentPackageService.java
+backend/multi-audio-guide/src/test/java/com/application/TourPackageIntegrationTest.java
+backend/multi-audio-guide/src/test/java/com/application/service/AdminContentServiceTest.java
 ```
 
-Cách này bao gồm toàn bộ ngày cuối, không cần đoán mốc `23:59:59.999...`. Kỳ đảo ngược hoặc dài quá 366 ngày bị từ chối.
-
-Repository chỉ tính event `PLAYBACK_STARTED`; tổng hợp theo online/offline, địa điểm và ngôn ngữ. `REPEATABLE_READ` giúp các query tổng và phân bố trong cùng method đọc một snapshot nhất quán khi có lượt mới ghi đồng thời.
-
-**Tự kiểm tra:** tổng online + offline phải bằng trường nào? Tại sao thời điểm server tạo response khác với thời điểm xảy ra event?
-
-## 7. Android thật: từ màn hình tới MediaPlayer
-
-### 7.1 Điểm vào và điều hướng
-
-Mở [MainActivity.kt](../../android/app/src/main/java/vn/hvp/travelvoice/MainActivity.kt) rồi [DemoApp.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/navigation/DemoApp.kt).
-
-`DemoApp` mặc định bắt đầu ở route `live`. Ba tab gốc là live/explore/offline. Explore mở `detail/{id}`; Detail gọi callback để mở `player/{id}/{language}/{mode}`. Player ở route này là **player mô phỏng**, khác MediaPlayer trong live.
-
-`appLanguage` là state nhỏ dùng giữa Explore/Detail. Nó không phải cấu hình tài khoản lưu trên server, và không điều khiển request VI/SHORT đang hardcode trong live.
-
-### 7.2 LiveDemoScreen
-
-Mở [LiveDemoScreen.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/LiveDemoScreen.kt).
-
-| Biến/hàm | Vai trò |
-| --- | --- |
-| `address` | URL đang gõ, có thể chưa hợp lệ |
-| `base` | URL đã xác nhận để gọi API; lưu trong SharedPreferences |
-| `revision` | Tăng để chủ động kích hoạt tải lại catalog |
-| `locations`, `selected` | Catalog và ID được chọn |
-| `guide` | Nội dung đã tải của lựa chọn hiện tại |
-| `catalogError`, `guideError` | Phân biệt lỗi danh sách và lỗi nội dung |
-| `synchronize` | Gửi mới/gửi lại sự kiện qua outbox và cập nhật thông báo |
-| `rememberNarrator` | Tạo/giữ/giải phóng DemoNarrator ứng với guide |
-
-`LaunchedEffect(base, revision)` tải catalog. `LaunchedEffect(base, selected)` tải guide khi đổi server/địa điểm. Các key cho biết **đổi dữ liệu nào mới kích hoạt effect**; nút refresh catalog không tự đồng nghĩa guide được tải lại khi ID vẫn giữ nguyên.
-
-`rememberNarrator` dùng `DisposableEffect` để gọi `close()` khi narrator bị thay hoặc rời composition. Một effect khác định kỳ 300 ms gọi `updatePosition`. Callback dùng `rememberUpdatedState` để narrator nhận logic callback hiện tại thay vì giữ closure cũ.
-
-Các block catch ném lại `CancellationException` để không biến hủy coroutine bình thường thành lỗi nghiệp vụ. Không mặc định mọi request OkHttp đang chạy đều được hủy ngay chỉ vì LaunchedEffect bị hủy; phải đọc cơ chế HTTP cancellation nếu sửa sâu phần này.
-
-**Tự kiểm tra:** vì sao phải tách address và base? Nếu đổi bài trong khi đang phát, đâu là chỗ giải phóng player cũ?
-
-### 7.3 DemoApi
-
-[DemoApi.kt](../../android/app/src/main/java/vn/hvp/travelvoice/data/remote/DemoApi.kt) là HTTP client thật, dùng OkHttp trên `Dispatchers.IO`.
-
-| Hàm | Việc thực hiện |
-| --- | --- |
-| `normalizeBaseUrl` | Kiểm tra scheme/host, không chấp nhận credentials/query/fragment trong URL |
-| `locations` | Gọi `/api/locations?size=50`, đọc items thành ServerLocation |
-| `guide` | Gọi guide với `language=VI&scriptType=SHORT` |
-| `playback` | POST eventId/contentId |
-| `json` | Thực thi request, đọc JSON hoặc thông điệp lỗi |
-
-Khi resolve audioUrl tương đối, client kiểm tra host/port thuộc server demo. ServerLocation hiện chỉ giữ id/name, không đưa toàn bộ tọa độ/category của response vào màn live.
-
-Client chỉ lấy trang đầu catalog. Không đồng nhất `size=50` với việc đã duyệt được mọi địa điểm khi DB có nhiều trang.
-
-### 7.4 DemoNarrator
-
-[DemoNarrator.kt](../../android/app/src/main/java/vn/hvp/travelvoice/platform/audio/DemoNarrator.kt) quản lý MediaPlayer, không phải engine TTS.
-
-| Hàm | Ý nghĩa cần hiểu |
-| --- | --- |
-| `play` | Tạo player/chuẩn bị audio mới; nếu đang pause thì tiếp tục player hiện có |
-| `start` | Kiểm tra lifecycle, xin audio focus và gọi player.start |
-| `pause` | Pause, lưu vị trí và trả audio focus |
-| `updatePosition` | Đọc currentPosition; phát callback một lần khi vị trí đã lớn hơn 0 |
-| `fail` | Release player, trả focus, hiện lỗi |
-| `close` | Gỡ observer/receiver, release và dọn callback |
-
-`counted` ngăn callback lượt nghe chạy lại trong cùng phiên. Chỉ bấm Play hoặc prepare thành công chưa đủ để đếm: code chờ quan sát vị trí phát tiến lên. Completion đánh dấu kết thúc; lần play mới reset cờ và tạo event mới khi phát bắt đầu.
-
-Lifecycle ON_STOP, mất audio focus và ngắt tai nghe có nhánh pause. Không có Seek/tốc độ/TTS thật trong class này. Những chức năng đó xuất hiện ở player mock không làm class này tự hỗ trợ chúng.
-
-**Tự kiểm tra:** nếu mỗi lần tick 300 ms đều gửi event thì sai thế nào? Vì sao cần cả pause và close?
-
-## 8. Luồng hoàn chỉnh: Android → DB → dashboard
-
-```mermaid
-sequenceDiagram
-    participant UI as LiveDemoScreen
-    participant Player as DemoNarrator
-    participant Outbox as PlaybackOutbox
-    participant API as PlaybackService
-    participant DB as analytics_events
-    participant Web as LiveAnalytics
-    UI->>Player: Người dùng chọn Play
-    Player->>Player: Prepare, audio focus, start
-    Player-->>UI: onStarted(eventId) khi position > 0
-    UI->>Outbox: enqueueAndFlush(eventId, contentId)
-    Outbox->>Outbox: Lưu sự kiện trên thiết bị
-    Outbox->>API: POST /api/playbacks
-    API->>DB: Insert chống trùng UUID
-    API-->>Outbox: Xác nhận
-    Outbox->>Outbox: Bỏ sự kiện đã xác nhận
-    Web->>API: GET analytics theo kỳ
-    API->>DB: Tổng hợp
-    API-->>Web: JSON số liệu
-```
-
-### 8.1 PlaybackOutbox giải quyết vấn đề gì?
-
-[PlaybackOutbox.kt](../../android/app/src/main/java/vn/hvp/travelvoice/data/remote/PlaybackOutbox.kt) dùng SharedPreferences tên `playback-outbox`, key `events`, lưu JSON gồm base/eventId/contentId.
-
-`enqueueAndFlush` lưu trước khi gửi. `flushLocked` chỉ gửi các event của base URL hiện tại và lưu xác nhận sau từng event. Nếu request tiếp theo lỗi, các event chưa gửi vẫn còn. `Mutex` tránh hai coroutine cùng đọc/sửa danh sách rồi ghi đè nhau trong cùng process.
-
-Nếu server đã ghi nhưng client chưa lưu được xác nhận, event có thể gửi lại. UUID và DB idempotency giúp lần gửi lại không tạo thêm lượt.
-
-Đây chưa phải một dịch vụ đồng bộ nền độc lập: source đang gọi flush khi tải màn và khi người dùng/callback yêu cầu; không có WorkManager trong luồng này.
-
-**Tự kiểm tra:** vì sao event lưu cả base URL? Vì sao chỉ xóa event sau xác nhận? Nếu một event đầu hàng đợi liên tục bị server từ chối thì các event phía sau sẽ ra sao?
-
-### 8.2 Web nhận số liệu như thế nào?
-
-Mở [LiveAnalytics.tsx](../../web-admin/src/pages/LiveAnalytics.tsx) và [live-analytics.ts](../../web-admin/src/lib/live-analytics.ts).
-
-`LiveAnalytics` giữ from/to trên URL, authorization trong bộ nhớ React, trạng thái export và revision làm mới. Đăng xuất xóa authorization khỏi state; đây không phải gọi endpoint logout để thu hồi session server.
-
-Hook `useLiveAnalytics`:
-
-1. Chỉ fetch khi có authorization và trang đang hiển thị.
-2. Gửi GET kèm Authorization, from/to và `cache: no-store`.
-3. Dùng cờ fetching để tránh hai lần polling chồng nhau trong effect.
-4. Poll mỗi 5 giây, thử refresh khi đổi visibility; ngừng retry tự động sau 401 trong effect đó.
-5. Khi unmount/đổi key, abort request và dọn timer/listener.
-
-Key gồm authorization/from/to/revision để không hiển thị kết quả của kỳ trước như thể thuộc kỳ mới. Cần đọc cả error branch: hiện hook ghi result lỗi mà không kèm data cũ trong result đó; câu “giữ dữ liệu khi export lỗi” không đồng nghĩa mọi lỗi polling đều giữ bảng cũ trên màn.
-
-Màn có bốn metric và bảng phân bố. Nút export lấy số liệu đã nhận rồi tạo XLSX ở trình duyệt; danh sách feedback truyền vào đang rỗng vì live chưa tích hợp feedback.
-
-**Tự kiểm tra:** gọi polling nhiều lần có tăng lượt nghe không? Vì sao tải dashboard chỉ nên đọc dữ liệu? Reload trình duyệt có còn đăng nhập thống kê không?
-
-## 9. Web: routes, URL và mô phỏng loading
-
-Mở [main.tsx](../../web-admin/src/main.tsx), [App.tsx](../../web-admin/src/App.tsx), [demo.ts](../../web-admin/src/lib/demo.ts).
-
-| Route | Màn | Nguồn |
-| --- | --- | --- |
-| `/` | Chuyển về `/locations` | Router |
-| `/locations` | LocationList | Mock/localStorage |
-| `/locations/new` | LocationForm trống | Mock/localStorage |
-| `/locations/:id/edit` | LocationForm bản có sẵn | Mock/localStorage |
-| `/analytics` | LiveAnalytics | API thật |
-| `/analytics?source=mock` | MockAnalyticsFeedback | Mock/localStorage |
-
-Layout chứa sidebar, breadcrumb, skip link và Outlet cho màn con. Bộ chọn scenario nằm ở footer trong các màn mock; scenario là công cụ trình diễn lỗi/rỗng/dữ liệu dài, không phải tham số nghiệp vụ production.
-
-`useSearchParams` đọc/ghi state trên URL. Nhờ đó filter/page/detail có thể truy vết qua đường dẫn thay vì chỉ tồn tại trong một biến UI.
-
-`useDemoLoad` dùng timer 350 ms rồi báo ready/error theo scenario. Loading này không chờ HTTP. `pageNumber` ép số trang vào khoảng hợp lệ; giao diện mock dùng trang bắt đầu từ **1**, khác API backend bắt đầu từ **0**.
-
-**Tự kiểm tra:** mở `/analytics` có vào màn feedback mock không? Đổi query language trong form có cần coi là rời trang đang sửa không?
-
-## 10. Web: dữ liệu mẫu và danh sách địa điểm
-
-### 10.1 mocks/data.ts
-
-Mở [data.ts](../../web-admin/src/mocks/data.ts). File này gộp ba trách nhiệm: khai báo kiểu, tạo fixture và đọc/ghi localStorage.
-
-| Kiểu/hàm | Ý nghĩa |
-| --- | --- |
-| `Location` | Thông tin địa điểm + bản làm việc + published mẫu |
-| `Asset` | Text/audio của một location/ngôn ngữ/scriptType |
-| `Feedback` | Phản hồi và trạng thái xử lý mẫu |
-| `getLocations`, `getFeedback` | Đọc localStorage, dùng fixture khi thiếu hoặc JSON lỗi |
-| `saveLocation` | Tìm theo ID để cập nhật/thêm mới, ghi updatedAt và serialize |
-| `advanceFeedback` | Chuyển đúng một bước trạng thái, ghi timestamp |
-| `playbackEvents` | Sinh số liệu mẫu, không đọc analytics_events |
-| `longLocations` | Tạo dữ liệu dài/nhiều hàng để thử bố cục |
-
-Hai key là `hvp-demo-locations-v1` và `hvp-demo-feedback-v1`. Dữ liệu chỉ thuộc origin/profile trình duyệt đang dùng; khác cổng, trình duyệt hoặc máy không tự chia sẻ dữ liệu.
-
-Một asset có key như `en:SHORT` trong `location.assets`. locationId nằm trong asset, còn ngôn ngữ và loại nằm cả trong key lẫn field. Khi sửa cần giữ các giá trị này nhất quán.
-
-`saveLocation` loại audioUrl ở working assets khi serialize. Object URL từ file người dùng chọn không phải đường dẫn audio được upload bền vững lên server. Metadata có thể còn sau reload nhưng cần chọn lại tệp để nghe thử.
-
-`published` là snapshot mẫu có name/assets/version; nó chưa mô hình hóa snapshot đầy đủ tên dịch/tọa độ/category/radius. Không lấy shape này làm hợp đồng cuối cho bảo vệ nội dung công khai.
-
-### 10.2 LocationList và các hàng
-
-Đọc [LocationList.tsx](../../web-admin/src/pages/LocationList.tsx), [LocationRow.tsx](../../web-admin/src/components/locations/LocationRow.tsx), [LanguageCoverage.tsx](../../web-admin/src/components/locations/LanguageCoverage.tsx).
+### Giai đoạn 2 — nội dung đa ngôn ngữ và phản hồi (42d77ed, 31 file)
 
 ```text
-chọn source theo scenario
-→ lọc q/status
-→ tính page hợp lệ
-→ lấy 10 dòng của page
-→ render LocationRow
+backend/multi-audio-guide/src/main/java/com/application/controller/ContentPackageController.java
+backend/multi-audio-guide/src/main/java/com/application/controller/FeedbackController.java
+backend/multi-audio-guide/src/main/java/com/application/dto/AdminContentDto.java
+backend/multi-audio-guide/src/main/java/com/application/dto/ContentPackageDto.java
+backend/multi-audio-guide/src/main/java/com/application/dto/FeedbackDto.java
+backend/multi-audio-guide/src/main/java/com/application/repository/AdminContentRepository.java
+backend/multi-audio-guide/src/main/java/com/application/repository/FeedbackRepository.java
+backend/multi-audio-guide/src/main/java/com/application/service/AdminContentService.java
+backend/multi-audio-guide/src/main/java/com/application/service/ContentPackageService.java
+backend/multi-audio-guide/src/main/java/com/application/service/FeedbackService.java
+backend/multi-audio-guide/src/main/resources/db/demo/V5_1__workspace_review_and_names.sql
+backend/multi-audio-guide/src/main/resources/db/migration/V5__feedback_and_localized_names.sql
+backend/multi-audio-guide/src/test/java/com/application/AdminWorkflowIntegrationTest.java
+backend/multi-audio-guide/src/test/java/com/application/service/AdminContentServiceTest.java
+backend/multi-audio-guide/src/test/java/com/application/service/ContentPackageServiceTest.java
+backend/multi-audio-guide/src/test/java/com/application/service/FeedbackServiceTest.java
+web-admin/src/App.tsx
+web-admin/src/components/LiveFeedback.tsx
+web-admin/src/lib/export.ts
+web-admin/src/lib/feedback.ts
+web-admin/src/lib/status.ts
+web-admin/src/mocks/data.ts
+web-admin/src/pages/AnalyticsFeedback.tsx
+web-admin/src/pages/LiveAnalytics.tsx
+web-admin/src/pages/LocationForm.tsx
+web-admin/src/pages/LocationList.tsx
+web-admin/tests/admin-fixture.ts
+web-admin/tests/admin-workflow.spec.ts
+web-admin/tests/demo.spec.ts
+web-admin/tests/live-analytics.spec.ts
+web-admin/tests/location-list.spec.ts
 ```
 
-Các nút thống kê trạng thái đổi bộ lọc và reset page. Link tại tên/hành động mở form theo ID. Hàng bảng dùng liên kết, không biến cả thẻ tr thành một nút bằng onClick.
-
-`LanguageCoverage.coverage` xem hai asset FULL/SHORT để phân biệt chưa có, thiếu text, audio lỗi, thiếu audio và đủ. Chỉ báo này giúp người biên tập xem tình trạng; nó không phải validator bắt buộc phải có audio khi gửi duyệt. Tooltip có nhãn truy cập và hỗ trợ Escape.
-
-**Tự kiểm tra:** tổng trên thẻ trạng thái lấy từ source hay rows sau lọc? Vì sao chỉ báo thiếu audio không nên tự khóa Submit?
-
-## 11. Web: LocationForm — phần nên đọc kỹ nhất
-
-Mở [LocationForm.tsx](../../web-admin/src/pages/LocationForm.tsx). Đọc phần state/hàm trước, sau đó mới đọc JSX.
-
-### 11.1 Các nhóm state
-
-| Nhóm | Biến tiêu biểu | Vai trò |
-| --- | --- | --- |
-| Dữ liệu | `form`, asset hiện chọn | Giá trị đang biên tập |
-| Chưa lưu | `dirty` | Quyết định cảnh báo khi rời form |
-| Lỗi | `errors`, `uploadError` | Lỗi field và lỗi audio riêng |
-| Request mô phỏng | `busy`, `uploadBusy` | Khóa thao tác liên quan khi xử lý |
-| Xác nhận | `saveStatus`, router blocker | Xác nhận lưu bản sửa hoặc bỏ thay đổi |
-| Tệp retry | `pendingFile` | Giữ file và key ban đầu để retry đúng asset |
-
-`useParams` cung cấp ID từ route. Khởi tạo form bằng dữ liệu hiện có hoặc `blankLocation`. URL giữ language/type; key được ghép thành `language:type`.
-
-### 11.2 Các hàm cần theo dõi
-
-| Hàm | Việc thực hiện |
-| --- | --- |
-| `blankLocation` | Tạo ID và bản DRAFT trống |
-| `change` | Sửa field địa điểm, đánh dấu dirty, xóa lỗi của field |
-| `updateAsset` | Thay một asset, giữ các key khác |
-| `query` | Đổi query language/type/scenario |
-| `validate` | Kiểm tra thông tin địa điểm và focus lỗi đầu |
-| `upload` | Kiểm tra extension/browser decode, tạo URL preview, mô phỏng lỗi/retry |
-| `requestSave` | Chọn có validate và có mở dialog xác nhận hay không |
-| `save` | Delay mô phỏng, gọi saveLocation, cập nhật message/dirty |
-
-`setForm(old => ...)` dùng dữ liệu mới nhất để merge. Ở nhánh upload, code chỉ merge metadata audio vào asset hiện tại, tránh ghi đè text người dùng vừa sửa trong lúc upload/retry.
-
-### 11.3 Lưu nháp và gửi duyệt
-
-```mermaid
-flowchart TD
-    A[Người dùng chọn hành động] --> B{Lưu nháp?}
-    B -->|Có| D[Bỏ qua kiểm tra bắt buộc]
-    B -->|Không| C[Validate tên/category/tọa độ/radius]
-    C -->|Sai| E[Inline error và focus lỗi đầu]
-    C -->|Đúng| D
-    D --> F{Đang sửa bản có ID trên route?}
-    F -->|Có| G[Xác nhận lưu]
-    F -->|Không| H[save]
-    G --> H
-    H --> I[saveLocation ghi localStorage]
-```
-
-Validate kiểm tra tên/category có giá trị, latitude −90..90, longitude −180..180, radius là số dương. Tọa độ chấp nhận dấu phẩy thập phân bằng cách chuyển sang dấu chấm khi kiểm tra.
-
-Đây là **bán kính geofence của địa điểm**, khác bán kính tìm kiếm nearby UC-01. Không áp giới hạn 100–500 m của nearby vào field này nếu PRD chưa quy định như vậy.
-
-Sau lưu địa điểm mới, code hiện chưa chuyển URL từ `/locations/new` sang edit ID vừa lưu. Reload route new khởi tạo form mới dù bản trước vẫn ở storage. Khi review, phải kiểm tra cả thông báo lưu, dữ liệu đã lưu và màn mở lại.
-
-### 11.4 Upload ở đây thực sự làm gì?
-
-Code nhận MP3/WAV/OGG theo tên file, tạo `new Audio()` để thử đọc metadata, rồi tạo object URL cho preview. Không có HTTP upload hoặc lưu file vào object storage. Scenario upload-error tạo lỗi mô phỏng; retry vẫn giữ file và target key ban đầu.
-
-Browser đọc được metadata là một kiểm tra hữu ích, chưa phải xác nhận đầy đủ MIME/bitrate/duration/size ở server. Object URL được revoke khi dọn component để giải phóng tài nguyên.
-
-### 11.5 Cảnh báo rời trang
-
-`beforeunload` xử lý đóng/reload tab. `useBlocker` chặn điều hướng sang pathname khác khi dirty; đổi query ngôn ngữ/loại vẫn ở cùng form nên không bị coi là bỏ form. Dialog cho chọn ở lại hoặc tiếp tục rời trang.
-
-**Tự kiểm tra:** sửa EN/SHORT phải giữ VI/FULL ở đoạn merge nào? Vì sao DRAFT được lưu thiếu tọa độ nhưng PENDING_REVIEW không được? Sau reload, file preview và metadata còn giống nhau không?
-
-## 12. Web: AnalyticsFeedback mock
-
-Mở [AnalyticsFeedback.tsx](../../web-admin/src/pages/AnalyticsFeedback.tsx). Component đầu chỉ chọn nguồn: `source=mock` render MockAnalyticsFeedback, còn lại render LiveAnalytics.
-
-### 12.1 Ba tập phản hồi khác nhau
+### Giai đoạn 3 — tài liệu
 
 ```text
-feedback                     Toàn bộ nguồn mock/storage
-  → periodFeedback           Lọc theo kỳ báo cáo
-    → rows                   Lọc thêm category/status
-      → rows.slice(...)      Chỉ trang đang xem
+docs/vi/DEMO_CODE_GUIDE.md
+docs/vi/AGENT_SKILLS.md
+backend/ADMIN_CONTENT_API.md
+backend/README.md
+web-admin/README.md
 ```
 
-Phải xác định đúng tập trước khi sửa chức năng. Export theo kỳ và bộ lọc cần toàn bộ `rows`, không chỉ slice một trang. Source hiện truyền `periodFeedback` vào export nên bỏ qua category/status; xem kết luận review trong Jira, không coi đây là hành vi mong muốn.
-
-`detail` được tìm trong `periodFeedback` bằng ID trên URL. Vì vậy chi tiết vẫn có thể đang mở dù sau đổi trạng thái bản ghi không còn khớp filter danh sách; hãy đọc cả điều kiện tìm detail trước khi đánh giá việc đó.
-
-### 12.2 Metrics và chuyển trạng thái
-
-Events của mock lấy từ `playbackEvents()`, lọc theo kỳ rồi cộng count, nhóm location/language và online/offline. Chúng không được lấy từ PostgreSQL hoặc từ thao tác Play trên Android.
-
-Hàm `update` gọi `advanceFeedback`, cập nhật danh sách và announcement. Model chỉ cho chuyển NEW → IN_REVIEW → RESOLVED; RESOLVED không có thao tác mở lại. Timestamp lưu trong localStorage.
-
-Kỳ/filter/page/feedback ID ở URL; 10 phản hồi một trang. Loading và lỗi do scenario; lỗi export giữ lựa chọn hiện tại để retry.
-
-**Tự kiểm tra:** vì sao feedback filter không làm biến tổng lượt nghe thay đổi? Nếu export chỉ dùng 10 dòng đang hiển thị thì vi phạm yêu cầu nào?
-
-## 13. Export và format dùng chung
-
-### 13.1 exportReport
-
-[export.ts](../../web-admin/src/lib/export.ts) nhận from/to, metrics, feedback và nhãn nguồn. Nó không tự truy vấn backend hoặc quyết định filter.
-
-Hàm lazy-load ExcelJS, tạo workbook gồm Analytics/Feedback, ghi dữ liệu, sinh buffer → Blob → object URL, rồi kích hoạt tải qua link. Sau đó revoke URL. Đây là **tệp XLSX thật**, nhưng tính đúng của nội dung phụ thuộc dữ liệu caller truyền vào.
-
-Mock và live cùng dùng hàm này. Live truyền feedback rỗng; không được hiểu sheet Feedback rỗng là bằng chứng database không có phản hồi nào nếu luồng đó chưa tích hợp.
-
-**Tự kiểm tra:** lỗi lọc nằm trong thư viện ExcelJS hay caller? Cần đọc workbook sau tải để kiểm tra điều gì ngoài việc file tồn tại?
-
-### 13.2 format.ts
-
-[format.ts](../../web-admin/src/lib/format.ts) gom Intl vi-VN cho số, tọa độ, phần trăm, ngày/giờ. `today` dùng Asia/Ho_Chi_Minh; `daysAgo` tạo ngày mẫu/kỳ mặc định. Không tự viết lại format ở từng component khi sửa UI.
-
-Phân biệt ngày `YYYY-MM-DD` dùng làm điều kiện báo cáo với timestamp ISO có giờ. Ghi dữ liệu ở dạng máy đọc được, format khi hiển thị.
-
-## 14. Web: component dùng chung và CSS
-
-| File | Giải thích trách nhiệm |
-| --- | --- |
-| [Button.tsx](../../web-admin/src/components/ui/Button.tsx) | Mặc định type=button; busy hiện spinner và disabled; submit phải truyền type=submit |
-| [Field.tsx](../../web-admin/src/components/ui/Field.tsx) | Bọc label/help/error; caller vẫn phải đặt id, aria-invalid/describedby đúng trên control |
-| [ConfirmDialog.tsx](../../web-admin/src/components/ui/ConfirmDialog.tsx) | Native dialog, ID nhãn riêng, Escape gọi cancel, khôi phục focus |
-| [AudioPlayer.tsx](../../web-admin/src/components/ui/AudioPlayer.tsx) | Audio native controls, báo decode lỗi và transcript; không TTS |
-| [DataTable.tsx](../../web-admin/src/components/ui/DataTable.tsx) | Caption, header và vùng cuộn bảng; không tự filter/page |
-| [StatusBadge.tsx](../../web-admin/src/components/ui/StatusBadge.tsx) | Nhãn và style trạng thái, không thay trạng thái dữ liệu |
-| [States.tsx](../../web-admin/src/components/ui/States.tsx) | Loading/Error/Pagination; Pagination gọi callback, không tự fetch |
-| [EmptyState.tsx](../../web-admin/src/components/ui/EmptyState.tsx) | Thông báo vùng không có dữ liệu |
-| [status.ts](../../web-admin/src/lib/status.ts) | Ánh xạ mã trạng thái thành nhãn |
-| [index.css](../../web-admin/src/index.css) | Layout, focus, responsive, bảng/modal/tooltip, reduced-motion |
-
-Native `<button>` đã có hành vi bàn phím; không cần tự thêm keydown cho mọi button. Cần kiểm tra custom interactive element và nhãn truy cập. Không suy từ component Field có label rằng control con chắc chắn đã liên kết đúng.
-
-**Tự kiểm tra:** vì sao nút Chọn audio trong form không được mặc định submit? Component nào chịu trách nhiệm lọc dữ liệu và component nào chỉ hiển thị?
-
-## 15. Android mock: Explore → Detail → Player
-
-### 15.1 DemoData và Explore
-
-[DemoData.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/mock/DemoData.kt) chứa text, khoảng cách và tọa độ minh họa. [ExploreScreen.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/ExploreScreen.kt) lọc tên/đường/category rồi sắp theo distanceMeters.
-
-Khi keyword/category/map tạo chế độ manual, kết quả không bị giới hạn bởi radius như nearby. Source cắt tối đa 5 nearby hoặc 20 manual; khoảng cách không tính từ thiết bị. Slider hiện 50–500 m, còn PRD là 100–500 m.
-
-Scenario GPS denied không gọi OS permission: nó đổi UI, khóa slider và giữ cách tìm thủ công. Nút Mở cài đặt hiện thông báo mô phỏng.
-
-UC-05 nằm trong phần scenario của Explore: chọn banner/permission/cooldown/ID lỗi. Banner trỏ tới nearest fixture; click mới gọi onLocation. Cooldown là một lựa chọn scenario, chưa là phép so thời gian thông báo theo location trong storage.
-
-### 15.2 Detail
-
-[DetailScreen.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/DetailScreen.kt) tìm location trong DemoData, giữ selectedLanguage/mode/scenario. Mặc định FULL. `contentLanguage` được chọn theo scenario thiếu bản dịch; `guideDemoText` tạo đoạn text mẫu theo ngôn ngữ/loại.
-
-Nút Nghe truyền **contentLanguage đang hiển thị** cùng ID/mode sang player. Loading/no-content khóa nút. Hộp Gửi mẫu chỉ đổi state cục bộ, không ghi bảng feedbacks; đây là hành vi cần đối chiếu lại phạm vi UC-02 ở Jira.
-
-### 15.3 Player mô phỏng
-
-[PlayerScreen.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/PlayerScreen.kt) nhận ID/language/mode. Duration giả là 90 giây cho SHORT hoặc 300 giây cho FULL. Coroutine mỗi giây tăng position theo speed; slider và các nút thay đổi state này.
-
-Nhãn audio/TTS chỉ đổi theo scenario. Chọn Cuộc gọi đến/Ngắt tai nghe làm playing=false; không nhận event âm thanh OS. Nó không gọi DemoNarrator, không phát WAV, không gọi TextToSpeech và không gửi lượt nghe.
-
-**Tự kiểm tra:** một nút có chữ Phát tiếp nhưng không tạo âm thanh nằm ở màn nào? Dấu hiệu source nào phân biệt timer giả với MediaPlayer thật?
-
-## 16. Android: bản đồ và nội dung offline
-
-### 16.1 MapPreview / MapSession
-
-Đọc [MapPoint.kt](../../android/app/src/main/java/vn/hvp/travelvoice/domain/model/MapPoint.kt), [MapPreview.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/components/MapPreview.kt), [MapSession.kt](../../android/app/src/main/java/vn/hvp/travelvoice/platform/maps/MapSession.kt).
-
-MapPoint là dữ liệu id/name/lat/lng dùng để vẽ marker; kiểm tra tọa độ không tự xác minh độ đúng của điểm du lịch. MapPreview nối Compose với native map, trạng thái mạng và lựa chọn marker. MapSession quản lý MapView, style, marker, camera, zoom/fit và lifecycle cleanup. Style raster OSM ở [osm.json](../../android/app/src/main/assets/maps/osm.json).
-
-Bản đồ có mạng thật và marker fixture. Không có quyền GPS cũng có thể xem/pan/zoom/chọn thủ công. Mất mạng hoặc tải lỗi có đường về danh sách; không có chức năng tải tile offline.
-
-Host test có thể inject renderer bản đồ để kiểm tra ID/navigation; renderer thay thế không chứng minh tile native tải được. Phải đọc test đang dùng renderer nào.
-
-### 16.2 OfflineScreen
-
-[OfflineScreen.kt](../../android/app/src/main/java/vn/hvp/travelvoice/ui/screens/OfflineScreen.kt) là state machine mô phỏng:
-
-```text
-Chưa kiểm tra → Có bản cập nhật → xác nhận
-→ Đang tải → Đang kiểm tra → Sẵn sàng ngoại tuyến
-```
-
-`installedVersion`, `optionalInstalled`, `phase`, `progress` là UI state. Effect dùng delay tăng tiến độ, không tải file. Phiên bản chỉ đổi ở nhánh kiểm tra thành công; thiếu dung lượng/gói lỗi giữ phiên bản cũ. Xóa optional cần xác nhận; Base không có nút xóa.
-
-Nhánh Mất mạng hiện giữ tiến độ và cho tiếp tục; PRD E2 yêu cầu bỏ dữ liệu tải dở, nên không sao chép hành vi này thành installer thật. Đổi phiên bản ở đây không thay nguồn DemoData hoặc audio đang nghe.
-
-`rememberSaveable` giúp khôi phục state nhỏ trong các cơ chế khôi phục UI thích hợp, không thay thế file/database và installed-package metadata bền vững.
-
-**Tự kiểm tra:** bước nào thực sự ghi tệp xuống thiết bị? Nếu không có bước đó, chữ “đã cài 1.1” đang mô tả điều gì?
-
-## 17. Database: bảng có sẵn khác với chức năng đã hoàn thành
-
-Đọc [V1__demo.sql](../../backend/multi-audio-guide/src/main/resources/db/migration/V1__demo.sql), [V2__location_discovery.sql](../../backend/multi-audio-guide/src/main/resources/db/migration/V2__location_discovery.sql), [V3__playback_content_reference.sql](../../backend/multi-audio-guide/src/main/resources/db/migration/V3__playback_content_reference.sql).
-
-| Nhóm | Bảng | Cần hiểu |
-| --- | --- | --- |
-| Catalog | categories, languages, locations | Tên, tọa độ PostGIS, radius; V2 thêm status/location completeness |
-| Nội dung | guide_content_revisions | Location + language + FULL/SHORT + revision_no, text/status |
-| Audio | audio_assets | File URL/storage key thuộc một content revision; không lưu WAV binary trong cột này |
-| Package | content_packages, content_package_items | Schema có liên kết package/content/audio; chưa có installer/API package hoàn chỉnh |
-| Phản hồi | feedbacks | Bảng có sẵn nhưng Web mock chưa dùng; chưa đủ trường theo mô hình PRD đề xuất |
-| Thống kê | analytics_events | Sự kiện theo location/language/connectivity/time; V3 thêm content_id |
-
-Tọa độ PostGIS lưu Point với kinh độ là X, vĩ độ là Y; repository trả latitude bằng ST_Y và longitude bằng ST_X. Index tọa độ không tự tạo hàm tìm nearby.
-
-Foreign key `(audio_id, content_id)` của package item ngăn trỏ audio thuộc revision khác. Schema có ràng buộc hữu ích nhưng chưa chứng minh whole-package publication hoặc atomic install đã hoạt động.
-
-### 17.1 Migration và seed
-
-| File | Vai trò |
-| --- | --- |
-| V1 | Schema nền, không seed lượt nghe |
-| V2 | Bổ sung status và điều kiện địa điểm APPROVED |
-| [V2_1 demo seed](../../backend/multi-audio-guide/src/main/resources/db/demo/V2_1__seed_discovery_demo.sql) | Catalog/địa điểm minh họa |
-| V3 | Tham chiếu revision từ event |
-| [V3_1 demo seed](../../backend/multi-audio-guide/src/main/resources/db/demo/V3_1__seed_short_guides.sql) | Ba script VI/SHORT và metadata WAV |
-
-Flyway áp migration theo thứ tự/version và lưu lịch sử. Profile demo nạp thêm thư mục db/demo. Khi migration đã chạy trên môi trường dùng chung, thay schema bằng migration mới; không sửa lịch sử chỉ để làm source trông gọn hơn.
-
-WAV nằm trong static/demo-audio, được chuẩn bị bằng [generate-demo-audio.ps1](../../backend/generate-demo-audio.ps1). TTS tạo tệp trước trên máy/server khác với OS TTS fallback chạy khi du khách Play. Android hiện chưa có fallback TTS thật.
-
-**Tự kiểm tra:** seed nội dung APPROVED mẫu có phải bằng chứng đã có người duyệt trong sản phẩm không? Vì sao có bảng feedbacks nhưng giao diện feedback vẫn không đồng bộ DB?
-
-## 18. Xác thực, cấu hình và cách chạy
-
-### 18.1 Basic Auth hiện có
-
-[DemoAdminFilter.java](../../backend/multi-audio-guide/src/main/java/com/application/config/DemoAdminFilter.java) chỉ bật ở profile demo, kiểm tra URL `/api/admin/`. Credentials lấy từ cấu hình/environment. Thiếu cấu hình password trả 503; credentials sai/thiếu trả 401; hợp lệ cho request đi tiếp. Response được đánh dấu no-store.
-
-Web tạo Basic header bằng `basicCredentials`, giữ authorization trong bộ nhớ tab. Base64 là cách mã hóa biểu diễn, không phải mã hóa bảo mật. HTTP local/Wi-Fi trong runbook là cấu hình demo; NFR production yêu cầu HTTPS.
-
-Hiện chưa có AdminAccount trong DB, login/logout session API, role SYSTEM_ADMIN/CONTENT_EDITOR, khóa/mở tài khoản hoặc reset password. Profile UI “Quản trị viên” không tạo danh tính backend cho UC-06.
-
-**Yêu cầu mới đã trao đổi:** chỉ thêm tài khoản quản trị Web, du khách không cần đăng nhập. UC-08/09 vẫn là đề xuất lưu trong Jira, chưa tích hợp vào source/PRD. UC-03 đã được bổ sung chi tiết TTS trong hai bản PRD ngày 19/10/2026; mã Android vẫn chưa triển khai TTS fallback thật. Đừng coi cập nhật yêu cầu là bằng chứng chức năng đã chạy.
-
-### 18.2 Docker, proxy và cổng
-
-| File | Vai trò |
-| --- | --- |
-| [compose.yaml](../../compose.yaml) | Backend + Web Nginx + PostgreSQL/PostGIS, healthcheck và volume |
-| [start-live-demo.ps1](../../scripts/start-live-demo.ps1) | Tạo env riêng nếu chưa có, chạy project Compose hvp-live-demo |
-| [vite.config.ts](../../web-admin/vite.config.ts) | Dev server proxy `/api` tới backend 8081 |
-| [nginx.conf](../../web-admin/nginx.conf) | Bản Docker proxy `/api` tới service backend; route SPA về index.html |
-| [application-demo.properties](../../backend/multi-audio-guide/src/main/resources/application-demo.properties) | Bật seed demo và ánh xạ credentials environment |
-
-Luồng live dùng backend 8081/Web 3001 theo script; Compose mặc định là 8080/3000 nếu không override. Android emulator dùng host alias `10.0.2.2`; điện thoại thật dùng IP máy chạy backend cùng mạng. `localhost` trên điện thoại không phải máy tính.
-
-Nginx giải quyết route Web/API khi đóng gói; Vite proxy giải quyết lúc dev. Android gọi trực tiếp backend, không đi qua React.
-
-PostgreSQL lưu dữ liệu vào named volume, không chỉ trong vòng đời container. Hướng dẫn chạy: [LIVE_DEMO_SETUP.md](LIVE_DEMO_SETUP.md). Không dùng thao tác xóa volume để thử sửa lỗi nếu còn cần giữ dữ liệu lượt nghe.
-
-## 19. Kiểm thử: đọc đúng bằng chứng
-
-### 19.1 Các nhóm test
-
-| Nhóm | File | Kiểm tra gì / giới hạn |
-| --- | --- | --- |
-| Web mock | [demo.spec.ts](../../web-admin/tests/demo.spec.ts) | Form, draft, upload retry, guard, feedback transition, export, trạng thái, axe |
-| Web list | [location-list.spec.ts](../../web-admin/tests/location-list.spec.ts) | Filter/URL, tooltip, link, responsive |
-| Web live | [live-analytics.spec.ts](../../web-admin/tests/live-analytics.spec.ts) | Backend thật, event idempotency, dashboard/XLSX; bài đầu tạo event thật |
-| Backend controller | [LocationControllerTest.java](../../backend/multi-audio-guide/src/test/java/com/application/controller/LocationControllerTest.java) | HTTP/service với repository mock; không chứng minh SQL/PostGIS |
-| Backend DB | [LocationDiscoveryIntegrationTest.java](../../backend/multi-audio-guide/src/test/java/com/application/LocationDiscoveryIntegrationTest.java), [PlaybackIntegrationTest.java](../../backend/multi-audio-guide/src/test/java/com/application/PlaybackIntegrationTest.java) | Database test riêng; cần TEST_DATABASE_URL/USERNAME/PASSWORD |
-| Android host | [DemoUiTest.kt](../../android/app/src/test/java/vn/hvp/travelvoice/DemoUiTest.kt), [MapCoordinateTest.kt](../../android/app/src/test/java/vn/hvp/travelvoice/MapCoordinateTest.kt), [DemoApiUrlTest.kt](../../android/app/src/test/java/vn/hvp/travelvoice/DemoApiUrlTest.kt) | Robolectric/UI flow và helper; không nghe được âm thanh native |
-| Android device | [LivePlaybackTest.kt](../../android/app/src/androidTest/java/vn/hvp/travelvoice/LivePlaybackTest.kt), [MapFlowTest.kt](../../android/app/src/androidTest/java/vn/hvp/travelvoice/MapFlowTest.kt), [DemoFlowTest.kt](../../android/app/src/androidTest/java/vn/hvp/travelvoice/DemoFlowTest.kt) | Cần thiết bị/emulator; kiểm tra điều kiện từng bài trước chạy |
-
-Đọc [playwright.config.ts](../../web-admin/playwright.config.ts) để biết dev server/viewport/output. Đọc [CI](../../.github/workflows/ci.yml): backend có PostGIS test và Maven verify; Web có lint/build. Workflow hiện không chạy Web Playwright hoặc Android, nên CI xanh không chứng minh các nhóm đó đã chạy.
-
-### 19.2 Kết quả có trước khi viết tài liệu
-
-Trong lượt review trước đó cùng ngày 19/10/2026: Web lint/build qua, 12 test Web mock/list qua; backend controller 16 test qua; Android host 8 test qua. Các kết quả này được lưu trong Jira. **Lượt viết tài liệu này không chạy lại test hoặc kiểm tra native trên thiết bị.**
-
-Kiểm tra bổ sung trước đó vẫn phát hiện export bỏ filter dù test xanh; bài export chỉ kiểm tra kỳ mà chưa bật category/status. Bài lưu draft đọc storage sau reload nhưng chưa xác nhận form reload mở lại đúng ID.
-
-### 19.3 Khi review một thay đổi
-
-1. Đọc yêu cầu và xác định đầu vào/đầu ra/quy tắc phải giữ.
-2. Lần caller → hàm xử lý → nơi lưu dữ liệu, không chỉ đọc file AI sửa.
-3. Đọc test: nó tạo điều kiện nào, assert điều gì, đang mock phần nào?
-4. Chạy luồng chính và ít nhất một trường hợp biên có liên quan.
-5. Ghi phạm vi chứng minh: source/build/test/browser/DB/device; phần chưa chạy phải để chưa kiểm chứng.
-
-## 20. Checklist cá nhân: đã hiểu đến đâu?
-
-Chỉ đánh dấu khi tự giải thích được bằng lời của mình; không đánh dấu vì AI nói đã hoàn thành.
-
-### A. Tổng thể
-
-- [ ] Tôi chỉ ra được màn nào dùng DB, localStorage hoặc UI state.
-- [ ] Tôi phân biệt locationId, contentId và eventId.
-- [ ] Tôi giải thích được vì sao sửa Web chưa thay nội dung Android.
-- [ ] Tôi phân biệt TTS tạo WAV sẵn với OS TTS fallback.
-
-### B. Backend
-
-- [ ] Tôi lần được request qua controller/service/repository và đọc được SQL chính.
-- [ ] Tôi giải thích được APPROVED filter và Selected → EN → VI giữ scriptType.
-- [ ] Tôi mô tả được retry cùng UUID và conflict khi dùng UUID cho content khác.
-- [ ] Tôi hiểu kỳ 30 ngày, timezone và khoảng SQL bao gồm ngày cuối.
-
-### C. Android thật
-
-- [ ] Tôi giải thích được effect nào tải catalog, effect nào tải guide.
-- [ ] Tôi chỉ ra điều kiện tạo một lượt nghe trong DemoNarrator.
-- [ ] Tôi giải thích được outbox lưu trước, xác nhận sau và không tạo lượt trùng.
-- [ ] Tôi chỉ ra nơi cleanup player/map và phần chưa tích hợp TTS/GPS/offline thật.
-
-### D. Web
-
-- [ ] Tôi phân biệt state form, state URL và dữ liệu localStorage.
-- [ ] Tôi giải thích được validate khi Submit nhưng không bắt đủ khi Save Draft.
-- [ ] Tôi lần được việc thay một audio mà giữ asset/ngôn ngữ khác.
-- [ ] Tôi phân biệt periodFeedback, rows và trang hiện tại khi export.
-- [ ] Tôi chỉ ra hook polling và cơ chế dọn request/timer của live analytics.
-
-### E. Kiểm soát thay đổi
-
-- [ ] Tôi đọc hết diff trước khi commit và không gom thay đổi ngoài phạm vi.
-- [ ] Tôi biết test nào chứng minh yêu cầu, test nào chưa bao phủ.
-- [ ] Tôi giải thích được phần mình phụ trách mà không cần đọc lời giải của AI.
-- [ ] Tôi ghi rõ mock/thật và giới hạn kiểm chứng trong PR.
-
-## 21. Bài tập đầu tiên để học kiểm soát code AI
-
-**Chỉ đọc, chưa sửa:** mở AnalyticsFeedback.tsx và vẽ lại `feedback → periodFeedback → rows → slice trang`.
-
-Trả lời: “Nếu đang lọc Audio + NEW và có hơn một trang, hàm export phải nhận tập nào? Tại sao hai tập còn lại không đúng?”
-
-Sau khi trả lời được, viết một tiêu chí nghiệm thu kiểm tra nội dung workbook. Khi đó mới giao AI thay đổi nhỏ và tự review diff. Các lỗi và ưu tiên còn lại tham khảo hồ sơ Jira; tài liệu này không thay thế danh sách review đang được duy trì ở đó.
+Không thay đổi android/ hoặc web-user/ trong các mốc này.

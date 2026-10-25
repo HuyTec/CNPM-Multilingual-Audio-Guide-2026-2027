@@ -1,6 +1,6 @@
 # Demo Admin content API
 
-Profile `demo`, migration V3_4; cùng PostgreSQL và locationId với Web/Android.
+Profile `demo`, workspace V3_4 và phần mở rộng V5/V5_1; cùng PostgreSQL và locationId với Web/Android. Luồng code: Controller → Service → Repository → JDBC. Hướng dẫn đầy đủ: [DEMO_CODE_GUIDE.md](../docs/vi/DEMO_CODE_GUIDE.md).
 `/api/admin/*` dùng Basic Auth hiện có (`DEMO_ADMIN_USERNAME`,
 `DEMO_ADMIN_PASSWORD`); thiếu cấu hình → 503, thiếu/sai đăng nhập → 401.
 Chỉ dùng HTTP trên local demo; triển khai thật cần HTTPS và xác thực phù hợp.
@@ -21,6 +21,10 @@ Body PUT: `id`, `name`, `category`, `latitude`, `longitude`, `radius` là string
 `locationId`, `languageCode` chữ thường, `scriptType`, `text`, tùy chọn
 `audioUrl`, `audioName`. Gửi đầy đủ assets để giữ các biến thể khác.
 Audio chỉ được gắn vào đúng địa điểm/ngôn ngữ/loại bài đã upload hoặc đã có.
+
+Body/response nay có record DTO trong `AdminContentDto`. Trường thêm `names` là object mã ngôn ngữ chữ thường → tên; giữ `name` legacy để tương thích client cũ. Tên mặc định VI → EN → ngôn ngữ khác → legacy. `reviewerComment` chỉ có ở response; status REJECTED do reviewer bên ngoài ghi, editor chỉ lưu DRAFT/PENDING_REVIEW. `edit_version` phải tăng khi reviewer bên ngoài thay đổi kết quả review.
+
+UC-07 có GET `/api/admin/feedback` (from/to/category/status/page=1/size=10), GET `/{id}`, PATCH `/{id}/status` và GET `/export` trả toàn bộ JSON đúng bộ lọc để trình duyệt tạo XLSX. Chỉ NEW → IN_REVIEW → RESOLVED; không mở lại. Không có endpoint gửi feedback mới trong Web Admin. Xem `FeedbackDto` và bảng API trong hướng dẫn code.
 
 Nháp cho phép thiếu thông tin. Gửi duyệt cần tên, danh mục hoạt động, tọa độ
 hợp lệ và bán kính nguyên dương. Body không hợp lệ → 400; phiên bản cũ → 409,

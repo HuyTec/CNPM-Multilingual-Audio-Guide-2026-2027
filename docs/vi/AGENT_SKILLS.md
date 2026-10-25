@@ -4,6 +4,19 @@ Ngày kiểm tra: 25/10/2026. Chỉ cài tại `.claude/skills/`, không cài gl
 
 ## Nguồn, lệnh cài tham khảo và kết quả an toàn
 
+| Tên skill/nhóm | URL repo đã xác minh | Lệnh upstream tham khảo (project) | Lý do chọn nguồn để audit |
+|---|---|---|---|
+| Superpowers | https://github.com/obra/superpowers | `npx skills add obra/superpowers --skill writing-plans -a claude-code` | Repo của tác giả bộ Superpowers, còn cập nhật; cài tập con được ghi dưới đây |
+| karpathy-guidelines | https://github.com/multica-ai/andrej-karpathy-skills | `npx skills add https://github.com/forrestchang/andrej-karpathy-skills --skill karpathy-guidelines -a claude-code` | Nguồn gốc của bộ hướng dẫn cộng đồng mà người dùng chỉ định; URL cũ redirect đúng repo, không nhận là repo của Karpathy |
+| systematic-debugging | https://github.com/obra/superpowers | `npx skills add obra/superpowers --skill systematic-debugging -a claude-code` | Có ngay trong nguồn Superpowers, không lấy bản sao không rõ tác giả |
+| github-code-review | https://github.com/ruvnet/ruflo | `npx skills add ruvnet/ruflo --skill github-code-review -a claude-code` | Tìm thấy đúng thư mục trong repo tác giả ruvnet; đây không phải skill do GitHub phát hành |
+| static-analysis | https://github.com/trailofbits/skills | `/plugin install trailofbits/skills/plugins/static-analysis` | Repo của tổ chức bảo mật Trail of Bits; bộ có CodeQL/Semgrep/SARIF |
+| webapp-testing | https://github.com/anthropics/skills | `npx skills add anthropics/skills --skill webapp-testing -a claude-code` | Repo skills chính thức Anthropic, đúng manifest yêu cầu |
+| supabase-postgres-best-practices | https://github.com/supabase/agent-skills | `npx skills add supabase/agent-skills --skill supabase-postgres-best-practices -a claude-code` | Repo chính thức Supabase, hướng dẫn PostgreSQL có references riêng |
+| vercel-react-best-practices | https://github.com/vercel-labs/agent-skills | `npx skills add vercel-labs/agent-skills --skill vercel-react-best-practices -a claude-code` | Repo Vercel Labs, name trong manifest đã đối chiếu với đường dẫn react-best-practices |
+| frontend-design | https://github.com/anthropics/skills | `npx skills add anthropics/skills --skill frontend-design -a claude-code` | Repo skills chính thức Anthropic, không dùng bản tổng hợp từ bên thứ ba |
+| skill-creator | https://github.com/openai/skills | `npx skills add openai/skills --skill skill-creator -a claude-code` | Repo chính thức OpenAI; chọn bản local-file tools sau khi loại bản Anthropic có gọi dịch vụ ngoài |
+
 Lệnh dưới đây là lệnh upstream tham khảo, **không phải lệnh đã chạy**. Bản thực tế được clone vào thư mục tạm với Git hooks tắt, đọc source rồi chép đúng thư mục skill tại commit trong lock. Không dùng `npx` vì bước tải/chạy installer chưa được audit; cách chép cũng tránh installer tự thêm agent/global links. Không chạy script upstream trong giai đoạn kiểm tra.
 
 | Yêu cầu | Nguồn chính thức / lệnh tham khảo | Kết quả |
@@ -38,7 +51,7 @@ Các nguồn được chọn từ tổ chức/tác giả gốc của bộ skill,
     skill-creator/SKILL.md (+ scripts, references, agents)
 ```
 
-Đã kiểm tra tồn tại 9 thư mục và frontmatter có name/description. File hash được ghi khi chép. Chưa khởi động lại Claude Code/phiên Codex để xác nhận tự nhận diện: phiên đang chạy không tự chứng minh khả năng discovery của `.claude/skills/`. Thư mục này dành cho Claude Code; Codex có thể cần cơ chế discovery riêng. Không thêm symlink/global để vượt phạm vi.
+Đã kiểm tra tồn tại 9 thư mục, frontmatter có name/description, parse cú pháp YAML bằng Prettier parser và đối chiếu **132 SHA-256 khớp lock**. File hash được ghi khi chép. Chưa khởi động lại Claude Code/phiên Codex để xác nhận tự nhận diện: phiên đang chạy không tự chứng minh khả năng discovery của `.claude/skills/`. Thư mục này dành cho Claude Code; Codex có thể cần cơ chế discovery riêng. Không thêm symlink/global để vượt phạm vi.
 
 ## Ngữ cảnh và xung đột
 

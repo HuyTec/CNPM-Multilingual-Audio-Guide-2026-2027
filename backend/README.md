@@ -84,7 +84,7 @@ Invoke-RestMethod 'http://localhost:8080/api/locations?categoryId=10000000-0000-
 Invoke-RestMethod 'http://localhost:8080/api/locations/20000000-0000-0000-0000-000000000001'
 ```
 
-Backend này phục vụ online; tìm/duyệt Base Content khi ngoại tuyến và điều hướng UI vẫn cần nối Android. Schema demo dùng tên đơn ngữ, chưa có bản dịch/tên đường hoặc snapshot địa điểm đã xuất bản để phục vụ luồng chỉnh sửa UC-06.
+Public discovery vẫn giữ hợp đồng tên legacy. Editor UC-06 có names theo ngôn ngữ trong workspace JSONB và bảng location_translations cho dữ liệu published; sửa nháp không thay dữ liệu đang phục vụ. Offline package, phân lớp và API phản hồi hiện tại được mô tả trong [DEMO_CODE_GUIDE.md](../docs/vi/DEMO_CODE_GUIDE.md). Không dùng snapshot mô tả demo cũ để kết luận các luồng mới chưa có.
 
 ### Kiểm thử
 
