@@ -9,6 +9,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/audio_guide
       SPRING_DATASOURCE_USERNAME: audio_guide
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Chua dat POSTGRES_PASSWORD}
+      TRANSLATION_PROVIDER: ${TRANSLATION_PROVIDER:-demo}
+      TRANSLATION_URL: ${TRANSLATION_URL:-http://host.docker.internal:5000/translate}
+      TRANSLATION_API_KEY: ${TRANSLATION_API_KEY:-}
+      DEMO_EDITOR_PASSWORD: ${DEMO_EDITOR_PASSWORD:-EditorDemo!2026}
+      DEMO_REVIEWER_PASSWORD: ${DEMO_REVIEWER_PASSWORD:-ReviewerDemo!2026}
       DEMO_ADMIN_USERNAME: ${DEMO_ADMIN_USERNAME:-admin}
       DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:-}
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_COMPONENTS: always
@@ -35,6 +40,18 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+
+  web-user:
+    profiles: ["tourist-web"]
+    build:
+      context: ./web-user
+    ports:
+      - "127.0.0.1:${TOURIST_WEB_PORT:-4176}:4176"
+    environment:
+      API_PROXY_TARGET: http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
 
   postgres:
     image: postgis/postgis:17-3.6-alpine
