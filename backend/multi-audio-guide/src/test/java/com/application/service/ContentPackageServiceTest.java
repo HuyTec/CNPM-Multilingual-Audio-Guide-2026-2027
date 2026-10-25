@@ -40,11 +40,28 @@ class ContentPackageServiceTest {
         var verifier = Signature.getInstance("SHA256withRSA"); verifier.initVerify(key); verifier.update(bundle.bytes());
         assertThat(verifier.verify(Base64.getDecoder().decode(bundle.manifest().signature()))).isTrue();
     }
-    @Test void invalidScopeAndMissingPublishedContentFailWithoutProducingPackage() {
+    @Test void invalidScopeAndIncompletePublishedContentFailWithoutProducingPackage() {
         assertThatThrownBy(() -> service.build("INVALID")).isInstanceOf(ResponseStatusException.class).hasMessageContaining("400");
         verifyNoInteractions(repository);
-        when(repository.locations(true)).thenReturn(List.of()); when(repository.guides(true)).thenReturn(List.of());
+        when(repository.locations(true)).thenReturn(List.of(new Location(UUID.randomUUID(), "Địa điểm", UUID.randomUUID(), "Văn hóa", 10, 106, 80)));
+        when(repository.guides(true)).thenReturn(List.of());
         assertThatThrownBy(() -> service.build("BASE")).isInstanceOf(ResponseStatusException.class).hasMessageContaining("404");
+        verifyNoInteractions(audio);
+    }
+    @Test void emptyScopesProduceVerifiablePackagesAfterReset() {
+        for (String scope : List.of("BASE", "OPTIONAL")) {
+            boolean base = scope.equals("BASE");
+            when(repository.locations(base)).thenReturn(List.of());
+            when(repository.guides(base)).thenReturn(List.of());
+            var bundle = service.build(scope);
+            var payload = JsonMapper.builder().build().readTree(bundle.bytes());
+            assertThat(payload.get("locations").size()).isZero();
+            assertThat(payload.get("guides").size()).isZero();
+            assertThat(payload.get("isBase").asBoolean()).isEqualTo(base);
+            assertThat(bundle.manifest().sha256()).isEqualTo(signer.checksum(bundle.bytes()));
+            assertThat(signer.verify(bundle.bytes(), bundle.manifest().signature())).isTrue();
+            assertThat(service.build(scope).bytes()).isEqualTo(bundle.bytes());
+        }
         verifyNoInteractions(audio);
     }
 }

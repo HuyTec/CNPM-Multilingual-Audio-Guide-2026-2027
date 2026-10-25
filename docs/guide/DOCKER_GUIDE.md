@@ -82,6 +82,10 @@ docker compose --env-file .env.demo.local stop
 
 `docker compose down` giữ named volume; **`down -v` xóa DB**. Không chạy lệnh đó để cập nhật giao diện. `.env.demo.local`, APK và backup chỉ lưu local, không commit.
 
+Khi cần thử nhập nội dung từ đầu, sao lưu `audio_guide` bằng `pg_dump -Fc` trước, dừng backend trong lúc dọn các bảng nội dung/gói/thống kê và giữ tài khoản, danh mục, ngôn ngữ, khóa ký cùng Flyway history. Bản sao lưu của lần reset gần nhất được ghi ở `.local-tools/last-content-reset-backup.txt` (chỉ local; có dữ liệu nhạy cảm, không chia sẻ hoặc commit). Giữ Flyway history để dữ liệu mẫu không được seed lại khi khởi động. Gói `BASE`/`OPTIONAL` rỗng vẫn có checksum/chữ ký hợp lệ, cho phép thay gói cũ trên thiết bị và xuất bản khi mới có nội dung ở một nhóm.
+
+Xóa dữ liệu server không tự xóa gói đã tải trong trình duyệt/Android. Để kiểm tra sạch, mở Web User trong cửa sổ riêng tư, hoặc cập nhật cả hai gói từ trang Ngoại tuyến; Android cũng cần cập nhật gói khi đang có mạng. Thêm địa điểm và upload ảnh ở Admin, chờ ảnh tải xong, lưu/gửi duyệt rồi duyệt và xuất bản; ảnh nháp không được public API phục vụ trước xuất bản.
+
 ## Cấu hình cũ
 
 Admin phụ `3000`, backend phụ `8080` và container Web du khách `hvp-publication-web-user` không còn cần cho cấu hình này. Overlay `compose.admin-shared.yaml` đã được gỡ. Các volume legacy không bị xóa hay gộp dữ liệu tự động. Nếu còn container cũ chiếm cổng, dừng đúng container đó trước khi khởi động stack chung.
