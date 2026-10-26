@@ -6,6 +6,35 @@ Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/guide/USER_WEB_GUIDE.md
 Tài liệu giúp thành viên nhóm nắm được Web User làm gì, dữ liệu đi qua đâu,
 cách chạy và phần còn cần nghiệm thu. Cập nhật ngày **24/10/2026**.
 
+## Chạy nhanh Web User (web du khách)
+
+Chuẩn bị: cài Node.js/npm và Docker Desktop. Mở Docker Desktop và chờ Docker sẵn sàng trước khi chạy các lệnh PowerShell bên dưới.
+
+1. Vào thư mục gốc dự án, khởi động backend và PostgreSQL:
+
+   ```powershell
+   cd D:\2026\CNPM-Multilingual-Audio-Guide-2026-2027
+   docker compose up -d backend postgres
+   ```
+
+   Nếu lưu dự án ở nơi khác, thay đường dẫn `cd` cho phù hợp.
+
+2. Cài thư viện và khởi động Web User:
+
+   ```powershell
+   cd web-user
+   npm ci
+   npm run dev
+   ```
+
+   Chạy `npm ci` lần đầu hoặc khi `package-lock.json` thay đổi. Những lần sau chỉ cần `npm run dev` trong thư mục `web-user`.
+
+3. Mở **[http://127.0.0.1:5175](http://127.0.0.1:5175)**. Giữ terminal chạy web; nhấn `Ctrl+C` để dừng frontend.
+
+Nếu trang mở được nhưng không tải địa điểm, mở terminal tại thư mục gốc và chạy `docker compose ps` để kiểm tra backend/database. Nếu cổng `5175` đang được dùng, dừng phiên Web User cũ rồi chạy lại.
+
+Hướng dẫn chi tiết: [Web User Guide](../docs/guide/USER_WEB_GUIDE.md).
+
 ## Hiện trạng để đọc nhanh
 
 Web User là website cho du khách khám phá địa điểm, đọc và nghe thuyết minh trên
