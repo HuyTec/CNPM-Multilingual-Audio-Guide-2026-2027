@@ -2,7 +2,6 @@
 
 Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/guide/USER_WEB_GUIDE.md). Đã có polling manifest và khối Android/QR. Trước build, chạy `./scripts/prepare-android-download.ps1` từ gốc để đóng APK vào website; output APK không được commit. Các kết quả nghiệm thu có ngày bên dưới là snapshot lịch sử.
 
-
 Tài liệu giúp thành viên nhóm nắm được Web User làm gì, dữ liệu đi qua đâu,
 cách chạy và phần còn cần nghiệm thu. Cập nhật ngày **24/10/2026**.
 
@@ -17,15 +16,15 @@ Source hiện đã có cả phần geofence và outbox playback bền vững, c�
 backend và kiểm thử tương ứng. Chức năng có trong source không đồng nghĩa đã
 được nghiệm thu với dữ liệu khảo sát, GPS hoặc thông báo nền trên thiết bị thật.
 
-| Phần | Đã triển khai | Giới hạn cần hiểu |
-| --- | --- | --- |
-| Khám phá — UC-01 | Bản đồ mở ở 7 địa điểm, gợi ý tìm tên có/không dấu, ghim và danh sách có ảnh; chọn điểm mở ảnh + nút vào bài thuyết minh. | Bản đồ nền cần mạng; tọa độ demo chỉ minh họa. |
-| GPS — UC-01 | Chỉ xin vị trí khi bấm biểu tượng định vị/Lấy vị trí hiện tại; lọc 50–500 m, mặc định 100 m; xếp khoảng cách tăng dần. | Cần quyền và HTTPS/localhost; sai số GPS có thể lớn. Một lần lấy GPS không chứng minh geofence hoạt động. |
-| Đọc bài — UC-02 | VI/EN/FR/JA/ZH/RU, FULL/SHORT; backend trả nội dung APPROVED, fallback Selected → EN → VI và giữ loại bài. | Nội dung/tên dịch demo vẫn cần thẩm định; trạng thái fixture không phải chứng nhận biên tập. |
-| Nghe bài — UC-03 | Có audio nữ VI cho 7 điểm × FULL/SHORT; ưu tiên audio đúng bài, lỗi/thiếu thì thử TTS đúng ngôn ngữ và nguyên văn bài; có dừng, pause/resume, tua và tốc độ. | TTS tùy giọng trên thiết bị; mở trang, đổi bài hoặc chọn thông báo không tự phát audio. |
-| Offline — UC-04 | Xác nhận tải, kiểm tra chữ ký/checksum JSON/audio, cài nguyên tử; giữ bản cũ khi lỗi; bảo vệ BASE và xác nhận trước khi xóa OPTIONAL. | Phải chuẩn bị nội dung/app shell từ trước; không có bản đồ nền offline; text không bảo đảm TTS offline. |
-| Geofence — UC-05 | Bật riêng watchPosition; kiểm tra vào/ra có xét sai số/GPS cũ; banner sáu ngôn ngữ, cooldown IndexedDB dùng chung tab/reload; có adapter thông báo hệ thống. | Chỉ dùng gói có dữ liệu khảo sát/cooldown. Demo chưa đủ đầu vào; chưa bảo đảm GPS nền liên tục khi khóa màn hình/đóng tab. |
-| Đồng bộ lượt nghe | Lưu IndexedDB sau callback bắt đầu phát; tự gửi lại qua mất mạng/reload, backoff và eventId chống đếm trùng; Background Sync nếu hỗ trợ. | Lỗi lưu trữ phải báo nguy cơ mất sự kiện; sự kiện bị từ chối vĩnh viễn được giữ để kiểm tra. |
+| Phần              | Đã triển khai                                                                                                                                                | Giới hạn cần hiểu                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Khám phá — UC-01  | Bản đồ mở ở 7 địa điểm, gợi ý tìm tên có/không dấu, ghim và danh sách có ảnh; chọn điểm mở ảnh + nút vào bài thuyết minh.                                    | Bản đồ nền cần mạng; tọa độ demo chỉ minh họa.                                                                             |
+| GPS — UC-01       | Chỉ xin vị trí khi bấm biểu tượng định vị/Lấy vị trí hiện tại; lọc 50–500 m, mặc định 100 m; xếp khoảng cách tăng dần.                                       | Cần quyền và HTTPS/localhost; sai số GPS có thể lớn. Một lần lấy GPS không chứng minh geofence hoạt động.                  |
+| Đọc bài — UC-02   | VI/EN/FR/JA/ZH/RU, FULL/SHORT; backend trả nội dung APPROVED, fallback Selected → EN → VI và giữ loại bài.                                                   | Nội dung/tên dịch demo vẫn cần thẩm định; trạng thái fixture không phải chứng nhận biên tập.                               |
+| Nghe bài — UC-03  | Có audio nữ VI cho 7 điểm × FULL/SHORT; ưu tiên audio đúng bài, lỗi/thiếu thì thử TTS đúng ngôn ngữ và nguyên văn bài; có dừng, pause/resume, tua và tốc độ. | TTS tùy giọng trên thiết bị; mở trang, đổi bài hoặc chọn thông báo không tự phát audio.                                    |
+| Offline — UC-04   | Xác nhận tải, kiểm tra chữ ký/checksum JSON/audio, cài nguyên tử; giữ bản cũ khi lỗi; bảo vệ BASE và xác nhận trước khi xóa OPTIONAL.                        | Phải chuẩn bị nội dung/app shell từ trước; không có bản đồ nền offline; text không bảo đảm TTS offline.                    |
+| Geofence — UC-05  | Bật riêng watchPosition; kiểm tra vào/ra có xét sai số/GPS cũ; banner sáu ngôn ngữ, cooldown IndexedDB dùng chung tab/reload; có adapter thông báo hệ thống. | Chỉ dùng gói có dữ liệu khảo sát/cooldown. Demo chưa đủ đầu vào; chưa bảo đảm GPS nền liên tục khi khóa màn hình/đóng tab. |
+| Đồng bộ lượt nghe | Lưu IndexedDB sau callback bắt đầu phát; tự gửi lại qua mất mạng/reload, backoff và eventId chống đếm trùng; Background Sync nếu hỗ trợ.                     | Lỗi lưu trữ phải báo nguy cơ mất sự kiện; sự kiện bị từ chối vĩnh viễn được giữ để kiểm tra.                               |
 
 ### Luồng sử dụng chính
 
@@ -37,11 +36,11 @@ backend và kiểm thử tương ứng. Chức năng có trong source không đ�
 
 ## Các trang và kết nối dữ liệu
 
-| URL | Chức năng |
-| --- | --- |
-| `/` | Khám phá bằng bản đồ, tìm kiếm, danh mục, danh sách và dán link địa điểm. |
+| URL                                                  | Chức năng                                                                   |
+| ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| `/`                                                  | Khám phá bằng bản đồ, tìm kiếm, danh mục, danh sách và dán link địa điểm.   |
 | `/locations/:locationId?language=VI&scriptType=FULL` | Đọc/nghe đúng địa điểm; giữ ngôn ngữ/loại bài khi reload hoặc Back/Forward. |
-| `/offline` | Kiểm tra, tải, xác minh và quản lý gói đã lưu. |
+| `/offline`                                           | Kiểm tra, tải, xác minh và quản lý gói đã lưu.                              |
 
 Từ khóa, ngôn ngữ, bộ lọc, địa điểm được chọn (`place`), bảng danh sách, bán kính và trang kết quả được giữ
 trong URL. Tọa độ GPS người dùng không được đưa vào URL hoặc gửi lên backend.
@@ -66,17 +65,17 @@ ngôn ngữ; chưa tự đặt cooldown nghiệp vụ hoặc chứng nhận các
 
 ## Đọc code theo thứ tự nào?
 
-| Nhóm file | Vai trò |
-| --- | --- |
-| `src/main.tsx`, `src/pages/LocationEntry.tsx` | Layout, routes, đăng ký worker và vào khám phá. |
-| `src/components/LocationCatalog.tsx`, `TourMap.tsx`, `LocationSearch.tsx`, `NearbyPlaces.tsx` | Bản đồ, bộ lọc, danh sách và kết quả quanh GPS. |
-| `src/lib/useBrowserLocation.ts`, `useLocationCatalog.ts`, `osmMap.ts` | Xin GPS, tải địa điểm, tính khoảng cách; `mapTiles.ts` quản lý nguồn nền và lỗi tải, `locationPhotos.ts` gắn ảnh theo ID. |
-| `src/pages/GuidePage.tsx`, `src/lib/useGuide.ts`, `guide.ts` | Chọn/kiểm tra bài theo địa điểm, ngôn ngữ và FULL/SHORT. |
-| `src/components/GuidePlayer.tsx`, `src/lib/playback.ts`, `usePlaybackReceipt.ts` | Điều khiển audio/TTS và tạo sự kiện khi thực sự phát. |
-| `src/pages/OfflinePage.tsx`, `src/lib/packages.ts` | Tải, xác minh, lưu và đọc gói offline. |
-| `src/lib/playbackOutbox.ts`, `public/playback-outbox.js`, `src/components/PlaybackSyncStatus.tsx` | Outbox bền vững và trạng thái đồng bộ; page/worker dùng chung phần lưu trữ. |
-| `src/lib/geofence.ts`, `useGeofencing.ts`, `src/components/GeofenceNotices.tsx` | Dữ liệu geofence, vào/ra, cooldown, quyền và banner/thông báo. |
-| `public/sw.js`, `scripts/public-server.mjs` | Worker production và gateway chỉ phục vụ app/API công khai. |
+| Nhóm file                                                                                         | Vai trò                                                                                                                   |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`, `src/pages/LocationEntry.tsx`                                                     | Layout, routes, đăng ký worker và vào khám phá.                                                                           |
+| `src/components/LocationCatalog.tsx`, `TourMap.tsx`, `LocationSearch.tsx`, `NearbyPlaces.tsx`     | Bản đồ, bộ lọc, danh sách và kết quả quanh GPS.                                                                           |
+| `src/lib/useBrowserLocation.ts`, `useLocationCatalog.ts`, `osmMap.ts`                             | Xin GPS, tải địa điểm, tính khoảng cách; `mapTiles.ts` quản lý nguồn nền và lỗi tải, `locationPhotos.ts` gắn ảnh theo ID. |
+| `src/pages/GuidePage.tsx`, `src/lib/useGuide.ts`, `guide.ts`                                      | Chọn/kiểm tra bài theo địa điểm, ngôn ngữ và FULL/SHORT.                                                                  |
+| `src/components/GuidePlayer.tsx`, `src/lib/playback.ts`, `usePlaybackReceipt.ts`                  | Điều khiển audio/TTS và tạo sự kiện khi thực sự phát.                                                                     |
+| `src/pages/OfflinePage.tsx`, `src/lib/packages.ts`                                                | Tải, xác minh, lưu và đọc gói offline.                                                                                    |
+| `src/lib/playbackOutbox.ts`, `public/playback-outbox.js`, `src/components/PlaybackSyncStatus.tsx` | Outbox bền vững và trạng thái đồng bộ; page/worker dùng chung phần lưu trữ.                                               |
+| `src/lib/geofence.ts`, `useGeofencing.ts`, `src/components/GeofenceNotices.tsx`                   | Dữ liệu geofence, vào/ra, cooldown, quyền và banner/thông báo.                                                            |
+| `public/sw.js`, `scripts/public-server.mjs`                                                       | Worker production và gateway chỉ phục vụ app/API công khai.                                                               |
 
 ## Kết quả đã kiểm chứng và phần còn thiếu
 
@@ -238,8 +237,10 @@ npm ci
 npm run dev
 ```
 
-Mở http://127.0.0.1:5175/ để chọn địa điểm. Proxy đọc `BACKEND_PORT` từ `.env` ở thư mục gốc
-(nếu chưa đặt thì dùng 8080). Có thể ghi đè bằng `API_PROXY_TARGET` trong `web-user/.env.local`.
+Mở http://127.0.0.1:5175/ để chọn địa điểm. Proxy ưu tiên `API_PROXY_TARGET` trong
+`web-user/.env.local`, sau đó dùng `API_PROXY_TARGET` hoặc `BACKEND_PORT` từ
+`.env.demo.local` ở thư mục gốc (nếu chưa đặt thì dùng cổng 8080). Có thể đặt URL backend
+khác trong `web-user/.env.local`; khởi động lại Vite sau khi đổi cấu hình.
 Backend dùng profile demo; phần geofence mới cần migration V4. Môi trường được kiểm tra ngày 22/10/2026 dùng cổng 8081.
 Danh sách mặc định là bảy điểm từ tài liệu nhóm cung cấp; vẫn có lựa chọn tất cả
 địa điểm cũ. Nội dung chưa thẩm định; tọa độ chỉ minh họa.
@@ -339,7 +340,11 @@ và chờ tối đa 12 giây để có điểm ban đầu; nếu sai số hơn 2
 Nút cập nhật yêu cầu vị trí mới, không dùng lại cache cũ. Một lần thử chính xác lỗi không xóa điểm gần đúng đã có.
 Trên điện thoại nên mở liên kết trực tiếp bằng Safari/Chrome, bật Dịch vụ vị trí và Vị trí chính xác cho trình duyệt,
 chọn Cho phép khi được hỏi. Web không thể tự bật GPS hoặc vượt qua quyền người dùng đã từ chối. Trình duyệt báo độ chính xác;
-nếu sai số lớn hơn bán kính, kết quả có thể sai lệch. Tọa độ demo chưa kiểm chứng,
+nếu sai số lớn hơn bán kính, kết quả có thể sai lệch. Tọa độ demo cd web-user
+npm run test:gateway
+node scripts/phone-share.smoke.mjscd web-user
+npm run test:gateway
+node scripts/phone-share.smoke.mjschưa kiểm chứng,
 không thay thế dữ liệu định vị đã khảo sát. Thiếu quyền GPS vẫn tìm kiếm thủ công được.
 
 ### Kiểm tra kết nối backend
@@ -353,7 +358,9 @@ Invoke-RestMethod 'http://127.0.0.1:5175/api/locations?size=50&categoryId=100000
 Invoke-RestMethod 'http://127.0.0.1:5175/api/categories'
 ```
 
-Nếu đổi cổng backend, sửa `BACKEND_PORT` tại `.env` gốc hoặc `API_PROXY_TARGET`, rồi khởi động lại Vite.
+Nếu đổi cổng backend Docker, cập nhật `BACKEND_PORT` và `API_PROXY_TARGET` trong `.env.demo.local`,
+rồi khởi động lại Vite. Vite dev chạy trên host nên dùng `127.0.0.1`; container `web-user`
+được Compose cấu hình riêng với `http://backend:8080`.
 API phân trang chỉ chấp nhận `size` từ 1 đến 50; web tải tuần tự mọi trang để quét đủ địa điểm.
 Trong **Danh sách**, chọn **Danh mục** để duyệt nhóm hoặc tất cả địa điểm; mặc định vẫn là tuyến 7 điểm.
 
