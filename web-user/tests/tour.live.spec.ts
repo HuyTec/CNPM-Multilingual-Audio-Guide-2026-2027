@@ -17,7 +17,7 @@ test.describe('District tour — live data', () => {
     await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('');
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(catalog.items.length);
     await page.getByRole('combobox', { name: 'Danh mục', exact: true }).selectOption('10000000-0000-0000-0000-000000000101');
-    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(8);
     await page.locator('select[name="language"]').selectOption('FR');
     await page.locator('.place-select').filter({ hasText: 'Dinh Độc Lập' }).click();
     await page.getByRole('link', { name: 'Mở bài thuyết minh' }).click();

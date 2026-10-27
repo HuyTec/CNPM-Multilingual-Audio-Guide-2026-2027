@@ -5,15 +5,15 @@ test.describe('Real signed package / production service worker', () => {
   test('stored audio corruption is rejected before reporting a package verified', async ({ page }) => {
     await page.goto('/offline');
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
-    await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
+    await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
+    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
     await page.evaluate(() => new Promise<void>((resolve, reject) => {
       const open = indexedDB.open('travelvoice-content-v1', 1);
       open.onerror = () => reject(open.error);
       open.onsuccess = () => {
         const db = open.result; const tx = db.transaction('packages', 'readwrite');
-        const store = tx.objectStore('packages'); const read = store.get('OPTIONAL');
+        const store = tx.objectStore('packages'); const read = store.get('BASE');
         read.onsuccess = () => {
           const stored = read.result;
           new Uint8Array(stored.assets[0].bytes)[0] ^= 1;
@@ -64,27 +64,27 @@ test.describe('Real signed package / production service worker', () => {
     await expect(page.locator('.script-text')).toBeVisible();
     await page.getByRole('link', { name: 'Khám phá', exact: true }).click();
     await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
-    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(7);
+    await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(8);
     await context.setOffline(false);
   });
 
-  test('real cached WAV creates durable offline receipt and syncs after reload/reconnection', async ({ page, context, request }) => {
+  test('real cached MP3 creates durable offline receipt and syncs after reload/reconnection', async ({ page, context, request }) => {
     await page.goto('/offline');
     await page.evaluate(async () => { await navigator.serviceWorker.ready; });
     await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
-    await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
+    await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
+    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
     await context.setOffline(true);
-    await page.goto('/locations/20000000-0000-0000-0000-000000000001?language=VI&scriptType=SHORT');
+    await page.goto('/locations/20000000-0000-0000-0000-000000000108?language=VI&scriptType=SHORT');
     await expect(page.getByText('Đang đọc từ gói offline đã xác minh.', { exact: false })).toBeVisible();
     await page.getByRole('button', { name: 'Nghe thuyết minh', exact: true }).click();
     await expect(page.locator('.guide-player')).toContainText('Đang phát · Audio thu sẵn');
     await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('1 lượt nghe đã lưu');
     const queued = await page.evaluate(async () => (await (await import('/playback-outbox.js' as string)).listReceipts())[0]);
     expect(queued.offline).toBe(true);
-    expect(queued.contentId).toBe('30000000-0000-0000-0000-000000000001');
+    expect(queued.contentId).toBe('32000000-0000-0000-0000-000000000002');
     await page.reload();
     await expect(page.getByLabel('Đồng bộ lượt nghe')).toContainText('1 lượt nghe đã lưu');
     await context.setOffline(false);
@@ -98,7 +98,7 @@ test.describe('Real signed package / production service worker', () => {
     // Chromium may bypass request interception for fetches delegated to a controlling worker.
     // The separate reopen test above exercises the actual production worker.
     test.use({ serviceWorkers: 'block' });
-    test('tampered signed bytes rejected without installation; optional audio verified and removable', async ({ page, context }) => {
+    test('tampered bytes rejected; BASE audio protected and empty OPTIONAL removable', async ({ page, context }) => {
       await page.goto('/offline');
       await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
       let tampered = 0;
@@ -115,12 +115,17 @@ test.describe('Real signed package / production service worker', () => {
       await expect(page.getByRole('status')).toContainText('Checksum');
       await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
       await context.unroute(packageUrl);
-      await page.getByRole('button', { name: 'Tải gói', exact: true }).nth(1).click();
+      await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
+      await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+      await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Xóa nội dung bổ sung' })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Tải gói', exact: true }).click();
       await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
       await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
       page.once('dialog', dialog => dialog.accept());
       await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
-      await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toHaveCount(0);
+      await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
     });
   });
 });

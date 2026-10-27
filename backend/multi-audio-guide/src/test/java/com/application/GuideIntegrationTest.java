@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @EnabledIfEnvironmentVariable(named = "TEST_DATABASE_URL", matches = "jdbc:postgresql:.*")
 @Transactional
+@org.springframework.test.context.jdbc.Sql("/catalog-fixtures.sql")
 class GuideIntegrationTest {
     private static final String LOCATION = "20000000-0000-0000-0000-000000000001";
     @Autowired MockMvc mvc;

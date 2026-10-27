@@ -1,13 +1,36 @@
 import { expect, test } from '@playwright/test';
 import type { Guide } from '../src/lib/guide';
+import AxeBuilder from '@axe-core/playwright';
 
 // Opt in only with the real demo backend and its Flyway fixtures running.
 // No page.route(), fallback data, intercepted responses or seeded playback events.
 test.describe('Live Web → backend → PostgreSQL guide', () => {
   test.skip(process.env.LIVE_GUIDE_API !== '1', 'Set LIVE_GUIDE_API=1 with the real demo backend running');
-  const location = '20000000-0000-0000-0000-000000000001';
+  const location = '20000000-0000-0000-0000-000000000108';
 
-  test('actual WAV starts only on click; position, pause/resume, speed and receipt work', async ({ page, request }) => {
+  test('published Xá Lợi photo loads on mobile without overflow or autoplay', async ({ page, request }, info) => {
+    const detail = await (await request.get(`/api/locations/${location}`)).json() as { imageUrl: string };
+    expect(detail.imageUrl).toMatch(/^\/api\/content-images\//);
+    const photoResponse = await request.get(detail.imageUrl);
+    expect(photoResponse.status()).toBe(200);
+    expect(photoResponse.headers()['content-type']).toBe('image/png');
+    const receipts: string[] = [];
+    page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/playbacks')) receipts.push(request.url()); });
+    for (const width of [320, 390, 430]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto(`/locations/${location}?language=VI&scriptType=FULL`);
+      const photo = page.getByRole('img', { name: 'Chùa Xá Lợi', exact: true });
+      await expect(photo).toHaveAttribute('src', detail.imageUrl);
+      await expect.poll(() => photo.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(800);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await expect(page.getByRole('button', { name: 'Nghe thuyết minh', exact: true })).toBeVisible();
+      expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
+      await page.screenshot({ path: info.outputPath(`xa-loi-mobile-${width}.png`), fullPage: true });
+    }
+    expect(receipts).toEqual([]);
+  });
+
+  test('actual MP3 starts only on click; position, pause/resume, speed and receipt work', async ({ page, request }) => {
     const receipts: string[] = [];
     page.on('request', request => { if (request.method() === 'POST' && request.url().endsWith('/api/playbacks')) receipts.push(request.postData()!); });
     await page.goto(`/locations/${location}?language=VI&scriptType=SHORT`);
@@ -32,22 +55,23 @@ test.describe('Live Web → backend → PostgreSQL guide', () => {
     await page.getByRole('button', { name: 'Tiếp tục', exact: true }).click();
     await expect(page.locator('.guide-player [role="status"]').first()).toContainText('Đang phát · Audio thu sẵn');
     expect(receipts).toHaveLength(1);
-    expect(JSON.parse(receipts[0]).contentId).toBe('30000000-0000-0000-0000-000000000001');
+    expect(JSON.parse(receipts[0]).contentId).toBe('32000000-0000-0000-0000-000000000002');
     await page.getByRole('button', { name: 'Dừng', exact: true }).click();
   });
 
   test('four stored variants, direct URL, switching, reload and history', async ({ page, request }, testInfo) => {
     const expected = new Map<string, Guide>();
-    for (const [language, type, suffix] of [['VI', 'FULL', '004'], ['EN', 'FULL', '005'], ['EN', 'SHORT', '006'], ['VI', 'SHORT', '001']]) {
+    for (const [language, type, suffix] of [['VI', 'FULL', '001'], ['EN', 'FULL', '003'], ['EN', 'SHORT', '004'], ['VI', 'SHORT', '002']]) {
       const response = await request.get(`/api/locations/${location}/guide?language=${language}&scriptType=${type}`);
       expect(response.status()).toBe(200);
       const guide = await response.json() as Guide;
-      expect(guide.contentId).toBe(`30000000-0000-0000-0000-000000000${suffix}`);
+      expect(guide.contentId).toBe(`32000000-0000-0000-0000-000000000${suffix}`);
       expect(guide.locationId).toBe(location);
       expect(guide.languageCode).toBe(language);
       expect(guide.scriptType).toBe(type);
       expect(guide.scriptText.trim().length).toBeGreaterThan(0);
-      expect(guide.audioUrl).toBe(suffix === '001' ? '/demo-audio/museum.wav' : null);
+      if (language === 'VI') expect(guide.audioUrl).toMatch(/^\/api\/content-audio\/[0-9a-f-]{36}\.mp3$/);
+      else expect(guide.audioUrl).toBeNull();
       expected.set(`${language}:${type}`, guide);
     }
     expect(new Set([...expected.values()].map(guide => guide.scriptText)).size).toBe(4);
@@ -73,27 +97,18 @@ test.describe('Live Web → backend → PostgreSQL guide', () => {
     await page.screenshot({ path: testInfo.outputPath('live-reader-mobile.png'), fullPage: true });
   });
 
-  test('real EN/VI fallback, missing FULL and unpublished location', async ({ page, request }) => {
-    await page.goto(`/locations/${location}?language=JA&scriptType=SHORT`);
-    await expect(page.locator('.fallback-note')).toContainText('Chưa có bản');
+  test('real EN fallback, removed locations and unpublished location', async ({ page, request }) => {
+    await page.goto(`/locations/${location}?language=DE&scriptType=SHORT`);
+    await expect(page.locator('.reader .fallback-note')).toContainText('Chưa có bản');
     await expect(page.locator('.script-text')).toHaveAttribute('lang', 'en');
-    await expect(page.getByLabel('Ngôn ngữ yêu cầu')).toHaveValue('JA');
+    await expect(page.getByLabel('Ngôn ngữ yêu cầu')).toHaveValue('DE');
     await page.getByRole('radio', { name: 'Đầy đủ' }).check();
     await expect(page.locator('.script-text')).toHaveAttribute('lang', 'en');
-    await expect(page).toHaveURL(/language=JA&scriptType=FULL/);
-    const viOnly = '20000000-0000-0000-0000-000000000002';
-    const response = await request.get(`/api/locations/${viOnly}/guide?language=JA&scriptType=SHORT`);
-    expect(response.status()).toBe(200);
-    const guide = await response.json() as Guide;
-    expect(guide.languageCode).toBe('VI');
-    expect(guide.scriptType).toBe('SHORT');
-    expect(guide.contentId).toBe('30000000-0000-0000-0000-000000000002');
-    await page.goto(`/locations/${viOnly}?language=JA&scriptType=SHORT`);
-    await expect(page.locator('.script-text')).toHaveText(guide.scriptText);
-    await expect(page.locator('.fallback-note')).toContainText('Tiếng Việt');
-    await page.getByRole('radio', { name: 'Đầy đủ' }).check();
-    await expect(page.getByRole('heading', { name: 'Nội dung đang được cập nhật' })).toBeVisible();
-    await expect(page.locator('.script-text')).toHaveCount(0);
+    await expect(page).toHaveURL(/language=DE&scriptType=FULL/);
+    for (const suffix of ['001','002','003']) {
+      const response = await request.get(`/api/locations/20000000-0000-0000-0000-000000000${suffix}/guide?language=VI&scriptType=SHORT`);
+      expect(response.status()).toBe(404);
+    }
     // A location with FULL but no SHORT must not silently substitute FULL.
     // That SQL branch is verified transactionally by GuideIntegrationTest.
     await page.goto('/locations/20000000-0000-0000-0000-000000000004');

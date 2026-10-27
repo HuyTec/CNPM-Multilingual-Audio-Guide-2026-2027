@@ -7,6 +7,7 @@ import { OfflinePage } from './pages/OfflinePage';
 import { PlaybackSyncStatus } from './components/PlaybackSyncStatus';
 import { GeofenceNotices } from './components/GeofenceNotices';
 import {PackageUpdateNotice} from './components/PackageUpdateNotice';
+import { SiteHeader } from './components/SiteHeader';
 import './style.css';
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) void navigator.serviceWorker.register(`/sw.js?build=${import.meta.env.APP_BUILD}`, { type: 'module', updateViaCache: 'none' }).catch(() => {});
@@ -15,10 +16,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <a className="skip-link" href="#main">Đến nội dung chính</a>
-      <header className="site-header">
-        <Link to="/" className="brand" translate="no">TravelVoice<span>Thuyết minh địa điểm</span></Link>
-        <nav className="header-nav" aria-label="Điều hướng chính"><Link to="/">Khám phá</Link><Link to="/offline">Nội dung offline</Link></nav>
-      </header>
+      <SiteHeader />
       <main id="main" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<LocationEntry />} />

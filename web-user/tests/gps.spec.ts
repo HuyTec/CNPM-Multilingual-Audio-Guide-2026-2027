@@ -20,7 +20,7 @@ test('coarse fix appears after My Location and survives precise GPS timeout', as
     } });
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
+  await page.getByRole('button', { name: 'Tìm địa điểm lân cận', exact: true }).click();
   await expect(page.locator('.user-location-icon')).toHaveCount(1);
   await expect(page.getByText(/Độ chính xác GPS lớn hơn/)).toBeVisible();
   await expect(page.getByText('Chưa lấy được vị trí sau khi thử lại.', { exact: false })).toHaveCount(0);
@@ -40,7 +40,7 @@ test('a slow first fix retries with longer precise GPS rather than failing after
     } });
   });
   await page.goto('/');
-  await page.getByRole('button', { name: 'Định vị vị trí hiện tại' }).click();
+  await page.getByRole('button', { name: 'Tìm địa điểm lân cận', exact: true }).click();
   await expect(page.locator('.user-location-icon')).toHaveCount(1);
   await expect(page.locator('.gps-accuracy')).toContainText('±8 m');
 });

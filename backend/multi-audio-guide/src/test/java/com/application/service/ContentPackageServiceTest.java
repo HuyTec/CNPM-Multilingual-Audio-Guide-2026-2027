@@ -47,4 +47,19 @@ class ContentPackageServiceTest {
         assertThatThrownBy(() -> service.build("BASE")).isInstanceOf(ResponseStatusException.class).hasMessageContaining("404");
         verifyNoInteractions(audio);
     }
+    @Test void emptyOptionalPackageCanWithdrawRetiredLocationsWithoutReadingAudio() {
+        when(repository.locations(false)).thenReturn(List.of()); when(repository.guides(false)).thenReturn(List.of());
+        var bundle = service.build("OPTIONAL");
+        var payload = JsonMapper.builder().build().readTree(bundle.bytes());
+        assertThat(payload.get("locations").size()).isZero();
+        assertThat(payload.get("guides").size()).isZero();
+        assertThat(bundle.manifest().assets()).isEmpty();
+        assertThat(bundle.manifest().sha256()).isEqualTo(signer.checksum(bundle.bytes()));
+        verifyNoInteractions(audio);
+    }
+    @Test void optionalLocationWithoutItsGuideIsStillRejected() {
+        when(repository.locations(false)).thenReturn(List.of(new Location(UUID.randomUUID(), "Missing guide", UUID.randomUUID(), "Category", 10, 106, 100)));
+        when(repository.guides(false)).thenReturn(List.of());
+        assertThatThrownBy(() -> service.build("OPTIONAL")).isInstanceOf(ResponseStatusException.class).hasMessageContaining("404");
+    }
 }

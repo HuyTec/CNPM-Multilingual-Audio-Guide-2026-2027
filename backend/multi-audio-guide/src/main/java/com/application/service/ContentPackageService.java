@@ -42,7 +42,9 @@ public class ContentPackageService {
         if (!List.of("BASE", "OPTIONAL").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại gói không hợp lệ.");
         boolean base = scope.equals("BASE");
         var locations = repository.locations(base); var guides = repository.guides(base);
-        if (locations.isEmpty() || guides.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có gói đã duyệt.");
+        // An empty OPTIONAL snapshot withdraws content removed from the catalogue.
+        // Keep rejecting incomplete snapshots and an unprovisioned BASE package.
+        if ((base && locations.isEmpty()) || locations.isEmpty() != guides.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có gói đã duyệt.");
         List<Asset> assets = guides.stream().map(GuideContent::audioUrl).filter(url -> url != null).distinct().sorted().map(url -> {
             byte[] bytes = audio.read(url); return new Asset(url, bytes.length, signer.checksum(bytes));
         }).toList();

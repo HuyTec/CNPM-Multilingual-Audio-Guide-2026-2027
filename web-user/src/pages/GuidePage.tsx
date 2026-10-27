@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { languageName, languagePattern, supportedLanguages, uuidPattern } from '../lib/guide';
+import { languageName, languageOptionName, languagePattern, supportedLanguages, uuidPattern } from '../lib/guide';
 import { GuidePlayer } from '../components/GuidePlayer';
 import type { Selection } from '../lib/guide';
 import { useGuide } from '../lib/useGuide';
 import { PublishedLocationPhoto } from '../components/PublishedLocationPhoto';
+import { PlaceCredits } from '../components/PlaceCredits';
 
 function GuideReader({ selection, retry }: { selection: Selection; retry: () => void }) {
   const state = useGuide(selection);
@@ -39,6 +40,7 @@ function GuideReader({ selection, retry }: { selection: Selection; retry: () => 
       : 'Đã tải bài thuyết minh.'}</p>
     <GuidePlayer key={guide.contentId} guide={guide} offline={state.offline} />
     <div className="script-text" lang={guide.languageCode.toLowerCase()}>{guide.scriptText}</div>
+    <PlaceCredits locationId={guide.locationId} />
     <p className="reader-end" aria-hidden="true">— Hết bài thuyết minh —</p>
   </article>;
 }
@@ -79,7 +81,7 @@ export function GuidePage() {
       <p className="eyebrow">Theo cách của bạn</p><p className="options-title" id="options-heading">Chọn bài đọc</p>
       <label htmlFor="guide-language">Ngôn ngữ yêu cầu</label>
       <select ref={languageControl} id="guide-language" name="language" autoComplete="off" defaultValue={language} onChange={event => change('language', event.target.value)}>
-        {languages.map(code => <option key={code} value={code}>{languageName(code)}{!supportedLanguages.includes(code) ? ' (theo liên kết)' : ''}</option>)}
+        {languages.map(code => <option key={code} value={code} lang="en" translate="no">{languageOptionName(code)}{!supportedLanguages.includes(code) ? ' (theo liên kết)' : ''}</option>)}
       </select>
       <fieldset ref={modeControls}><legend>Độ dài thuyết minh</legend>
         {(['FULL', 'SHORT'] as const).map(mode => <label className="mode-option" key={mode}>

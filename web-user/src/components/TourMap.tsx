@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -29,7 +29,8 @@ function popupFor(item: TourLocation, language: string, scriptType: string) {
 }
 
 export default function TourMap({ items, language, scriptType, toolbar, listOpen, closeList, loading, error, errorMessage, offline, retry, focusRequest, selectedId: selected, noSearchMatch }: {
-  items: TourLocation[]; language: string; scriptType: string; toolbar: ReactNode;
+  items: TourLocation[]; language: string; scriptType: string;
+  toolbar: (actions: { startNearby: () => void; nearbyOpen: boolean; triggerRef: RefObject<HTMLButtonElement | null> }) => ReactNode;
   listOpen: boolean; closeList: () => void; loading: boolean; error: boolean; errorMessage?: string; offline: boolean; retry: () => void;
   focusRequest: number;
   selectedId: string | null; noSearchMatch: boolean;
@@ -37,12 +38,25 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+  const nearbyTrigger = useRef<HTMLButtonElement>(null);
   const [state, setState] = useState<MapTileState>('loading');
   const [attempt, setAttempt] = useState(0);
   const [params, setParams] = useSearchParams();
   const rawRadius = Number(params.get('radius') ?? 100);
-  const radius = Number.isFinite(rawRadius) ? Math.min(500, Math.max(50, Math.round(rawRadius))) : 100;
+  const radius = Number.isFinite(rawRadius) ? Math.min(500, Math.max(100, Math.round(rawRadius))) : 100;
+  const nearbyOpen = params.get('nearby') === 'true';
   const gps = useBrowserLocation();
+  function startNearby() {
+    const next = new URLSearchParams(params);
+    next.set('nearby', 'true'); next.delete('panel'); next.delete('nearbyPage'); next.delete('nearbyExpanded'); next.set('view', 'map');
+    next.set('radius', String(radius));
+    setParams(next);
+    gps.locate();
+  }
+  function closeNearby() {
+    const next = new URLSearchParams(params); next.delete('nearby'); setParams(next);
+    nearbyTrigger.current?.focus();
+  }
   const stops = useMemo(() => items.filter(hasMapCoordinates), [items]);
   const viewportStops = useMemo(() => {
     const local = stops.filter(item => item.latitude >= mapArea.bounds.south && item.latitude <= mapArea.bounds.north
@@ -152,18 +166,21 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !gps.position) return;
+    if (!map || !gps.position || !nearbyOpen) return;
     const circle = L.circle([gps.position.latitude, gps.position.longitude], { radius, color: '#08766d', weight: 2, fillOpacity: 0.1, interactive: false }).addTo(map);
     return () => { circle.remove(); };
-  }, [gps.position, radius, attempt]);
+  }, [gps.position, radius, attempt, nearbyOpen]);
 
   useEffect(() => { if (listOpen) closeButton.current?.focus(); }, [listOpen]);
 
   return <section className="map-section" aria-label="Bản đồ địa điểm">
     <h2 className="sr-only">Bản đồ OpenStreetMap · Quận 1 &amp; Quận 3</h2>
     <div className="map-workspace">
-      <div key={attempt} ref={container} className="tour-map" role="region" aria-label="Bản đồ OpenStreetMap bao phủ Quận 1 và Quận 3" />
-      {toolbar}
+      <div key={attempt} ref={container} className="tour-map" inert={nearbyOpen || listOpen} role="region" aria-label="Bản đồ OpenStreetMap bao phủ Quận 1 và Quận 3" />
+      {toolbar({ startNearby, nearbyOpen, triggerRef: nearbyTrigger })}
+      {nearbyOpen && <NearbyPlaces items={items} language={language} scriptType={scriptType} radius={radius} onClose={closeNearby}
+        onRadius={value => { const next = new URLSearchParams(params); next.set('radius', String(value)); next.delete('nearbyPage'); setParams(next, { replace: true }); }}
+        position={gps.position} gpsStatus={gps.status} gpsError={gps.error} refining={gps.refining} locate={gps.locate} loading={loading} error={error} errorMessage={errorMessage} retry={retry} />}
       <aside id="map-location-list" className="location-drawer" hidden={!listOpen} aria-labelledby="list-heading" onKeyDown={event => { if (event.key === 'Escape') closeList(); }}>
         <div className="drawer-heading"><h2 id="list-heading">Danh sách địa điểm</h2><button ref={closeButton} className="secondary-button" onClick={closeList} aria-label="Đóng danh sách">✕</button></div>
         <CategoryFilter />
@@ -188,9 +205,8 @@ export default function TourMap({ items, language, scriptType, toolbar, listOpen
       {loading ? ' Đang tải địa điểm…' : !error && !items.length ? ' Chưa tìm thấy địa điểm. Hãy thử từ khóa khác.' : ''}
       {offline && ' Danh sách từ gói offline đã xác minh.'}
     </div>
+    {!nearbyOpen && gps.error && <p className="field-error" role="alert">{gps.error}</p>}
+    {error && !nearbyOpen && !listOpen && <div className="map-error" role="alert"><p>{errorMessage || 'Chưa tải được địa điểm. Hãy kiểm tra kết nối rồi thử lại.'}</p><button type="button" className="secondary-button" onClick={retry}>Thử tải lại địa điểm</button></div>}
     {state === 'error' && <button className="secondary-button" onClick={() => { setState('loading'); setAttempt(value => value + 1); }}>Tải lại bản đồ</button>}
-    <NearbyPlaces items={items} language={language} scriptType={scriptType} radius={radius}
-      onRadius={value => { const next = new URLSearchParams(params); next.set('radius', String(value)); next.delete('nearbyPage'); setParams(next, { replace: true }); }}
-      position={gps.position} gpsStatus={gps.status} gpsError={gps.error} refining={gps.refining} locate={gps.locate} loading={loading} error={error} errorMessage={errorMessage} retry={retry} />
   </section>;
 }

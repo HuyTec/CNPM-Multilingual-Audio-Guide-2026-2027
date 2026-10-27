@@ -7,7 +7,7 @@ const location = '20000000-0000-0000-0000-000000000001';
 const path = `/locations/${location}`;
 const content = (language = 'VI', type = 'FULL', text = `Bài đọc ${language} ${type}`) => ({
   contentId: '30000000-0000-0000-0000-000000000004',
-  locationId: location, locationName: 'Bảo tàng Demo', languageCode: language,
+  locationId: location, locationName: 'Địa điểm kiểm thử', languageCode: language,
   scriptType: type, scriptText: text, audioUrl: null,
 });
 async function respond(route: Route, language?: string, type?: string, text?: string) {
@@ -15,7 +15,7 @@ async function respond(route: Route, language?: string, type?: string, text?: st
   await route.fulfill({ json: content(language ?? query.get('language')!, type ?? query.get('scriptType')!, text) });
 }
 async function mockApi(page: Page) {
-  await page.route('**/api/**', route => respond(route));
+  await page.route('**/api/locations/**', route => respond(route));
 }
 
 test.describe('Guide browser contract — synthetic API', () => {
@@ -28,16 +28,22 @@ test.describe('Guide browser contract — synthetic API', () => {
         return original(...args);
       };
     });
-    await page.route('**/api/**', route => route.fulfill({ status: 403 }));
-    await page.goto(path);
+    await page.route('**/api/locations/**', route => route.fulfill({ status: 403 }));
+    await page.route('**/api/content-packages', route => route.fulfill({ json: [] }));
+    await page.goto('/locations/not-an-id');
+    await expect(page.getByRole('heading', { name: 'Đường dẫn chưa hợp lệ' })).toBeVisible();
+    await page.evaluate(next => {
+      Reflect.set(window, 'offlineReads', 0);
+      history.pushState({}, '', next); window.dispatchEvent(new PopStateEvent('popstate'));
+    }, path);
     await expect(page.getByRole('heading', { name: 'Chưa tải được thuyết minh' })).toBeVisible();
     expect(await page.evaluate(() => Reflect.get(window, 'offlineReads'))).toBe(0);
     await expect(page.locator('.script-text')).toHaveCount(0);
   });
   test('direct link defaults to FULL, supports all four variants, refresh and history', async ({ page }) => {
     const requests: string[] = [];
-    await page.route('**/api/**', async route => {
-      requests.push(route.request().url());
+    await page.route('**/api/locations/**', async route => {
+      if (new URL(route.request().url()).pathname.endsWith('/guide')) requests.push(route.request().url());
       await respond(route);
     });
     await page.goto(path);
@@ -63,13 +69,13 @@ test.describe('Guide browser contract — synthetic API', () => {
   for (const effective of ['EN', 'VI']) {
     test(`fallback ${effective} is visible, retains requested JA and SHORT`, async ({ page }) => {
       const requests: string[] = [];
-      await page.route('**/api/**', async route => {
-        requests.push(route.request().url());
+      await page.route('**/api/locations/**', async route => {
+        if (new URL(route.request().url()).pathname.endsWith('/guide')) requests.push(route.request().url());
         await respond(route, effective);
       });
       await page.goto(`${path}?language=JA&scriptType=SHORT`);
       await expect(page.locator('.script-text')).toHaveText(`Bài đọc ${effective} SHORT`);
-      await expect(page.locator('.fallback-note')).toContainText('Chưa có bản');
+      await expect(page.locator('.reader .fallback-note')).toContainText('Chưa có bản');
       await expect(page.getByLabel('Ngôn ngữ yêu cầu')).toHaveValue('JA');
       await expect(page.locator('.script-text')).toHaveAttribute('lang', effective.toLowerCase());
       await page.getByRole('radio', { name: 'Đầy đủ' }).check();
@@ -84,7 +90,7 @@ test.describe('Guide browser contract — synthetic API', () => {
     let delayed = false;
     const barrier = new Promise<void>(resolve => { release = resolve; });
     const oldFinished = new Promise<void>(resolve => { finishOld = resolve; });
-    await page.route('**/api/**', async route => {
+    await page.route('**/api/locations/**', async route => {
       if (new URL(route.request().url()).searchParams.get('language') === 'EN') {
         delayed = true;
         await barrier;
@@ -108,8 +114,8 @@ test.describe('Guide browser contract — synthetic API', () => {
 
   test('404 clears old text, keeps options and permits another location', async ({ page }) => {
     const requests: string[] = [];
-    await page.route('**/api/**', async route => {
-      requests.push(new URL(route.request().url()).pathname);
+    await page.route('**/api/locations/**', async route => {
+      if (new URL(route.request().url()).pathname.endsWith('/guide')) requests.push(new URL(route.request().url()).pathname);
       if (new URL(route.request().url()).searchParams.get('scriptType') === 'SHORT') {
         await route.fulfill({ status: 404, json: { detail: 'Nội dung đang cập nhật' } });
       } else await respond(route);
@@ -131,7 +137,7 @@ test.describe('Guide browser contract — synthetic API', () => {
   for (const error of ['503', 'network']) {
     test(`${error} shows retry, preserves URL and does not substitute fixture text`, async ({ page }) => {
       let failed = true;
-      await page.route('**/api/**', async route => {
+      await page.route('**/api/locations/**', async route => {
         if (!failed) return respond(route);
         if (error === 'network') await route.abort('failed');
         else await route.fulfill({ status: 503, json: { detail: 'Database unavailable' } });
@@ -150,7 +156,7 @@ test.describe('Guide browser contract — synthetic API', () => {
   for (const invalid of ['not-an-id', `${location}?language=bad!`, `${location}?scriptType=OTHER`]) {
     test(`invalid link ${invalid} makes no API call`, async ({ page }) => {
       let calls = 0;
-      await page.route('**/api/**', async route => { calls++; await respond(route); });
+      await page.route('**/api/locations/**', async route => { calls++; await respond(route); });
       await page.goto(`/locations/${invalid}`);
       await expect(page.getByRole('heading', { name: 'Đường dẫn chưa hợp lệ' })).toBeVisible();
       expect(calls).toBe(0);
@@ -159,7 +165,7 @@ test.describe('Guide browser contract — synthetic API', () => {
 
   for (const malformed of ['empty', 'mode', 'location', 'language']) {
     test(`rejects successful but mismatched response: ${malformed}`, async ({ page }) => {
-      await page.route('**/api/**', route => route.fulfill({ json: {
+      await page.route('**/api/locations/**', route => route.fulfill({ json: {
         ...content(),
         ...(malformed === 'empty' ? { scriptText: ' \t\n ' } : {}),
         ...(malformed === 'mode' ? { scriptType: 'SHORT' } : {}),
@@ -212,10 +218,10 @@ test.describe('Guide browser contract — synthetic API', () => {
     const text = '<script>alert("never")</script>\n' + 'Câu chuyện địa điểm. '.repeat(120) + 'X'.repeat(300);
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('**/api/**', route => respond(route, 'VI', 'FULL', text));
+    await page.route('**/api/locations/**', route => respond(route, 'VI', 'FULL', text));
     await page.goto(path);
     await expect(page.locator('.script-text')).toHaveText(text);
-    await expect(page).toHaveTitle('Bảo tàng Demo · TravelVoice');
+    await expect(page).toHaveTitle('Địa điểm kiểm thử · TravelVoice');
     await expect(page.locator('.script-text script')).toHaveCount(0);
     for (const width of [320, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 1000 });
