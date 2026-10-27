@@ -233,16 +233,16 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .place-copy h3, .place-copy .place-name { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--story-ink); font-size: 1rem; font-weight: 600; line-height: 1.4; margin: 0 0 4px; overflow-wrap: anywhere; }
 .place-copy > span:not(.place-name) { color: var(--story-muted); font-size: 0.8125rem; line-height: 1.5; overflow-wrap: anywhere; }
 .place-distance { flex-shrink: 0; color: var(--trail-teal); font-size: 0.875rem; font-weight: 600; font-variant-numeric: tabular-nums; }
-.nearby-section { position: absolute; z-index: 580; inset: 82px auto 16px 16px; width: min(430px, calc(100% - 96px)); overflow-y: auto; overscroll-behavior: contain; padding: 20px; border: 1px solid var(--reading-rule); border-radius: 12px; background: var(--reading-paper); box-shadow: 0 4px 16px #17263d1a; }
+.nearby-section { margin-top: 12px; padding: 16px; border: 1px solid var(--reading-rule); border-radius: 8px; background: var(--reading-paper); }
 .nearby-title { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; }
 .nearby-title > div { min-width: 0; }
-.nearby-title .eyebrow { margin-bottom: 8px; }
-.nearby-title h2 { font-size: clamp(1.125rem, 3vw, 1.5rem); margin: 0; }
+.nearby-title h2 { font-size: 1.125rem; margin: 0; }
 .nearby-close { flex-shrink: 0; min-width: 44px; padding: 8px; }
-.nearby-refresh { width: 100%; margin-bottom: 16px; }
+.nearby-refresh { width: 100%; margin-bottom: 12px; }
 .location-settings { margin-block: 12px; font-size: 0.8125rem; }
 .location-settings summary { cursor: pointer; color: var(--trail-teal); padding-block: 8px; font-weight: 600; }
 .location-settings p { margin-block: 8px; }
+.scan-control { scroll-margin-block: 16px; }
 .scan-control label { display: flex; justify-content: space-between; gap: 16px; }
 .scan-control output { color: var(--trail-teal); font-variant-numeric: tabular-nums; font-size: 1.125rem; }
 .scan-control input { display: block; width: 100%; height: 44px; margin: 4px 0; accent-color: var(--trail-teal); cursor: pointer; }
@@ -251,19 +251,17 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .place-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
 @media (max-width: 767px) {
   body:has(.map-catalog) .site-header { padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px max(16px, env(safe-area-inset-left)); align-items: center; flex-wrap: wrap; }
-  body:has(.map-catalog) .header-nav { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; max-width: none; width: 100%; gap: 8px; justify-content: initial; }
-  .header-language { width: 100%; max-width: 156px; justify-self: center; }
+  body:has(.map-catalog) .header-nav { display: grid; grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1fr); max-width: none; width: 100%; gap: 12px; justify-content: initial; }
+  .header-language { width: 100%; max-width: 156px; justify-self: start; }
   body:has(.map-catalog) .header-nav > a:last-child { max-width: 80px; line-height: 1.4; }
   main:has(.map-catalog) { padding: 8px max(8px, env(safe-area-inset-right)) 8px max(8px, env(safe-area-inset-left)); }
   .map-catalog .tour-map { height: max(500px, 72svh); border-radius: 8px; }
-  .map-toolbar { inset: 12px 12px auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .map-toolbar { inset: 12px 12px auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
   .map-search { grid-column: 1 / -1; }
-  .nearby-toggle { padding-inline: 12px; font-size: 0.875rem; text-align: left; justify-content: start; }
+  .nearby-toggle { padding: 8px; font-size: 0.875rem; text-align: center; justify-content: center; }
   .nearby-toggle svg { width: 20px; height: 20px; }
-  .map-list-toggle { margin-left: 0; padding-inline: 12px; }
+  .map-list-toggle { margin-left: 0; padding: 8px; font-size: 0.875rem; justify-content: center; }
   .location-drawer { top: auto; left: 12px; right: 72px; bottom: 12px; width: auto; max-height: calc(100% - 144px); }
-  .nearby-section { inset: auto 12px 12px; width: auto; max-height: calc(100% - 144px); padding: 16px; border-radius: 8px; }
-  .nearby-title { margin-bottom: 16px; }
   .map-status { padding-inline: 8px; }
 }
 

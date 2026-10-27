@@ -1,3 +1,10 @@
+```powershell
+powershell -ExecutionPolicy Bypass -File .\web-user\scripts\share-phone.ps1 -Stop
+```
+
+New-Item -ItemType Directory -Path .local-tools/python -Force
+python -m pip install --target .local-tools/python "qrcode[pil]"
+
 # TravelVoice · Web User dành cho du khách
 
 Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/guide/USER_WEB_GUIDE.md). Đã có polling manifest và khối Android/QR. Trước build, chạy `./scripts/prepare-android-download.ps1` từ gốc để đóng APK vào website; output APK không được commit. Các kết quả nghiệm thu có ngày bên dưới là snapshot lịch sử.

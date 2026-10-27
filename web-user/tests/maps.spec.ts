@@ -362,7 +362,25 @@ test('nearby panel is opt-in, mobile friendly, keyboard dismissible and language
     await expect(slider).toHaveAttribute('min', '100');
     await expect(slider).toHaveAttribute('max', '500');
     await expect(slider).toHaveValue('100');
+    await expect(page.locator('.scan-control')).toBeInViewport({ ratio: 1 });
     await expect(page.getByRole('button', { name: 'Đóng tìm kiếm lân cận' })).toBeFocused();
+    const map = page.locator('.tour-map');
+    const panel = page.locator('#nearby-panel');
+    const mapBox = (await map.boundingBox())!;
+    const panelBox = (await panel.boundingBox())!;
+    expect(panelBox.y).toBeGreaterThanOrEqual(mapBox.y + mapBox.height);
+    await expect(map).not.toHaveAttribute('inert');
+    await expect(panel).not.toContainText('Bạn vẫn có thể tìm theo tên');
+    await expect(panel).not.toContainText('Kéo hoặc dùng phím mũi tên');
+    const languageBox = (await language.boundingBox())!;
+    const exploreBox = (await page.getByRole('link', { name: 'Khám phá', exact: true }).boundingBox())!;
+    expect(languageBox.x).toBeLessThan(exploreBox.x);
+    if (width < 768) {
+      const nearbyBox = (await trigger.boundingBox())!;
+      const listBox = (await page.getByRole('button', { name: 'Danh sách', exact: true }).boundingBox())!;
+      expect(Math.abs(nearbyBox.width - listBox.width)).toBeLessThan(1);
+      expect(nearbyBox.height).toBe(listBox.height);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(audit.violations).toEqual([]);
