@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { TourLocation } from "../lib/guide";
 import { distanceMeters, hasMapCoordinates } from "../lib/osmMap";
@@ -41,6 +41,8 @@ export function NearbyPlaces({
   onClose: () => void;
 }) {
   const closeButton = useRef<HTMLButtonElement>(null);
+  const resultsHeading = useRef<HTMLParagraphElement>(null);
+  const [dismissedNotice, setDismissedNotice] = useState("");
   useEffect(() => {
     closeButton.current?.focus({ preventScroll: true });
   }, []);
@@ -64,6 +66,9 @@ export function NearbyPlaces({
         : [],
     [items, position, radius],
   );
+  const noticeKey = JSON.stringify([position, radius, nearby.map((item) => item.locationId)]);
+  const showNotice = position && !loading && !error && gpsStatus !== "loading" && nearby.length > 0 && dismissedNotice !== noticeKey;
+  const resultMessage = `Tìm thấy ${number.format(nearby.length)} địa điểm trong phạm vi ${number.format(radius)} m.`;
   return (
     <section
       id="nearby-panel"
@@ -73,6 +78,31 @@ export function NearbyPlaces({
         if (event.key === "Escape") onClose();
       }}
     >
+      <div aria-live="polite" aria-atomic="true">
+        {showNotice && (
+          <div className="nearby-notice">
+            <button
+              type="button"
+              className="nearby-notice-action"
+              onClick={() => {
+                setDismissedNotice(noticeKey);
+                resultsHeading.current?.focus({ preventScroll: true });
+                resultsHeading.current?.scrollIntoView({
+                  behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+                  block: "start",
+                });
+              }}
+            >
+              <strong>{resultMessage}</strong>
+              <span>Chạm để chọn địa điểm nghe thuyết minh ↓</span>
+            </button>
+            <button type="button" className="nearby-notice-close" aria-label="Đóng thông báo địa điểm lân cận" onClick={() => {
+              setDismissedNotice(noticeKey);
+              closeButton.current?.focus({ preventScroll: true });
+            }}>✕</button>
+          </div>
+        )}
+      </div>
       <div className="nearby-title">
         <div>
           <h2 id="nearby-heading">Tìm địa điểm lân cận</h2>
@@ -162,9 +192,9 @@ export function NearbyPlaces({
           <p>Đang tải địa điểm để quét…</p>
         ) : (
           !error && (
-            <p>
+            <p ref={resultsHeading} tabIndex={-1} className="nearby-result-summary">
               {nearby.length
-                ? `Tìm thấy ${number.format(nearby.length)} địa điểm trong phạm vi ${number.format(radius)} m.`
+                ? resultMessage
                 : `Chưa có địa điểm trong phạm vi ${number.format(radius)} m. Hãy mở rộng phạm vi hoặc thử tìm kiếm thủ công.`}
             </p>
           )

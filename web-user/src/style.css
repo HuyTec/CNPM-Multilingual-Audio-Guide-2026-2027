@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+.nearby-notice { position: fixed; z-index: 1200; top: max(16px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); width: auto; max-width: 480px; margin-inline: auto; display: flex; align-items: flex-start; gap: 8px; padding: 12px; background: var(--reading-paper); border: 2px solid var(--trail-teal); border-radius: 8px; box-shadow: 0 4px 16px #17263d26; }
+.nearby-notice-action { flex: 1; min-width: 0; text-align: left; padding: 8px; background: transparent; border: 0; color: var(--story-ink); overflow-wrap: anywhere; }
+.nearby-notice-action strong, .nearby-notice-action span { display: block; }
+.nearby-notice-action strong { font-variant-numeric: tabular-nums; }
+.nearby-notice-action span { color: var(--trail-teal); font-size: 0.875rem; margin-top: 4px; }
+.nearby-notice-close { flex-shrink: 0; min-width: 44px; min-height: 44px; border: 0; border-radius: 4px; background: transparent; color: var(--story-ink); }
+.nearby-notice-action:hover, .nearby-notice-close:hover { background: var(--trail-wash); }
+.nearby-result-summary { scroll-margin-top: 24px; }
+
 .android-promo { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:32px; align-items:center; margin:32px 0; padding:32px; background:var(--reading-paper); border:1px solid var(--reading-rule); border-radius:12px; scroll-margin-top:24px; }
 .android-promo-copy { min-width:0; max-width:640px; }
 .android-promo h2 { margin:8px 0 16px; font-size:clamp(1.4rem,3vw,1.9rem); }
