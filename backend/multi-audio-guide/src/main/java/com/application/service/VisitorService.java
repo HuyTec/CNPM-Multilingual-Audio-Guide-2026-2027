@@ -14,8 +14,14 @@ public class VisitorService {
     @Transactional
     public void heartbeat(VisitorHeartbeat request) { repository.touch(request); }
     @Transactional(readOnly = true)
-    public VisitorStats stats() {
+    public VisitorStats stats(int minutes) {
         Instant now = Instant.now();
-        return new VisitorStats(now, 5, repository.stats(now.minusSeconds(300)));
+        Instant activeSince = now.minusSeconds(minutes * 60L);
+
+        return new VisitorStats(
+            now,
+            minutes,
+            repository.stats(activeSince)
+        );
     }
 }

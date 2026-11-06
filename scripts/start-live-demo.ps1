@@ -23,8 +23,20 @@ if (-not (Test-Path -LiteralPath $demoEnvPath)) {
 Push-Location $demoRoot
 try {
     $composeArguments = @('compose', '--env-file', $demoEnvPath, '-f', (Join-Path $demoRoot 'compose.yaml'), '-p', 'hvp-live-demo')
-    $composeArguments += @('up', '-d', '--wait')
-    if (-not $NoBuild) { $composeArguments += '--build' }
+    if (-not $NoBuild) {
+        # Compose Bake can reject Windows paths under OneDrive. Build the same
+        # service images directly, then let Compose start them without rebuilding.
+        $builds = @(
+            @{ Image = 'hvp-live-demo-backend'; Context = 'backend/multi-audio-guide' },
+            @{ Image = 'hvp-live-demo-web-admin'; Context = 'web-admin' },
+            @{ Image = 'hvp-live-demo-web-user'; Context = 'web-user' }
+        )
+        foreach ($build in $builds) {
+            & docker build -t $build.Image (Join-Path $demoRoot $build.Context)
+            if ($LASTEXITCODE -ne 0) { throw "Failed to build $($build.Image); see Docker output above." }
+        }
+    }
+    $composeArguments += @('up', '-d', '--wait', '--no-build')
     & docker @composeArguments
     if ($LASTEXITCODE -ne 0) { throw 'Demo services failed to start; inspect docker compose logs.' }
     $portArguments = @('compose', '--env-file', $demoEnvPath, '-f', (Join-Path $demoRoot 'compose.yaml'), '-p', 'hvp-live-demo', 'port')

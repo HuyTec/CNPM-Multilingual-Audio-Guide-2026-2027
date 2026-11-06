@@ -17,5 +17,16 @@ public class VisitorController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void heartbeat(@Valid @RequestBody VisitorHeartbeat request) { service.heartbeat(request); }
     @GetMapping("/api/admin/visitors")
-    public VisitorStats stats() { return service.stats(); }
+    public VisitorStats stats(
+            @RequestParam(defaultValue = "5") int minutes
+    ) {
+        if (minutes < 1 || minutes > 1440) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Số phút phải từ 1 đến 1440."
+            );
+        }
+
+        return service.stats(minutes);
+    }
 }
