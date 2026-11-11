@@ -74,9 +74,9 @@ class TourPackageIntegrationTest {
         var verifier = Signature.getInstance("SHA256withRSA"); verifier.initVerify(key); verifier.update(bundle.bytes());
         assertThat(verifier.verify(Base64.getDecoder().decode(manifest.signature()))).isTrue();
         var payload = mapper.readTree(bundle.bytes());
-        assertThat(payload.get("locations").size()).isEqualTo(7);
-        assertThat(payload.get("guides").size()).isEqualTo(84);
-        assertThat(payload.get("assets").size()).isEqualTo(14);
+        assertThat(payload.get("locations").size()).isEqualTo(8);
+        assertThat(payload.get("guides").size()).isEqualTo(96);
+        assertThat(payload.get("assets").size()).isEqualTo(16);
         mvc.perform(get(manifest.downloadUrl())).andExpect(status().isOk()).andExpect(content().bytes(bundle.bytes()));
         byte[] tampered = bundle.bytes().clone(); tampered[tampered.length-2] ^= 1;
         verifier.initVerify(key); verifier.update(tampered);
@@ -124,10 +124,9 @@ class TourPackageIntegrationTest {
         assertThat(mapper.readTree(packages.build("BASE").bytes()).has("geofencing")).isFalse();
     }
 
-    @Test void optionalPackageContainsMatchingChecksummedAudioAndWrongVersionIs404() throws Exception {
+    @Test void optionalPackageWithdrawsRetiredLocationsAndWrongVersionIs404() throws Exception {
         var optional = packages.build("OPTIONAL").manifest();
-        assertThat(optional.isBase()).isFalse(); assertThat(optional.assets()).hasSize(3);
-        assertThat(optional.assets()).allSatisfy(asset -> { assertThat(asset.sizeBytes()).isGreaterThan(100_000); assertThat(asset.sha256()).hasSize(64); });
+        assertThat(optional.isBase()).isFalse(); assertThat(optional.assets()).isEmpty();
         mvc.perform(get("/api/content-packages/BASE/wrong-version")).andExpect(status().isNotFound());
         mvc.perform(get("/api/content-packages/WRONG/wrong-version")).andExpect(status().isBadRequest());
     }

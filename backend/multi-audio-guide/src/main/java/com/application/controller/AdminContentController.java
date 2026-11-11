@@ -4,6 +4,8 @@ import com.application.service.AdminContentService;
 import com.application.dto.AdminContentDto.*;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +30,12 @@ public class AdminContentController {
     public UploadResponse upload(@RequestParam UUID locationId,@RequestParam String language,@RequestParam String scriptType,@RequestParam MultipartFile file) throws IOException {
         return service.upload(locationId,language,scriptType,file.getOriginalFilename(),file.getBytes());
     }
-    @GetMapping("/api/admin/content/audio/{id}.{format}") public ResponseEntity<byte[]> preview(@PathVariable UUID id,@PathVariable String format){return audio(id,format,true);}
-    @GetMapping("/api/content-audio/{id}.{format}") public ResponseEntity<byte[]> published(@PathVariable UUID id,@PathVariable String format){return audio(id,format,false);}
-    private ResponseEntity<byte[]> audio(UUID id,String format,boolean preview){
+    @GetMapping("/api/admin/content/audio/{id}.{format}") public ResponseEntity<Resource> preview(@PathVariable UUID id,@PathVariable String format){return audio(id,format,true);}
+    @GetMapping("/api/content-audio/{id}.{format}") public ResponseEntity<Resource> published(@PathVariable UUID id,@PathVariable String format){return audio(id,format,false);}
+    private ResponseEntity<Resource> audio(UUID id,String format,boolean preview){
         var data=service.audio(id,format,preview);
         String type=switch(data.format()){case "mp3"->"audio/mpeg";case "ogg"->"audio/ogg";default->"audio/wav";};
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.parseMediaType(type)).body(data.bytes());
+        // Resource responses let Spring handle byte ranges for browser seeking.
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).contentType(MediaType.parseMediaType(type)).body(new ByteArrayResource(data.bytes()));
     }
 }

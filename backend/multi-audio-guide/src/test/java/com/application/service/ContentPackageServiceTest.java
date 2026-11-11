@@ -57,11 +57,17 @@ class ContentPackageServiceTest {
             var payload = JsonMapper.builder().build().readTree(bundle.bytes());
             assertThat(payload.get("locations").size()).isZero();
             assertThat(payload.get("guides").size()).isZero();
+            assertThat(bundle.manifest().assets()).isEmpty();
             assertThat(payload.get("isBase").asBoolean()).isEqualTo(base);
             assertThat(bundle.manifest().sha256()).isEqualTo(signer.checksum(bundle.bytes()));
             assertThat(signer.verify(bundle.bytes(), bundle.manifest().signature())).isTrue();
             assertThat(service.build(scope).bytes()).isEqualTo(bundle.bytes());
         }
         verifyNoInteractions(audio);
+    }
+    @Test void optionalLocationWithoutItsGuideIsStillRejected() {
+        when(repository.locations(false)).thenReturn(List.of(new Location(UUID.randomUUID(), "Missing guide", UUID.randomUUID(), "Category", 10, 106, 100)));
+        when(repository.guides(false)).thenReturn(List.of());
+        assertThatThrownBy(() -> service.build("OPTIONAL")).isInstanceOf(ResponseStatusException.class).hasMessageContaining("404");
     }
 }

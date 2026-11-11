@@ -23,6 +23,11 @@ export function languageName(code: string) {
   return new Intl.DisplayNames(['vi'], { type: 'language' }).of(code.toLowerCase()) || code;
 }
 
+const internationalLanguageNames = new Intl.DisplayNames(['en'], { type: 'language' });
+export function languageOptionName(code: string) {
+  return internationalLanguageNames.of(code.toLowerCase()) || code;
+}
+
 /** Reject mismatched or empty successful responses instead of showing another selection. */
 export function parseGuide(value: unknown, selection: Selection): Guide {
   if (!value || typeof value !== 'object') throw new Error('Invalid guide');

@@ -5,6 +5,7 @@ import operaHouse from '../assets/locations/nha-hat-thanh-pho.webp';
 import notreDame from '../assets/locations/nha-tho-duc-ba.webp';
 import saigonUniversity from '../assets/locations/dai-hoc-sai-gon.webp';
 import bitexco from '../assets/locations/bitexco.webp';
+import xaLoi from '../assets/locations/xa-loi.webp';
 
 // Photos supplied by the user, associated by stable location ID, never list order.
 const photos: Record<string, { src: string; width: number; height: number }> = {
@@ -15,6 +16,7 @@ const photos: Record<string, { src: string; width: number; height: number }> = {
   '20000000-0000-0000-0000-000000000105': { src: warMuseum, width: 640, height: 480 },
   '20000000-0000-0000-0000-000000000106': { src: benNhaRong, width: 1280, height: 720 },
   '20000000-0000-0000-0000-000000000107': { src: bitexco, width: 886, height: 1600 },
+  '20000000-0000-0000-0000-000000000108': { src: xaLoi, width: 800, height: 450 },
 };
 
 export const locationPhoto = (id: string, imageUrl?: string) =>

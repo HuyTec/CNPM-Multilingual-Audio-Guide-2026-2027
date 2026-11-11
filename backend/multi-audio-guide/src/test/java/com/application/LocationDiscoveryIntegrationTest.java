@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("demo")
 @EnabledIfEnvironmentVariable(named = "TEST_DATABASE_URL", matches = "jdbc:postgresql:.*")
 @Transactional
+@org.springframework.test.context.jdbc.Sql("/catalog-fixtures.sql")
 class LocationDiscoveryIntegrationTest {
     private static final UUID CATEGORY = UUID.fromString("10000000-0000-0000-0000-000000000001");
     private static final String LOCATION = "20000000-0000-0000-0000-000000000001";
