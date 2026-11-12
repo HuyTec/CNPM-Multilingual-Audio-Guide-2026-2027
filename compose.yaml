@@ -61,6 +61,8 @@ services:
   postgres:
     restart: unless-stopped
     image: postgis/postgis:17-3.6-alpine
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_DB: audio_guide
       POSTGRES_USER: audio_guide

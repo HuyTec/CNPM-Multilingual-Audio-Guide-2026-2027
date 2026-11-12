@@ -129,7 +129,7 @@ fun TravelQ1App(mapContent: (@Composable (List<ServerLocation>, (String) -> Unit
                     if (previous != updates.available.map { it.getString("version") }) retry()
                     delay(30_000)
                 }
-            }
+            }//Tạo heartbeat khi app ở foreground
             launch {
                 while (isActive) {
                     try { VisitorApi.heartbeat(context, base) }

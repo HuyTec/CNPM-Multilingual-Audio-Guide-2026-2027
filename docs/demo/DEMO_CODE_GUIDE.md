@@ -6,18 +6,18 @@ Cập nhật 25/10/2026 theo code hiện tại. UC-06 đã bổ sung EDITOR/REVI
 
 | Tài liệu | Nội dung |
 |---|---|
-| [BACKEND_GUIDE.md](BACKEND_GUIDE.md) | Kiến trúc JDBC ba lớp, class/luồng, ERD, xác thực, migration, chạy/test. |
-| [ADMIN_GUIDE.md](ADMIN_GUIDE.md) | Form/dịch/nháp, duyệt, thống kê/phản hồi/XLSX, phân quyền và UI states. |
-| [USER_WEB_GUIDE.md](USER_WEB_GUIDE.md) | Danh sách/bản đồ/thuyết minh, polling/offline và tải APK Android bằng QR. |
-| [ANDROID_GUIDE.md](ANDROID_GUIDE.md) | Kotlin client chung, GPS/map/player, gói/analytics/polling và build APK. |
-| [API_list.md](API_list.md) | Nguồn duy nhất cho method/path/DTO/JSON/lỗi/quyền và component gọi. |
+| [BACKEND_GUIDE.md](../development/BACKEND_GUIDE.md) | Kiến trúc JDBC ba lớp, class/luồng, ERD, xác thực, migration, chạy/test. |
+| [ADMIN_GUIDE.md](../development/ADMIN_GUIDE.md) | Form/dịch/nháp, duyệt, thống kê/phản hồi/XLSX, phân quyền và UI states. |
+| [USER_WEB_GUIDE.md](../development/USER_WEB_GUIDE.md) | Danh sách/bản đồ/thuyết minh, polling/offline và tải APK Android bằng QR. |
+| [ANDROID_GUIDE.md](../development/ANDROID_GUIDE.md) | Kotlin client chung, GPS/map/player, gói/analytics/polling và build APK. |
+| [API_list.md](../development/API_list.md) | Nguồn duy nhất cho method/path/DTO/JSON/lỗi/quyền và component gọi. |
 
 ## Khởi động theo thứ tự
 
-1. Mở Docker Desktop, đợi Linux engine hoạt động (`docker version` phải có Client và Server). Từ gốc repo chạy [start-live-demo.ps1](../../scripts/start-live-demo.ps1); script tạo .env.demo.local riêng khi chưa có, khởi động cả PostgreSQL → backend → Web Admin và Web du khách qua một [compose.yaml](../../compose.yaml). Mặc định backend 8081, Admin 3001, Web du khách 14176; tất cả dùng một DB. Xem [DOCKER_GUIDE.md](DOCKER_GUIDE.md). Không in/commit password DB.
+1. Mở Docker Desktop, đợi Linux engine hoạt động (`docker version` phải có Client và Server). Từ gốc repo chạy [start-live-demo.ps1](../../scripts/start-live-demo.ps1); script tạo .env.demo.local riêng khi chưa có, khởi động cả PostgreSQL → backend → Web Admin và Web du khách qua một [compose.yaml](../../compose.yaml). Mặc định backend 8081, Admin 3001, Web du khách 14176; tất cả dùng một DB. Xem [DOCKER_GUIDE.md](../operations/DOCKER_GUIDE.md). Không in/commit password DB.
 2. Đợi health DB UP; mở Admin. Seed mới: editor / EditorDemo!2026 và reviewer / ReviewerDemo!2026. Có thể override DEMO_EDITOR_PASSWORD/DEMO_REVIEWER_PASSWORD trước lần seed đầu; không reset mật khẩu đã tồn tại. Đăng nhập cũ admin/Basic không còn dùng.
 3. Chuẩn bị Android bằng [prepare-android-download.ps1](../../scripts/prepare-android-download.ps1) để build APK và copy metadata. Khi chạy Vite trên host, cả Web User và Web Admin tự đọc `API_PROXY_TARGET`/`BACKEND_PORT` từ `.env.demo.local` (backend Docker là `127.0.0.1:8081`); có thể ghi đè trong `.env.local` riêng của từng web rồi khởi động lại Vite. Web User chạy ở `5175`, Web Admin ở `5173`. Container web dùng proxy nội bộ `http://backend:8080`, không dùng địa chỉ localhost của host. Để kiểm offline shell, chạy build/preview hoặc public server; dev page mở được chưa chứng minh offline reopen.
-4. Muốn người khác tải APK bằng QR, phục vụ Web qua HTTPS/LAN mà điện thoại truy cập được. QR tự theo origin website; localhost của PC không dùng trên điện thoại. Build Web sau khi chuẩn bị APK; xem [USER_WEB_GUIDE.md](USER_WEB_GUIDE.md). APK được gitignore, không tự xuất hiện khi người khác chỉ git clone.
+4. Muốn người khác tải APK bằng QR, phục vụ Web qua HTTPS/LAN mà điện thoại truy cập được. QR tự theo origin website; localhost của PC không dùng trên điện thoại. Build Web sau khi chuẩn bị APK; xem [USER_WEB_GUIDE.md](../development/USER_WEB_GUIDE.md). APK được gitignore, không tự xuất hiện khi người khác chỉ git clone.
 
 Để public Web du khách, chạy [share-docker-web.ps1](../../scripts/share-docker-web.ps1) sau khi stack healthy. Script mặc định cổng 14176 và chọn Cloudflare Quick Tunnel; không đưa Admin ra internet. `-TouristWeb` của script khởi động chỉ còn để tương thích lệnh cũ; cả hai web luôn được khởi động. Xem kết quả thử tunnel và lệnh dừng trong User Web Guide.
 

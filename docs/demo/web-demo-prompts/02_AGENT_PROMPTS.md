@@ -97,5 +97,5 @@ Cuối phiên bắt buộc bàn giao báo cáo ngắn: chức năng đã demo/AC
 ## Prompt tiếp tục ở phiên sau
 
 ```text
-Đọc docs/vi/web-demo-prompts/SESSION_REPORT.md, API_CONTRACT.md và 00_MASTER_PROMPT.md; xác minh source/git status hiện tại. Tiếp tục từ AC còn thiếu ưu tiên cao nhất, bảo toàn phần đã đạt; không khởi động lại thiết kế hoặc tạo Jira. Chạy lại checks chỉ khi có thay đổi hoặc bằng chứng cũ không còn phù hợp. Kết thúc bằng báo cáo ngắn cập nhật đúng commit và môi trường.
+Đọc docs/demo/web-demo-prompts/SESSION_REPORT.md, API_CONTRACT.md và 00_MASTER_PROMPT.md; xác minh source/git status hiện tại. Tiếp tục từ AC còn thiếu ưu tiên cao nhất, bảo toàn phần đã đạt; không khởi động lại thiết kế hoặc tạo Jira. Chạy lại checks chỉ khi có thay đổi hoặc bằng chứng cũ không còn phù hợp. Kết thúc bằng báo cáo ngắn cập nhật đúng commit và môi trường.
 ```

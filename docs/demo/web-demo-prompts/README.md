@@ -23,7 +23,7 @@ Dán nội dung [00_MASTER_PROMPT.md](00_MASTER_PROMPT.md) cho agent chính tron
 
 ## Nguồn và giới hạn
 
-Nguồn nghiệp vụ: [PRD EN](../../en/PRD_Report.md), [PRD VI](../PRD_Report_vi.md), nhất là §2.4, UC-01–07, §6.4, NFR. Mọi ô `[ ]`, `[?]` là chưa xác nhận, không được biến thành yêu cầu đã chốt.
+Nguồn nghiệp vụ: [PRD EN](../../en/PRD_Report.md), [PRD VI](../../vi/PRD_Report_vi.md), nhất là §2.4, UC-01–07, §6.4, NFR. Mọi ô `[ ]`, `[?]` là chưa xác nhận, không được biến thành yêu cầu đã chốt.
 
 Snapshot source lúc soạn: có Android live VI/SHORT + MediaPlayer + playback outbox, API guide APPROVED và analytics thật; Admin form/feedback còn mock; chưa có Web du khách/TTS. Agent phải đọc lại vì source có thể thay đổi.
 

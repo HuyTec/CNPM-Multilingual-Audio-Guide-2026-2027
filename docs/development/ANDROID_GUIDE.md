@@ -1,6 +1,6 @@
 # Android Kotlin — client chung và offline
 
-App Kotlin/Compose dùng cùng locationId/contentId, public API và schema gói với Web user. Hợp đồng: [API_list.md](API_list.md); vận hành: [DOCKER_GUIDE.md](DOCKER_GUIDE.md).
+App Kotlin/Compose dùng cùng locationId/contentId, public API và schema gói với Web user. Hợp đồng: [API_list.md](API_list.md); vận hành: [DOCKER_GUIDE.md](../operations/DOCKER_GUIDE.md).
 
 ## Entry point và các phần chính
 

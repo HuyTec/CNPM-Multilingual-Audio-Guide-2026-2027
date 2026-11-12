@@ -38,7 +38,7 @@ REVIEWER mở Duyệt và xuất bản, chọn bản PENDING_REVIEW. Xem tên đ
 
 ## Trạng thái và kiểm thử
 
-Từ ngày 25/10/2026, [compose.yaml](../../compose.yaml) chạy chung PostgreSQL, backend, Web Admin và Web du khách trong project `hvp-live-demo`. Admin mặc định cổng `3001`, backend `8081`, Web du khách `14176`; không còn cần Admin phụ cổng `3000` hay overlay chia sẻ DB. Xem [DOCKER_GUIDE.md](DOCKER_GUIDE.md). Volume legacy của stack gốc được giữ nguyên; không repair/reset DB đó để ép chạy code nhánh này.
+Từ ngày 25/10/2026, [compose.yaml](../../compose.yaml) chạy chung PostgreSQL, backend, Web Admin và Web du khách trong project `hvp-live-demo`. Admin mặc định cổng `3001`, backend `8081`, Web du khách `14176`; không còn cần Admin phụ cổng `3000` hay overlay chia sẻ DB. Xem [DOCKER_GUIDE.md](../operations/DOCKER_GUIDE.md). Volume legacy của stack gốc được giữ nguyên; không repair/reset DB đó để ép chạy code nhánh này.
 
 ```powershell
 .\scripts\start-live-demo.ps1
@@ -65,6 +65,6 @@ npx.cmd playwright test --config playwright.publication.config.ts
 
 ## Hướng dẫn cho người vận hành
 
-Xem [ADMIN_USER_GUIDE.md](ADMIN_USER_GUIDE.md) cho thao tác đăng nhập, biên tập, duyệt, kiểm tra gói, phản hồi và QR. Trong ứng dụng có trang /help với menu Hướng dẫn sử dụng, dùng được cả trước khi đăng nhập.
+Xem [ADMIN_USER_GUIDE.md](../users/ADMIN_USER_GUIDE.md) cho thao tác đăng nhập, biên tập, duyệt, kiểm tra gói, phản hồi và QR. Trong ứng dụng có trang /help với menu Hướng dẫn sử dụng, dùng được cả trước khi đăng nhập.
 
 Hàng đợi UI chỉ hiển thị PENDING_REVIEW và bản APPROVED có editVersion > 0 đang chờ công bố; các POI legacy APPROVED với editVersion = 0 không bị liệt kê nhầm như bản cần xét duyệt.

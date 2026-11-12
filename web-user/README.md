@@ -1,6 +1,6 @@
 # TravelVoice · Web User dành cho du khách
 
-Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/guide/USER_WEB_GUIDE.md). Đã có polling manifest và khối Android/QR. Trước build, chạy `./scripts/prepare-android-download.ps1` từ gốc để đóng APK vào website; output APK không được commit. Các kết quả nghiệm thu có ngày bên dưới là snapshot lịch sử.
+Hướng dẫn hiện hành: [USER_WEB_GUIDE.md](../docs/development/USER_WEB_GUIDE.md). Đã có polling manifest và khối Android/QR. Trước build, chạy `./scripts/prepare-android-download.ps1` từ gốc để đóng APK vào website; output APK không được commit. Các kết quả nghiệm thu có ngày bên dưới là snapshot lịch sử.
 
 
 Tài liệu giúp thành viên nhóm nắm được Web User làm gì, dữ liệu đi qua đâu,
@@ -33,7 +33,7 @@ Chuẩn bị: cài Node.js/npm và Docker Desktop. Mở Docker Desktop và chờ
 
 Nếu trang mở được nhưng không tải địa điểm, mở terminal tại thư mục gốc và chạy `docker compose ps` để kiểm tra backend/database. Nếu cổng `5175` đang được dùng, dừng phiên Web User cũ rồi chạy lại.
 
-Hướng dẫn chi tiết: [Web User Guide](../docs/guide/USER_WEB_GUIDE.md).
+Hướng dẫn chi tiết: [Web User Guide](../docs/development/USER_WEB_GUIDE.md).
 
 ## Hiện trạng để đọc nhanh
 

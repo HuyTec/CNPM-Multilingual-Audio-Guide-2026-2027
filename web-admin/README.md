@@ -1,7 +1,7 @@
 # TravelVoice · Web Admin
 
 React/Vite/TypeScript cho biên tập POI đa ngôn ngữ, duyệt/xuất bản và thống kê/phản hồi từ PostgreSQL.
-Tài liệu: [Admin Guide](../docs/guide/ADMIN_GUIDE.md), [API](../docs/guide/API_list.md), [chạy demo](../docs/guide/DEMO_CODE_GUIDE.md).
+Tài liệu: [Admin Guide](../docs/development/ADMIN_GUIDE.md), [API](../docs/development/API_list.md), [chạy demo](../docs/demo/DEMO_CODE_GUIDE.md).
 
 ```powershell
 npm.cmd ci

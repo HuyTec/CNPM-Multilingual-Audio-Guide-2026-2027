@@ -9,7 +9,7 @@ Xây Web du khách trước: camera điện thoại quét QR → URL địa đi�
 Đọc theo thứ tự:
 1. `AGENTS.md` và các hướng dẫn áp dụng trong phần sẽ sửa. Yêu cầu trực tiếp trong prompt này ưu tiên khi xung đột với quy trình cũ.
 2. `docs/en/PRD_Report.md`: §2.4, UC-01–07, §5–7; dùng bản VI để hỗ trợ đọc.
-3. `docs/vi/web-demo-prompts/01_ACCEPTANCE_MATRIX.md` và `03_DEMO_AND_REPORT.md`.
+3. `docs/demo/web-demo-prompts/01_ACCEPTANCE_MATRIX.md` và `03_DEMO_AND_REPORT.md`.
 4. Source backend, Web Admin, demo Android liên quan, `.github/workflows`, Compose và test hiện có. `DEMO_CODE_GUIDE.md` là bản đồ đọc code, không thay PRD.
 
 Không dùng Jira trong đợt này: không đọc, tạo, cập nhật hoặc đổi trạng thái task. Không dừng công việc để quản trị backlog. Ghi checkpoint ngắn trong chat và một báo cáo cuối phiên. Không sửa PRD để hợp thức hóa chức năng chưa đạt.
@@ -30,7 +30,7 @@ Chạy/đọc đủ để phân biệt live/mock; kiểm tra endpoint guide/play
 
 Chuẩn bị một địa điểm tham chiếu và bộ thử VI/EN × FULL/SHORT. Đây là fixture kiểm thử, không tự chốt danh mục ngôn ngữ sản phẩm. Có đủ trường hợp: audio hợp lệ, thiếu audio, audio lỗi, thiếu bản dịch, không có APPROVED, text dài, DRAFT/PENDING_REVIEW/REJECTED, vị trí/QR sai. Không sửa bản seed đã chạy; dùng migration mới hoặc fixture test riêng có thể reset an toàn trong DB test.
 
-Đóng băng hợp đồng tối thiểu bằng ghi chú ngắn `docs/vi/web-demo-prompts/API_CONTRACT.md`: public location/search/guide; requested/effective language; scriptType; content/revision; optional audio; errors; Admin editing/status/upload; analytics event/retry/report period. Tận dụng API hiện có, không ép đổi tên endpoint cho đẹp. Payload mới phải không làm hỏng APK cũ; fields mới cần default hoặc version rõ.
+Đóng băng hợp đồng tối thiểu bằng ghi chú ngắn `docs/demo/web-demo-prompts/API_CONTRACT.md`: public location/search/guide; requested/effective language; scriptType; content/revision; optional audio; errors; Admin editing/status/upload; analytics event/retry/report period. Tận dụng API hiện có, không ép đổi tên endpoint cho đẹp. Payload mới phải không làm hỏng APK cũ; fields mới cần default hoặc version rõ.
 
 Trước khi viết UI, đọc skill và command thực tế:
 - `.agents/skills/frontend-design-principles/SKILL.md` và `app.md`.
@@ -77,7 +77,7 @@ CI phải bao phủ backend verify + DB integration, lint/build hai web và E2E 
 Đánh giá CI/CD theo đúng commit SHA: cấu hình → chạy local → run trên GitHub → deploy staging → smoke trên URL thật là các bằng chứng khác nhau. Không có quyền/token/đích deploy thì báo NOT_RUN/NOT_CONFIGURED/BLOCKED; chuẩn bị workflow/script reviewable, không bịa deploy thành công. Không tự chọn dịch vụ trả phí hay xuất bản public nếu chưa được cho phép. Compose local là triển khai thủ công, không phải CD tự động.
 
 Trước mỗi lần kết thúc phiên, dù xong hay bị chặn:
-1. Cập nhật `docs/vi/web-demo-prompts/SESSION_REPORT.md` theo mẫu ở `03_DEMO_AND_REPORT.md`; gọn khoảng một trang, kết quả mới nhất và các giới hạn thật.
+1. Cập nhật `docs/demo/web-demo-prompts/SESSION_REPORT.md` theo mẫu ở `03_DEMO_AND_REPORT.md`; gọn khoảng một trang, kết quả mới nhất và các giới hạn thật.
 2. Cho biết các AC PASS/FAIL/NOT_RUN/BLOCKED/MOCK_ONLY, chức năng đã thực sự demo và môi trường; link log/screenshot/report/run, không copy secret.
 3. Báo CI và CD riêng, commit/local diff và điều kiện chưa đủ; một bước tiếp theo cụ thể.
 4. Giải thích tối đa 5 file chính: trách nhiệm, input/output và đường dữ liệu; dùng flow ngắn khi cần. Không viết một báo cáo dài thay cho sửa lỗi.

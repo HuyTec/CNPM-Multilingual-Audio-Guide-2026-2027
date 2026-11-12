@@ -111,4 +111,4 @@ Set-Location backend/multi-audio-guide
 Without `TEST_DATABASE_URL`, PostgreSQL integration tests are **skipped**; passing
 controller/service tests with mocked repositories does not prove SQL selection,
 fixture installation, fallback or a live Web integration. See SESSION_REPORT.md
-in `docs/vi/web-demo-prompts/` for this session's observed results.
+in `docs/demo/web-demo-prompts/` for this session's observed results.

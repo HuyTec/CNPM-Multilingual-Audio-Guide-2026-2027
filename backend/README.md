@@ -1,6 +1,6 @@
 # Backend
 
-**Luồng nghe/thống kê thật:** profile `demo` có API nội dung, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. Dữ liệu fixture chỉ được tạo khi migration demo chạy lần đầu; database đã reset có thể rỗng. Xem luồng và kịch bản hiện hành tại [Demo Code Guide](../docs/guide/DEMO_CODE_GUIDE.md).
+**Luồng nghe/thống kê thật:** profile `demo` có API nội dung, `POST /api/playbacks` idempotent và `/api/admin/analytics` có xác thực. Dữ liệu fixture chỉ được tạo khi migration demo chạy lần đầu; database đã reset có thể rỗng. Xem luồng và kịch bản hiện hành tại [Demo Code Guide](../docs/demo/DEMO_CODE_GUIDE.md).
 
 Spring Boot API cho nội dung hướng dẫn, quy trình duyệt và quản trị. Mã nguồn ở `multi-audio-guide/`, dùng Java 21, Spring Boot 4.1.1 và Maven Wrapper 3.3.4 (Maven 3.9.9).
 
@@ -29,7 +29,7 @@ cd .\backend\multi-audio-guide
 
 ## Chạy backend với PostgreSQL
 
-Dùng [Docker Guide](../docs/guide/DOCKER_GUIDE.md) tại thư mục gốc: chạy `scripts/start-live-demo.ps1` hoặc `docker compose --env-file .env.demo.local up -d --build --wait` khi đã chuẩn bị file cấu hình. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Quy ước migration, backup và reset cũng nằm trong guide này.
+Dùng [Docker Guide](../docs/operations/DOCKER_GUIDE.md) tại thư mục gốc: chạy `scripts/start-live-demo.ps1` hoặc `docker compose --env-file .env.demo.local up -d --build --wait` khi đã chuẩn bị file cấu hình. Backend dùng JDBC tới `postgres:5432/audio_guide`; PostgreSQL không công khai cổng ra máy host. Quy ước migration, backup và reset cũng nằm trong guide này.
 
 Nếu chạy `spring-boot:run` ngoài Docker, phải có database truy cập được từ máy host và tự đặt `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` phù hợp. Tên host `postgres` chỉ dùng trong mạng Compose.
 
@@ -84,7 +84,7 @@ Invoke-RestMethod 'http://localhost:8080/api/locations?categoryId=10000000-0000-
 Invoke-RestMethod 'http://localhost:8080/api/locations/20000000-0000-0000-0000-000000000001'
 ```
 
-Public discovery giữ trường name tương thích và bổ sung names đa ngôn ngữ. Editor UC-06 có names theo ngôn ngữ trong workspace JSONB và bảng location_translations cho dữ liệu published; sửa nháp không thay dữ liệu đang phục vụ. Offline package, phân lớp và API phản hồi hiện tại được mô tả trong [DEMO_CODE_GUIDE.md](../docs/guide/DEMO_CODE_GUIDE.md). Không dùng snapshot mô tả demo cũ để kết luận các luồng mới chưa có.
+Public discovery giữ trường name tương thích và bổ sung names đa ngôn ngữ. Editor UC-06 có names theo ngôn ngữ trong workspace JSONB và bảng location_translations cho dữ liệu published; sửa nháp không thay dữ liệu đang phục vụ. Offline package, phân lớp và API phản hồi hiện tại được mô tả trong [DEMO_CODE_GUIDE.md](../docs/demo/DEMO_CODE_GUIDE.md). Không dùng snapshot mô tả demo cũ để kết luận các luồng mới chưa có.
 
 ### Kiểm thử
 

@@ -20,11 +20,11 @@
 
 Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
-**Hướng sản phẩm đã chốt ngày 19/10/2026:** Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Xem ma trận nền tảng và tiêu chí luồng thật đầu tiên tại [PRD VI §2.4](docs/vi/PRD_Report_vi.md). Source hiện có Web du khách, Android và Web Admin dùng API/DB chung; UC-06 bổ sung EDITOR/REVIEWER, dịch, duyệt và xuất bản gói. Xem [hướng dẫn demo hiện hành](docs/guide/DEMO_CODE_GUIDE.md) để chạy và phân biệt phần đã kiểm thử với giới hạn production.
+**Hướng sản phẩm đã chốt ngày 19/10/2026:** Web du khách + Android dùng chung UC-01–UC-05; Web Admin phục vụ UC-06–UC-07. Xem ma trận nền tảng và tiêu chí luồng thật đầu tiên tại [PRD VI §2.4](docs/vi/PRD_Report_vi.md). Source hiện có Web du khách, Android và Web Admin dùng API/DB chung; UC-06 bổ sung EDITOR/REVIEWER, dịch, duyệt và xuất bản gói. Xem [hướng dẫn demo hiện hành](docs/demo/DEMO_CODE_GUIDE.md) để chạy và phân biệt phần đã kiểm thử với giới hạn production.
 
 ## Công nghệ sử dụng
 
-Chạy toàn bộ backend, PostgreSQL, Web Admin và Web du khách bằng `.\scripts\start-live-demo.ps1` từ gốc repo. Tất cả nằm trong một [compose.yaml](compose.yaml); xem cổng, Cloudflare và cách giữ dữ liệu trong [hướng dẫn Docker](docs/guide/DOCKER_GUIDE.md).
+Chạy toàn bộ backend, PostgreSQL, Web Admin và Web du khách bằng `.\scripts\start-live-demo.ps1` từ gốc repo. Tất cả nằm trong một [compose.yaml](compose.yaml); xem cổng, Cloudflare và cách giữ dữ liệu trong [hướng dẫn Docker](docs/operations/DOCKER_GUIDE.md).
 
 | Thành phần     | Công nghệ               | Ghi chú                                             |
 | -------------- | ----------------------- | --------------------------------------------------- |
@@ -58,7 +58,7 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 - **Business Logic Layer:** xử lý các quy tắc và nghiệp vụ của hệ thống (service).
 - **Data Access Layer:** làm việc với cơ sở dữ liệu (repository).
 
-> Cấu trúc class và luồng hiện hành nằm trong [Backend Guide](docs/guide/BACKEND_GUIDE.md).
+> Cấu trúc class và luồng hiện hành nằm trong [Backend Guide](docs/development/BACKEND_GUIDE.md).
 
 ## Quy trình và công cụ
 
@@ -87,6 +87,8 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 ## Tài liệu
 
+Xem [mục lục tài liệu theo vai trò](docs/README.md) để tìm hướng dẫn, kịch bản nghiệm thu và audit log.
+
 - gg doc: [docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing](https://docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing)
 - lược đồ: **[drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing](https://drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing)**
 - **PRD hiện hành:** [tiếng Anh](docs/en/PRD_Report.md), [tiếng Việt](docs/vi/PRD_Report_vi.md).
@@ -102,4 +104,4 @@ Thiết kế, backlog nháp và biên bản review được quản lý trực ti
 
 ## Chạy dự án
 
-Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](./docs/guide/DOCKER_GUIDE.md) và [thiết lập CI/CD](./docs/vi/CI_CD_SETUP.md).
+Xem hướng dẫn cài và chạy [backend](./backend/README.md), [web-admin](./web-admin/README.md), [Docker Compose](docs/operations/DOCKER_GUIDE.md) và [thiết lập CI/CD](docs/operations/CI_CD_SETUP.md).

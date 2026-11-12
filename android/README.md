@@ -13,9 +13,9 @@
 
 ## Backend local
 
-Khởi động stack theo [Docker Guide](../docs/guide/DOCKER_GUIDE.md). Build trực tiếp mặc định dùng emulator tại `http://10.0.2.2:8081/`. APK tải trên Web được build với URL Cloudflare hiện hành qua `scripts/prepare-android-download.ps1`; có thể đổi URL trong Profile khi tunnel thay đổi. Điện thoại thật dùng HTTPS hoặc IP LAN truy cập được.
+Khởi động stack theo [Docker Guide](../docs/operations/DOCKER_GUIDE.md). Build trực tiếp mặc định dùng emulator tại `http://10.0.2.2:8081/`. APK tải trên Web được build với URL Cloudflare hiện hành qua `scripts/prepare-android-download.ps1`; có thể đổi URL trong Profile khi tunnel thay đổi. Điện thoại thật dùng HTTPS hoặc IP LAN truy cập được.
 
-Luồng Profile/khách, polling, APK trỏ Cloudflare và QR hiện hành: [Android Guide](../docs/guide/ANDROID_GUIDE.md). Bản APK tải trên Web có thể đổi máy chủ trong Profile nếu tunnel thay đổi; không gọi API OTP không có trong backend hiện tại.
+Luồng Profile/khách, polling, APK trỏ Cloudflare và QR hiện hành: [Android Guide](../docs/development/ANDROID_GUIDE.md). Bản APK tải trên Web có thể đổi máy chủ trong Profile nếu tunnel thay đổi; không gọi API OTP không có trong backend hiện tại.
 
 ## Google Maps
 
@@ -59,4 +59,4 @@ Build bản dùng backend local đã được người dùng chọn:
 
 Output: `.verification-build/app/outputs/apk/release/app-release.apk`. Release không debuggable, dùng R8/resource shrinking và khóa ký riêng. HTTP chỉ được cho phép với các host loopback/emulator trong cấu hình release này; các host khác cần HTTPS. Khi chuyển sang server online, build lại với `-PtravelApiBaseUrl=https://your-api-origin/` và bỏ cờ local.
 
-Hồ sơ thiết kế: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Đọc [hướng dẫn Android](../docs/guide/ANDROID_GUIDE.md), bao gồm kết quả kiểm tra ngày 22/10/2026 và các device test còn bám giao diện cũ. Prototype không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.
+Hồ sơ thiết kế: [HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22). Đọc [hướng dẫn Android](../docs/development/ANDROID_GUIDE.md), bao gồm kết quả kiểm tra ngày 22/10/2026 và các device test còn bám giao diện cũ. Prototype không phải entry point của ứng dụng phát hành. PRD do người dùng cập nhật riêng.

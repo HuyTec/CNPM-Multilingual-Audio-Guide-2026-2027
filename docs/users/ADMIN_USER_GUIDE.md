@@ -1,6 +1,6 @@
 # Hướng dẫn thao tác Web Admin
 
-Dành cho quản trị viên mới. Có thể mở hướng dẫn ngay trong ứng dụng bằng menu **Hướng dẫn sử dụng** (`/help`). Xem [ADMIN_GUIDE.md](ADMIN_GUIDE.md) cho cấu hình và kiểm thử kỹ thuật.
+Dành cho quản trị viên mới. Có thể mở hướng dẫn ngay trong ứng dụng bằng menu **Hướng dẫn sử dụng** (`/help`). Xem [ADMIN_GUIDE.md](../development/ADMIN_GUIDE.md) cho cấu hình và kiểm thử kỹ thuật.
 
 ## 1. Đăng nhập và chọn vai trò
 
