@@ -2,7 +2,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { installedPackages, type PackageManifest } from "./packages";
 let snapshot: PackageManifest[] = [];
 let etag = "";
-let loading: Promise<void> | null = null;
+let loading: Promise<PackageManifest[]> | null = null;
 const listeners = new Set<() => void>();
 const subscribe = (callback: () => void) => {
   listeners.add(callback);
@@ -18,7 +18,7 @@ export async function checkPackageUpdates({ force = false }: { force?: boolean }
       cache: "no-cache",
       signal: AbortSignal.timeout(15000),
     });
-    if (response.status === 304) return;
+    if (response.status === 304) return snapshot;
     if (!response.ok) throw new Error("Chưa kiểm tra được gói mới.");
     const next = (await response.json()) as PackageManifest[];
     if (!Array.isArray(next) || next.some((m) => m.status !== "APPROVED"))
@@ -26,6 +26,7 @@ export async function checkPackageUpdates({ force = false }: { force?: boolean }
     snapshot = next;
     etag = response.headers.get("ETag") || "";
     listeners.forEach((f) => f());
+    return snapshot;
   })().finally(() => {
     loading = null;
   });

@@ -82,11 +82,21 @@ class TourPackageIntegrationTest {
         verifier.initVerify(key); verifier.update(tampered);
         assertThat(verifier.verify(Base64.getDecoder().decode(manifest.signature()))).isFalse();
     }
-    @Test void unapprovedReplacementIsExcludedAndApprovedChangeGetsNewVersion() {
+    @Test void unapprovedReplacementIsExcludedAndPreviewReportsChangedLocation() throws Exception {
         String old = packages.build("BASE").manifest().version();
         jdbc.update("UPDATE guide_content_revisions SET status='DRAFT' WHERE id='31000000-0000-0000-0000-000000000001'");
-        assertThat(packages.build("BASE").manifest().version()).isNotEqualTo(old);
-        assertThat(new String(packages.build("BASE").bytes(), java.nio.charset.StandardCharsets.UTF_8)).doesNotContain("\"contentId\":\"31000000-0000-0000-0000-000000000001\"");
+        var current = packages.build("BASE");
+        assertThat(current.manifest().version()).isNotEqualTo(old);
+        assertThat(new String(current.bytes(), java.nio.charset.StandardCharsets.UTF_8)).doesNotContain("\"contentId\":\"31000000-0000-0000-0000-000000000001\"");
+        publisher.publish(versions.enqueue(null));
+        mvc.perform(get(current.manifest().downloadUrl() + "/preview").param("installedVersion", old))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.locations").value(8))
+                .andExpect(jsonPath("$.guides").value(95))
+                .andExpect(jsonPath("$.audioFiles").value(15))
+                .andExpect(jsonPath("$.changes.added").value(0))
+                .andExpect(jsonPath("$.changes.updated").value(1))
+                .andExpect(jsonPath("$.changes.removed").value(0));
     }
     @Test void narrationMigrationCannotAttachSpeechToChangedTextOrReplaceExistingAudio() throws Exception {
         var connection = org.springframework.jdbc.datasource.DataSourceUtils.getConnection(jdbc.getDataSource());

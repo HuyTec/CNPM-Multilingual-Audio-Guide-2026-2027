@@ -39,6 +39,7 @@ test.describe('Real signed package / production service worker', () => {
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await expect(page.getByRole('heading', { name: 'Xác nhận tải nội dung?' })).toBeVisible();
+    await expect(page.getByRole('dialog')).toContainText('Gói chứa 8 địa điểm, 96 bài thuyết minh và 16 tệp audio.');
     await page.getByRole('button', { name: 'Hủy', exact: true }).click();
     await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
@@ -66,6 +67,59 @@ test.describe('Real signed package / production service worker', () => {
     await page.getByRole('button', { name: 'Danh sách', exact: true }).click();
     await expect(page.getByRole('list', { name: 'Danh sách địa điểm' }).getByRole('listitem')).toHaveCount(8);
     await context.setOffline(false);
+  });
+  test('an interrupted update and insufficient storage preserve the installed base', async ({ page, context, request }) => {
+    const manifests = await (await request.get('/api/content-packages')).json();
+    const base = manifests.find((manifest: { scope: string }) => manifest.scope === 'BASE');
+    await page.goto('/offline');
+    await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
+    await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+    await expect(page.getByText('Sẵn sàng ngoại tuyến.', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
+    await expect(page.getByRole('status')).toContainText('phiên bản mới nhất');
+
+    const version = 'base-' + 'a'.repeat(64);
+    const downloadUrl = '/api/content-packages/BASE/' + version;
+    await page.route('**/api/content-packages', route => route.fulfill({
+      json: manifests.map((manifest: { scope: string }) => manifest.scope === 'BASE'
+        ? { ...base, version, downloadUrl } : manifest),
+    }));
+    await page.route('**' + downloadUrl + '/preview?*', route => route.fulfill({
+      json: { locations: 8, guides: 96, audioFiles: 16, changes: { added: 0, updated: 1, removed: 0 } },
+    }));
+    await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
+    await page.getByRole('button', { name: 'Cập nhật gói', exact: true }).click();
+    await expect(page.getByRole('dialog')).toContainText('1 đã cập nhật');
+    await page.evaluate(() => {
+      Object.defineProperty(navigator.storage, 'estimate', {
+        configurable: true, value: async () => ({ usage: 100, quota: 100 }),
+      });
+    });
+    await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+    await expect(page.getByRole('status')).toContainText('Không đủ dung lượng');
+    await page.evaluate(() => Reflect.deleteProperty(navigator.storage, 'estimate'));
+
+    let releaseDownload = () => {};
+    const delayedDownload = new Promise<void>(resolve => { releaseDownload = resolve; });
+    await page.route('**' + downloadUrl, async route => {
+      await delayedDownload;
+      await route.abort().catch(() => {});
+    });
+    await page.getByRole('button', { name: 'Thử tải lại' }).click();
+    const started = page.waitForRequest('**' + downloadUrl);
+    await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+    await started;
+    await expect(page.getByRole('progressbar')).toBeVisible();
+    try {
+      await context.setOffline(true);
+      await expect(page.getByRole('status')).toContainText('phiên bản cũ vẫn được giữ');
+    } finally {
+      releaseDownload();
+    }
+    await page.reload();
+    await expect(page.getByText(base.version, { exact: true })).toBeVisible();
+    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+    await expect(page.getByText('Sẵn sàng ngoại tuyến.', { exact: true })).toBeVisible();
   });
 
   test('real cached MP3 creates durable offline receipt and syncs after reload/reconnection', async ({ page, context, request }) => {
@@ -102,7 +156,7 @@ test.describe('Real signed package / production service worker', () => {
       await page.goto('/offline');
       await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
       let tampered = 0;
-      const packageUrl = (url: URL) => url.pathname.startsWith('/api/content-packages/BASE/');
+      const packageUrl = (url: URL) => /^\/api\/content-packages\/BASE\/base-[a-f0-9]{64}$/.test(url.pathname);
       await context.route(packageUrl, async route => {
         const response = await route.fetch(); const bytes = Buffer.from(await response.body());
         bytes[bytes.length - 2] ^= 1;
@@ -115,12 +169,18 @@ test.describe('Real signed package / production service worker', () => {
       await expect(page.getByRole('status')).toContainText('Checksum');
       await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
       await context.unroute(packageUrl);
+      await context.route('**/api/content-packages/BASE/*/preview', route => route.fulfill({ status: 404 }));
       await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
+      await expect(page.getByRole('dialog')).toContainText('Bạn vẫn có thể xác nhận tải.');
       await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
       await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Xóa nội dung bổ sung' })).toHaveCount(0);
       await page.getByRole('button', { name: 'Tải gói', exact: true }).click();
       await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
+      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
+      await context.setOffline(true);
+      page.once('dialog', dialog => dialog.dismiss());
+      await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
       await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
       page.once('dialog', dialog => dialog.accept());
       await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();

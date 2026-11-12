@@ -8,6 +8,15 @@ export type PackageManifest = {
   schemaVersion: number; scope: 'BASE' | 'OPTIONAL'; version: string; status: string; isBase: boolean;
   sizeBytes: number; sha256: string; signature: string; keyId: string; downloadUrl: string; assets: PackageAsset[];
 };
+export type PackagePreview = {
+  locations: number; guides: number; audioFiles: number;
+  changes: { added: number; updated: number; removed: number } | null;
+};
+export const packageSize = (manifest: PackageManifest) =>
+  manifest.sizeBytes + manifest.assets.reduce((total, asset) => total + asset.sizeBytes, 0);
+const storageSize = new Intl.NumberFormat('vi-VN', {
+  style: 'unit', unit: 'megabyte', maximumFractionDigits: 2, roundingMode: 'ceil',
+});
 type Payload = { schemaVersion: number; status: string; scope: string; isBase: boolean;
   locations: TourLocation[]; guides: Guide[]; languages: string[]; assets: PackageAsset[]; geofencing?: GeofencingMetadata };
 type StoredPackage = { scope: string; manifest: PackageManifest; bytes: ArrayBuffer; key: string;
@@ -43,10 +52,14 @@ export async function verifyPackage(stored: Pick<StoredPackage, 'manifest' | 'by
   const key = await crypto.subtle.importKey('spki', spki, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
   if (!await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64(manifest.signature), bytes)) throw new Error('Chữ ký gói không hợp lệ.');
   const payload = JSON.parse(new TextDecoder().decode(bytes)) as Payload;
-  if (payload.schemaVersion !== 1 || payload.status !== 'APPROVED' || payload.scope !== manifest.scope
+  if (manifest.schemaVersion !== 1 || manifest.status !== 'APPROVED' || !['BASE', 'OPTIONAL'].includes(manifest.scope)
+    || payload.schemaVersion !== 1 || payload.status !== 'APPROVED' || payload.scope !== manifest.scope
     || payload.isBase !== manifest.isBase || payload.isBase !== (payload.scope === 'BASE')
     || manifest.version !== `${manifest.scope.toLowerCase()}-${manifest.sha256}`
     || !Array.isArray(payload.locations) || !Array.isArray(payload.guides) || !Array.isArray(payload.assets)
+    || payload.assets.length !== manifest.assets.length
+    || payload.assets.some((asset, index) => asset.url !== manifest.assets[index].url
+      || asset.sha256 !== manifest.assets[index].sha256 || asset.sizeBytes !== manifest.assets[index].sizeBytes)
     || payload.locations.some(item => !uuidPattern.test(item.locationId) || typeof item.name !== 'string')) throw new Error('Cấu trúc gói không hợp lệ.');
   for (const guide of payload.guides) {
     parseGuide(guide, { locationId: guide.locationId, language: guide.languageCode, scriptType: guide.scriptType });
@@ -55,10 +68,11 @@ export async function verifyPackage(stored: Pick<StoredPackage, 'manifest' | 'by
   }
   return payload;
 }
-export async function installedPackages() {
+export async function readInstalledPackages() {
   const packages = await allStored();
-  return Promise.all(packages.map(async stored => {
+  const results = await Promise.allSettled(packages.map(async stored => {
     const payload = await verifyPackage(stored);
+    if (stored.scope !== payload.scope) throw new Error('Loại gói đã lưu không khớp.');
     if (!Array.isArray(stored.assets) || stored.assets.length !== payload.assets.length) throw new Error('Gói đã lưu thiếu audio. Hãy tải lại khi có mạng.');
     for (const expected of payload.assets) {
       const asset = stored.assets.find(item => item.url === expected.url);
@@ -67,55 +81,93 @@ export async function installedPackages() {
     }
     return { stored, payload };
   }));
+  return {
+    packages: results.flatMap(result => result.status === 'fulfilled' ? [result.value] : []),
+    invalidScopes: packages.filter((_, index) => results[index].status === 'rejected').map(item => item.scope),
+  };
 }
-/** Retry only transport failures; signature/checksum validation still runs once on the complete bytes. */
-async function fetchPackageBytes(url: string, signal: AbortSignal, progress: (message: string) => void): Promise<ArrayBuffer> {
+export async function installedPackages() {
+  return (await readInstalledPackages()).packages;
+}
+async function fetchPackageBytes(url: string, signal: AbortSignal, expected?: number, progress?: (bytes: number) => void): Promise<ArrayBuffer> {
   for (let attempt = 0; attempt < 3; attempt++) {
     signal.throwIfAborted();
     try {
       const response = await fetch(url, { signal: AbortSignal.any([signal, AbortSignal.timeout(45_000)]), cache: 'no-store' });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.arrayBuffer();
+      if (!response.ok) throw new Error(`Máy chủ từ chối tải nội dung (HTTP ${response.status}).`);
+      if (expected === undefined || !response.body) return await response.arrayBuffer();
+      const reader = response.body.getReader();
+      const buffer = new Uint8Array(expected);
+      let received = 0;
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) return received === expected ? buffer.buffer : buffer.buffer.slice(0, received);
+          if (received + value.byteLength > expected) {
+            await reader.cancel();
+            return new ArrayBuffer(0);
+          }
+          buffer.set(value, received);
+          received += value.byteLength;
+          progress?.(received);
+        }
+      } finally {
+        reader.releaseLock();
+      }
     } catch {
       signal.throwIfAborted();
-      if (attempt === 2) throw new Error('Kết nối tải gói bị gián đoạn sau 3 lần thử. Kiểm tra mạng rồi tải lại; nội dung cũ vẫn được giữ.');
-      progress(`Kết nối bị gián đoạn. Đang thử tải lại (${attempt + 2}/3)…`);
+      if (!navigator.onLine || attempt === 2) throw new Error('Kết nối tải gói bị gián đoạn. Kiểm tra mạng rồi thử lại; nội dung cũ vẫn được giữ.');
+      progress?.(0);
       await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
   throw new Error('Chưa tải được nội dung.');
 }
-export async function downloadPackage(manifest: PackageManifest, signal: AbortSignal, progress: (message: string) => void) {
+export async function downloadPackage(manifest: PackageManifest, signal: AbortSignal, progress: (message: string, bytes?: number) => void) {
   if (!crypto.subtle || !navigator.storage?.estimate) throw new Error('Môi trường lưu trữ/xác minh chưa được hỗ trợ.');
-  const size = manifest.sizeBytes + manifest.assets.reduce((total, asset) => total + asset.sizeBytes, 0);
-  if (!Number.isSafeInteger(size) || size <= 0 || size > 150 * 1024 * 1024) throw new Error('Kích thước gói không hợp lệ.');
+  const size = packageSize(manifest);
+  if (!Number.isSafeInteger(size) || size <= 0 || size > 150 * 1024 * 1024
+    || [manifest, ...manifest.assets].some(item => !Number.isSafeInteger(item.sizeBytes) || item.sizeBytes <= 0)) throw new Error('Kích thước gói không hợp lệ.');
+  const required = Math.ceil(size * 1.2);
+  const quotaError = () => new Error(`Không đủ dung lượng. Hãy giải phóng ít nhất ${storageSize.format(required / 1_000_000)} rồi thử lại. Phiên bản đã cài vẫn được giữ.`);
   const estimate = await navigator.storage.estimate();
-  if (estimate.quota !== undefined && estimate.usage !== undefined && estimate.quota - estimate.usage < size * 1.2) throw new Error('Không đủ dung lượng. Phiên bản đã cài vẫn được giữ.');
+  if (estimate.quota !== undefined && estimate.usage !== undefined && estimate.quota - estimate.usage < required) throw quotaError();
   if (manifest.downloadUrl !== `/api/content-packages/${manifest.scope}/${manifest.version}`) throw new Error('Đường dẫn gói không hợp lệ.');
   progress('Đang tải và xác minh nội dung…');
-  const [keyBytes, bytes] = await Promise.all([fetchPackageBytes('/api/content-packages/key', signal, progress), fetchPackageBytes(manifest.downloadUrl, signal, progress)]);
+  const keyBytes = await fetchPackageBytes('/api/content-packages/key', signal);
+  const bytes = await fetchPackageBytes(manifest.downloadUrl, signal, manifest.sizeBytes,
+    received => progress('Đang tải dữ liệu địa điểm và bài thuyết minh…', received));
   const keyData = JSON.parse(new TextDecoder().decode(keyBytes)) as { spki: string };
   const payload = await verifyPackage({ manifest, bytes, key: keyData.spki });
   const assets: StoredPackage['assets'] = [];
+  let downloaded = bytes.byteLength;
   for (const [index, asset] of payload.assets.entries()) {
     if (!/^(?:\/demo-audio\/[a-z-]+\.wav|\/api\/content-audio\/[0-9a-f-]{36}\.(?:mp3|wav|ogg))$/.test(asset.url)) throw new Error('Nguồn audio trong gói không hợp lệ.');
-    progress(`Đang tải audio ${new Intl.NumberFormat('vi-VN').format(index + 1)} / ${new Intl.NumberFormat('vi-VN').format(payload.assets.length)}…`);
-    const bytes = await fetchPackageBytes(asset.url, signal, progress);
+    const message = `Đang tải audio ${new Intl.NumberFormat('vi-VN').format(index + 1)} / ${new Intl.NumberFormat('vi-VN').format(payload.assets.length)}…`;
+    progress(message, downloaded);
+    const bytes = await fetchPackageBytes(asset.url, signal, asset.sizeBytes, received => progress(message, downloaded + received));
     if (bytes.byteLength !== asset.sizeBytes || await digest(bytes) !== asset.sha256) throw new Error('Audio không qua kiểm tra toàn vẹn.');
     assets.push({ url: asset.url, bytes });
+    downloaded += bytes.byteLength;
   }
   signal.throwIfAborted();
-  progress('Đang chờ kết thúc lượt nghe trước khi cài gói…');
+  progress('Đang chờ kết thúc lượt nghe trước khi cài gói…', size);
   await waitForPlayback(signal);
   progress('Đang cài đặt gói đã xác minh…');
   const db = await database();
+  if (signal.aborted) { db.close(); signal.throwIfAborted(); }
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction('packages', 'readwrite');
-    tx.objectStore('packages').put({ scope: manifest.scope, manifest, bytes, key: keyData.spki, assets, installedAt: new Date().toISOString() } satisfies StoredPackage);
+    const write = tx.objectStore('packages').put({ scope: manifest.scope, manifest, bytes, key: keyData.spki, assets, installedAt: new Date().toISOString() } satisfies StoredPackage);
     const abort = () => { try { tx.abort(); } catch { /* Already committed. */ } };
     signal.addEventListener('abort', abort, { once: true });
     tx.oncomplete = () => { signal.removeEventListener('abort', abort); db.close(); window.dispatchEvent(new Event('travelvoice-content-changed')); resolve(); };
-    tx.onabort = tx.onerror = () => { signal.removeEventListener('abort', abort); db.close(); reject(new Error('Chưa cài được gói; phiên bản cũ vẫn giữ nguyên.')); };
+    tx.onabort = () => {
+      signal.removeEventListener('abort', abort);
+      db.close();
+      reject((tx.error ?? write.error)?.name === 'QuotaExceededError'
+        ? quotaError() : new Error('Chưa cài được gói; phiên bản cũ vẫn giữ nguyên.'));
+    };
   });
 }
 export async function deleteOptionalPackage(scope: string) {

@@ -295,10 +295,12 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .package-download-dialog h2 { font-size: 24px; line-height: 1.4; }
 .package-download-dialog p { line-height: 1.7; }
 .package-download-dialog .player-actions { margin-top: 24px; justify-content: flex-end; }
+.package-progress { display: grid; gap: 4px; max-width: 32rem; font-variant-numeric: tabular-nums; }
+.package-progress progress { width: 100%; }
 .installed-places { margin-block: 16px; }
 .installed-places summary { cursor: pointer; font-weight: 600; padding-block: 8px; }
 .installed-places ul { max-height: 260px; overflow-y: auto; padding-inline-start: 22px; }
-.installed-places li { padding-block: 7px; overflow-wrap: anywhere; }
+.installed-places li { padding-block: 7px; overflow-wrap: anywhere; content-visibility: auto; contain-intrinsic-size: auto 2rem; }
 .android-qr-host { font-size: 12px; color: var(--story-muted); overflow-wrap: anywhere; margin-block: 8px; }
 .android-qr-save { display: inline-block; padding: 8px 12px; font-size: 14px; text-underline-offset: 4px; }
 .fallback-note a, .android-qr-save { text-decoration: underline; text-underline-offset: 3px; }
