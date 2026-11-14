@@ -29,7 +29,7 @@ test.describe('Guide browser contract — synthetic API', () => {
       };
     });
     await page.route('**/api/locations/**', route => route.fulfill({ status: 403 }));
-    await page.route('**/api/content-packages', route => route.fulfill({ json: [] }));
+    await page.route('**/api/content-packages?client=web', route => route.fulfill({ json: [] }));
     await page.goto('/locations/not-an-id');
     await expect(page.getByRole('heading', { name: 'Đường dẫn chưa hợp lệ' })).toBeVisible();
     await page.evaluate(next => {

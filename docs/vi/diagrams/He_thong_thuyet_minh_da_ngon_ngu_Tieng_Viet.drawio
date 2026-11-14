@@ -1186,13 +1186,13 @@
         <mxCell id="UC4_activity-system-lane" parent="1" style="swimlane;horizontal=1;startSize=34;whiteSpace=wrap;html=1;fillColor=#FFFFFF;swimlaneFillColor=none;strokeColor=#82B366;fontStyle=1;fontSize=14;fontFamily=Arial;" value="HỆ THỐNG — Ứng dụng di động / Máy chủ gói nội dung" vertex="1">
           <mxGeometry height="2022" width="1155" x="-134" y="-39" as="geometry" />
         </mxCell>
-        <mxCell id="uc4-download-bytes" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;fontFamily=Arial;" value="Tải dữ liệu gói nội dung" vertex="1">
+        <mxCell id="uc4-download-bytes" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;fontFamily=Arial;" value="Tải gói đã chọn; Web tải một gói gồm toàn bộ nội dung đã xuất bản đủ điều kiện" vertex="1">
           <mxGeometry height="50" width="180" x="790" y="1221" as="geometry" />
         </mxCell>
         <mxCell id="uc4-report-progress" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;fontFamily=Arial;" value="Cập nhật tiến độ tải trên giao diện" vertex="1">
           <mxGeometry height="50" width="210" x="892" y="1297" as="geometry" />
         </mxCell>
-        <mxCell id="uc4-delete-confirmed" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Arial;" value="Xóa nội dung tùy chọn đã chọn và cập nhật trạng thái" vertex="1">
+        <mxCell id="uc4-delete-confirmed" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontFamily=Arial;" value="Android / Web cũ: xóa nội dung tùy chọn đã chọn" vertex="1">
           <mxGeometry height="55" width="164.07" x="35" y="610" as="geometry" />
         </mxCell>
         <mxCell id="g45D0m5QW9cc8jciQBO7-30" parent="UC4_activity-system-lane" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontStyle=2;container=0;fontFamily=Arial;" value="E2 — Mất mạng: tạm dừng và giữ tiến độ" vertex="1">
@@ -1466,7 +1466,7 @@
         <mxCell id="g45D0m5QW9cc8jciQBO7-60" parent="1" style="text;whiteSpace=wrap;html=1;fontFamily=Arial;" value="Đã tải xong?" vertex="1">
           <mxGeometry height="18.678701378443584" width="108.98248679215867" x="528.9975132078414" y="1160" as="geometry" />
         </mxCell>
-        <mxCell id="uc4-delete-confirm" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Arial;" value="B1: Xác nhận xóa?" vertex="1">
+        <mxCell id="uc4-delete-confirm" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontFamily=Arial;" value="B1: Android / Web cũ xác nhận xóa?" vertex="1">
           <mxGeometry height="65" width="180" x="-712" y="330" as="geometry" />
         </mxCell>
         <mxCell id="uc4-delete-cancelled" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;fontStyle=2;fontFamily=Arial;" value="A2: Hủy xóa; giữ nguyên nội dung hiện tại" vertex="1">

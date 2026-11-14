@@ -2,21 +2,22 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 test('manual checks keep receiving polling updates and download confirmation stays visible', async ({ page }) => {
-  let version = 'base-first';
-  await page.route('**/api/content-packages', route => route.fulfill({ json: [{
-    schemaVersion: 1, scope: 'BASE', version, status: 'APPROVED', isBase: true,
-    sizeBytes: 1024, sha256: 'a'.repeat(64), signature: '', keyId: '', downloadUrl: `/api/content-packages/BASE/${version}`, assets: [],
+  let version = 'web-first';
+  await page.route('**/api/content-packages?client=web', route => route.fulfill({ json: [{
+    schemaVersion: 1, scope: 'WEB', version, status: 'APPROVED', isBase: true,
+    sizeBytes: 1024, sha256: 'a'.repeat(64), signature: '', keyId: '', downloadUrl: `/api/content-packages/WEB/${version}`, assets: [],
   }], headers: { ETag: `"${version}"` } }));
-  await page.route('**/api/content-packages/BASE/*/preview', route => route.fulfill({
+  await page.route('**/api/content-packages/WEB/*/preview', route => route.fulfill({
     json: { locations: 1, guides: 1, audioFiles: 0, changes: null },
   }));
   await page.setViewportSize({ width: 390, height: 700 });
   await page.goto('/offline');
   await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
-  await expect(page.getByText('base-first', { exact: true })).toBeVisible();
-  version = 'base-new-point-a';
+  await expect(page.getByText('web-first', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Tải gói', exact: true })).toHaveCount(1);
+  version = 'web-new-point-a';
   await page.evaluate(() => window.dispatchEvent(new Event('online')));
-  await expect(page.getByText('base-new-point-a', { exact: true })).toBeVisible();
+  await expect(page.getByText('web-new-point-a', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Tải gói', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Xác nhận tải nội dung?' });
   await expect(dialog).toBeVisible();
@@ -32,11 +33,11 @@ test('manual checks keep receiving polling updates and download confirmation sta
 
 test('unavailable preview still allows confirmation and retries preserve integrity checks', async ({ page }) => {
   let attempts = 0;
-  const version = `base-${'a'.repeat(64)}`;
-  await page.route('**/api/content-packages', route => route.fulfill({ json: [{ schemaVersion: 1, scope: 'BASE', version, status: 'APPROVED', isBase: true, sizeBytes: 1024, sha256: 'a'.repeat(64), signature: '', keyId: '', downloadUrl: `/api/content-packages/BASE/${version}`, assets: [] }] }));
-  await page.route(`**/api/content-packages/BASE/${version}/preview`, route => route.fulfill({ status: 404 }));
+  const version = `web-${'a'.repeat(64)}`;
+  await page.route('**/api/content-packages?client=web', route => route.fulfill({ json: [{ schemaVersion: 1, scope: 'WEB', version, status: 'APPROVED', isBase: true, sizeBytes: 1024, sha256: 'a'.repeat(64), signature: '', keyId: '', downloadUrl: `/api/content-packages/WEB/${version}`, assets: [] }] }));
+  await page.route(`**/api/content-packages/WEB/${version}/preview`, route => route.fulfill({ status: 404 }));
   await page.route('**/api/content-packages/key', route => route.fulfill({ json: { spki: '' } }));
-  await page.route(`**/api/content-packages/BASE/${version}`, route => {
+  await page.route(`**/api/content-packages/WEB/${version}`, route => {
     attempts++;
     return attempts < 3 ? route.abort('failed') : route.fulfill({ body: '{}', contentType: 'application/json' });
   });

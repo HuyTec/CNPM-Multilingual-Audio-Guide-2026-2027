@@ -7,13 +7,13 @@ Saving/submitting a workspace does not change any public package.
 
 - `GET /api/content-packages/key`: `{algorithm, keyId, spki}`. SPKI is a base64
   public RSA key, keyId is SHA-256 of the decoded SPKI. No private key is exposed.
-- `GET /api/content-packages`: BASE and OPTIONAL manifests. BASE contains the
-  seven new locations / 84 scripts (VI, EN, FR, JA, ZH, RU × FULL/SHORT);
-  OPTIONAL contains the older demo locations and their existing WAV assets.
+- `GET /api/content-packages`: Android BASE and OPTIONAL manifests.
+- `GET /api/content-packages?client=web`: the single WEB manifest, covering
+  eligible published locations, scripts and audio from both Android scopes.
 - Manifest: `schemaVersion:1`, `scope`, `version`, `status:"APPROVED"`, `isBase`,
   `sizeBytes`, `sha256`, base64 `signature`, `keyId`, `downloadUrl`, `assets`.
   Asset: `{url,sizeBytes,sha256}`. Size includes JSON bytes; asset sizes are separate.
-- `GET /api/content-packages/{BASE|OPTIONAL}/{version}` returns exact UTF-8 JSON
+- `GET /api/content-packages/{BASE|OPTIONAL|WEB}/{version}` returns exact UTF-8 JSON
   bytes. Verify byte length, SHA-256 and SHA256withRSA / RSASSA-PKCS1-v1_5 signature
   **before parsing**. Payload: `{schemaVersion,status,scope,isBase,locations,guides,languages,assets}`.
   Location fields match discovery API; guide fields match [GUIDE_API.md](GUIDE_API.md).
@@ -25,7 +25,9 @@ Clients download only after confirmation, verify every declared audio asset and
 replace a scope atomically. Cancel/failure keeps the previous package. BASE is
 protected from deletion. Offline guide selection preserves scriptType and follows
 Selected → EN → VI; no matching guide means unavailable, never generated translation.
-Web provisions BASE online, uses IndexedDB + production service worker for reopen;
+Web provisions WEB online and uses IndexedDB + production service worker for reopen.
+The verified WEB package replaces any legacy local BASE and OPTIONAL packages
+in the same IndexedDB transaction.
 Android also bundles a verified public signed BASE envelope in assets/content/base.json.
 Map tiles and network-dependent TTS voices are not part of these packages.
 

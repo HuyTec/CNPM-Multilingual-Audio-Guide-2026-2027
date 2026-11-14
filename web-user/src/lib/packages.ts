@@ -5,7 +5,7 @@ import type { GeofencingMetadata } from './geofence';
 
 export type PackageAsset = { url: string; sizeBytes: number; sha256: string };
 export type PackageManifest = {
-  schemaVersion: number; scope: 'BASE' | 'OPTIONAL'; version: string; status: string; isBase: boolean;
+  schemaVersion: number; scope: 'BASE' | 'OPTIONAL' | 'WEB'; version: string; status: string; isBase: boolean;
   sizeBytes: number; sha256: string; signature: string; keyId: string; downloadUrl: string; assets: PackageAsset[];
 };
 export type PackagePreview = {
@@ -52,9 +52,9 @@ export async function verifyPackage(stored: Pick<StoredPackage, 'manifest' | 'by
   const key = await crypto.subtle.importKey('spki', spki, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
   if (!await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64(manifest.signature), bytes)) throw new Error('Chữ ký gói không hợp lệ.');
   const payload = JSON.parse(new TextDecoder().decode(bytes)) as Payload;
-  if (manifest.schemaVersion !== 1 || manifest.status !== 'APPROVED' || !['BASE', 'OPTIONAL'].includes(manifest.scope)
+  if (manifest.schemaVersion !== 1 || manifest.status !== 'APPROVED' || !['BASE', 'OPTIONAL', 'WEB'].includes(manifest.scope)
     || payload.schemaVersion !== 1 || payload.status !== 'APPROVED' || payload.scope !== manifest.scope
-    || payload.isBase !== manifest.isBase || payload.isBase !== (payload.scope === 'BASE')
+    || payload.isBase !== manifest.isBase || payload.isBase !== (payload.scope !== 'OPTIONAL')
     || manifest.version !== `${manifest.scope.toLowerCase()}-${manifest.sha256}`
     || !Array.isArray(payload.locations) || !Array.isArray(payload.guides) || !Array.isArray(payload.assets)
     || payload.assets.length !== manifest.assets.length
@@ -158,7 +158,12 @@ export async function downloadPackage(manifest: PackageManifest, signal: AbortSi
   if (signal.aborted) { db.close(); signal.throwIfAborted(); }
   await new Promise<void>((resolve, reject) => {
     const tx = db.transaction('packages', 'readwrite');
-    const write = tx.objectStore('packages').put({ scope: manifest.scope, manifest, bytes, key: keyData.spki, assets, installedAt: new Date().toISOString() } satisfies StoredPackage);
+    const store = tx.objectStore('packages');
+    const write = store.put({ scope: manifest.scope, manifest, bytes, key: keyData.spki, assets, installedAt: new Date().toISOString() } satisfies StoredPackage);
+    if (manifest.scope === 'WEB') {
+      store.delete('BASE');
+      store.delete('OPTIONAL');
+    }
     const abort = () => { try { tx.abort(); } catch { /* Already committed. */ } };
     signal.addEventListener('abort', abort, { once: true });
     tx.oncomplete = () => { signal.removeEventListener('abort', abort); db.close(); window.dispatchEvent(new Event('travelvoice-content-changed')); resolve(); };

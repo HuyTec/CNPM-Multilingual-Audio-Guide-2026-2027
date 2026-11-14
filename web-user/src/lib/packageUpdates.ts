@@ -13,7 +13,7 @@ const subscribe = (callback: () => void) => {
 export async function checkPackageUpdates({ force = false }: { force?: boolean } = {}) {
   if (loading) return loading;
   loading = (async () => {
-    const response = await fetch("/api/content-packages", {
+    const response = await fetch("/api/content-packages?client=web", {
       headers: etag && !force ? { "If-None-Match": etag } : {},
       cache: "no-cache",
       signal: AbortSignal.timeout(15000),
@@ -21,7 +21,7 @@ export async function checkPackageUpdates({ force = false }: { force?: boolean }
     if (response.status === 304) return snapshot;
     if (!response.ok) throw new Error("Chưa kiểm tra được gói mới.");
     const next = (await response.json()) as PackageManifest[];
-    if (!Array.isArray(next) || next.some((m) => m.status !== "APPROVED"))
+    if (!Array.isArray(next) || next.length > 1 || next.some((m) => m.status !== "APPROVED" || m.scope !== "WEB" || !m.isBase))
       throw new Error("Manifest không hợp lệ.");
     snapshot = next;
     etag = response.headers.get("ETag") || "";

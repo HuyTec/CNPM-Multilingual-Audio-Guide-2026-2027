@@ -5,9 +5,11 @@ export type PlaybackState = {
   status: 'idle' | 'preparing' | 'playing' | 'paused' | 'ended' | 'error';
   source: 'audio' | 'tts' | null; message: string; position: number; total: number;
   rate: number; voice: string;
+  elapsed: number;
+  estimatedDuration?: number;
 };
 
-/** Preserve every source character; positions are real text chunks, never invented seconds. */
+/** Preserve every source character across utterances. */
 export function speechChunks(text: string, language: string) {
   const chunks: string[] = [];
   let current = '';
@@ -24,7 +26,7 @@ export function speechChunks(text: string, language: string) {
 
 /** One owned playback source. Generation guards suppress callbacks after cancel/seek/unmount. */
 export class GuidePlayback {
-  private state: PlaybackState = { status: 'idle', source: null, message: '', position: 0, total: 0, rate: 1, voice: '' };
+  private state: PlaybackState = { status: 'idle', source: null, message: '', position: 0, total: 0, rate: 1, voice: '', elapsed: 0 };
   private listeners = new Set<() => void>();
   private audio: HTMLAudioElement | null = null;
   private generation = 0;
@@ -34,8 +36,18 @@ export class GuidePlayback {
   private chunks: string[];
   private offset = 0;
   private started = false;
+  private chunkDurations: number[];
+  private speechClock: ReturnType<typeof setInterval> | undefined;
+  private readSpeechClock: (() => number) | undefined;
   constructor(private guide: Guide, private onStarted: () => void) {
     this.chunks = speechChunks(guide.scriptText, guide.languageCode);
+    const language = guide.languageCode.toLowerCase();
+    const segmenter = new Intl.Segmenter(language, { granularity: 'word' });
+    this.chunkDurations = this.chunks.map(chunk => {
+      if (/^(ja|zh)(-|$)/.test(language)) return Math.max(1, [...chunk.replace(/\s/g, '')].length / 5);
+      const words = [...segmenter.segment(chunk)].filter(segment => segment.isWordLike).length;
+      return Math.max(1, words / 2.5);
+    });
   }
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   snapshot = () => this.state;
@@ -49,6 +61,7 @@ export class GuidePlayback {
   }
   private cancelSpeech() {
     this.generation++; this.clearTimer(); this.clearVoiceWait();
+    this.finishSpeechClock();
     window.speechSynthesis?.cancel();
   }
   private releaseAudio() {
@@ -120,19 +133,43 @@ export class GuidePlayback {
     this.cancelSpeech(); const generation = this.generation;
     this.offset = offset;
     this.update({ source: 'tts', status: 'preparing', position: index, total: this.chunks.length,
+      estimatedDuration: this.estimateDuration(index, offset),
       voice: this.voice.name, message: 'Đang dùng giọng đọc văn bản (TTS).' });
     const utterance = new SpeechSynthesisUtterance(this.chunks[index].slice(offset));
     utterance.voice = this.voice; utterance.lang = this.voice.lang; utterance.rate = this.state.rate;
-    utterance.onstart = () => { if (generation === this.generation) this.didStart(); };
+    utterance.onstart = () => {
+      if (generation !== this.generation) return;
+      const elapsed = this.state.elapsed;
+      const startedAt = performance.now();
+      const readClock = () => elapsed + (performance.now() - startedAt) / 1000;
+      this.readSpeechClock = readClock;
+      this.speechClock = setInterval(() => {
+        if (generation === this.generation) this.update({ elapsed: readClock() });
+      }, 250);
+      this.didStart();
+    };
     utterance.onboundary = event => { if (generation === this.generation) this.offset = offset + event.charIndex; };
     utterance.onend = () => {
       if (generation !== this.generation) return;
+      this.finishSpeechClock();
       this.offset = 0;
       if (index + 1 < this.chunks.length) this.speak(index + 1);
-      else this.update({ status: 'ended', position: index });
+      else this.update({ status: 'ended', position: index, estimatedDuration: this.state.elapsed });
     };
     utterance.onerror = () => { if (generation === this.generation) this.fail('Giọng đọc không phát được. Hãy kiểm tra giọng/kết nối và bấm Thử lại.'); };
     this.armTimeout(); window.speechSynthesis.speak(utterance);
+  }
+  private estimateDuration(index: number, offset: number) {
+    const current = this.chunkDurations[index]! * (1 - offset / this.chunks[index]!.length);
+    const remaining = this.chunkDurations.slice(index + 1).reduce((sum, duration) => sum + duration, current);
+    return this.state.elapsed + remaining / this.state.rate;
+  }
+  private finishSpeechClock() {
+    clearInterval(this.speechClock);
+    this.speechClock = undefined;
+    const elapsed = this.readSpeechClock?.();
+    this.readSpeechClock = undefined;
+    if (elapsed !== undefined) this.update({ elapsed });
   }
   pause = () => {
     if (!['playing', 'preparing'].includes(this.state.status)) return;
@@ -142,7 +179,7 @@ export class GuidePlayback {
   };
   stop = () => {
     this.cancelSpeech(); this.releaseAudio(); this.offset = 0;
-    this.update({ status: 'idle', source: null, position: 0, total: 0, message: '', voice: '' });
+    this.update({ status: 'idle', source: null, position: 0, total: 0, message: '', voice: '', elapsed: 0, estimatedDuration: undefined });
   };
   private fail(message: string) {
     this.cancelSpeech(); this.releaseAudio(); this.update({ status: 'error', message });
@@ -154,7 +191,8 @@ export class GuidePlayback {
     } else if (this.state.source === 'tts') {
       const index = Math.max(0, Math.min(Math.floor(position), this.chunks.length - 1));
       const resume = ['playing', 'preparing'].includes(this.state.status);
-      this.cancelSpeech(); this.offset = 0; this.update({ position: index });
+      this.cancelSpeech(); this.offset = 0;
+      this.update({ position: index, estimatedDuration: this.estimateDuration(index, 0) });
       if (resume) this.speak(index);
       else this.update({ status: 'paused' });
     }
@@ -163,6 +201,9 @@ export class GuidePlayback {
     this.update({ rate });
     if (this.audio) this.audio.playbackRate = rate;
     else if (this.state.source === 'tts' && ['playing', 'preparing'].includes(this.state.status)) this.speak(this.state.position, this.offset);
+    else if (this.state.source === 'tts' && this.state.status === 'paused') {
+      this.update({ estimatedDuration: this.estimateDuration(this.state.position, this.offset) });
+    }
   };
   networkLost = () => {
     if (this.state.source === 'tts' && this.voice && !this.voice.localService && ['playing', 'preparing'].includes(this.state.status))

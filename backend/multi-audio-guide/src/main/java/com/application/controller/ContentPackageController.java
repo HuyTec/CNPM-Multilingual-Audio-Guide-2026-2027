@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import org.springframework.web.bind.annotation.RequestHeader;
 import com.application.dto.ContentPackageDto.PublicKey;
 import com.application.dto.ContentPackageDto.Manifest;
 
@@ -24,8 +25,10 @@ public class ContentPackageController {
     public PublicKey key() { return service.publicKey(); }
 
     @GetMapping("/api/content-packages")
-    public ResponseEntity<List<Manifest>> packages(@org.springframework.web.bind.annotation.RequestHeader(value="If-None-Match",required=false) String previous) {
-        var manifests=service.manifests();
+    public ResponseEntity<List<Manifest>> packages(@RequestHeader(value="If-None-Match",required=false) String previous,
+            @RequestParam(defaultValue = "android") String client) {
+        var manifests=service.manifests().stream()
+                .filter(manifest -> manifest.scope().equals("WEB") == client.equals("web")).toList();
         String tag="\""+manifests.stream().map(Manifest::version).collect(java.util.stream.Collectors.joining("."))+"\"";
         boolean same=previous!=null && java.util.Arrays.stream(previous.split(",")).map(String::trim).anyMatch(v->v.equals(tag)||v.equals("W/"+tag)||v.equals("*"));
         return same?ResponseEntity.status(304).eTag(tag).build():ResponseEntity.ok().cacheControl(CacheControl.noCache()).eTag(tag).body(manifests);

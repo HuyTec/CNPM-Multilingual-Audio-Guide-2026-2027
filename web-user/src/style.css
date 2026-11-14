@@ -130,7 +130,7 @@ button:disabled { opacity: 0.55; cursor: default; }
 .guide-player .player-actions label { display: flex; align-items: center; gap: 8px; }
 .guide-player select { width: auto; margin: 0; }
 .playback-position { margin-top: 16px; }
-.playback-position input { display: block; width: 100%; accent-color: var(--trail-teal); margin: 12px 0; }
+.playback-position input, .playback-position progress { display: block; width: 100%; accent-color: var(--trail-teal); margin: 12px 0; }
 .catalog-intro { max-width: 680px; margin-bottom: 24px; }
 .catalog-intro h1 { font-family: inherit; font-weight: 700; }
 .demo-notice { border-left: 3px solid var(--reading-rule); padding-left: 16px; max-width: 840px; }

@@ -3,7 +3,6 @@ import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uuidPattern } from '../lib/guide';
 import { LocationCatalog } from '../components/LocationCatalog';
-import { AndroidAppPromo } from '../components/AndroidAppPromo';
 
 export function LocationEntry() {
   const navigate = useNavigate();
@@ -23,7 +22,6 @@ export function LocationEntry() {
   }
   return <>
     <LocationCatalog />
-    <AndroidAppPromo />
     <details className="link-entry"><summary>Bạn có đường dẫn địa điểm?</summary>
     <p>Dán liên kết hoặc quét mã QR để mở thẳng bài thuyết minh.</p>
     <form onSubmit={openLocation} noValidate>

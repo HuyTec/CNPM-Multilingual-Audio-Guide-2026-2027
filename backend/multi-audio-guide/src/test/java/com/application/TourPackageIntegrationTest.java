@@ -140,4 +140,29 @@ class TourPackageIntegrationTest {
         mvc.perform(get("/api/content-packages/BASE/wrong-version")).andExpect(status().isNotFound());
         mvc.perform(get("/api/content-packages/WRONG/wrong-version")).andExpect(status().isBadRequest());
     }
+
+    @Test void webPublishesOneSignedSnapshotContainingBothAndroidPartitions() throws Exception {
+        String location = "20000000-0000-0000-0000-000000000101";
+        String category = "10000000-0000-0000-0000-000000000199";
+        jdbc.update("INSERT INTO categories(id,name) VALUES (?::uuid,'Web package test')", category);
+        jdbc.update("UPDATE locations SET category_id=?::uuid WHERE id=?::uuid", category, location);
+        publisher.publish(versions.enqueue(null));
+
+        var response = mvc.perform(get("/api/content-packages").param("client", "web"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].scope").value("WEB")).andReturn();
+        var manifest = mapper.readTree(response.getResponse().getContentAsByteArray()).get(0);
+        var download = mvc.perform(get(manifest.get("downloadUrl").asString()))
+                .andExpect(status().isOk()).andReturn();
+        byte[] bytes = download.getResponse().getContentAsByteArray();
+        assertThat(mapper.readTree(bytes).get("locations").size()).isEqualTo(8);
+        assertThat(mapper.readTree(bytes).get("guides").size()).isEqualTo(96);
+        assertThat(new String(bytes, java.nio.charset.StandardCharsets.UTF_8)).contains(location);
+        assertThat(packages.build("OPTIONAL").manifest().assets()).isNotEmpty();
+        mvc.perform(get("/api/content-packages")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].scope").value("BASE"))
+                .andExpect(jsonPath("$[1].scope").value("OPTIONAL"));
+    }
 }
