@@ -6,7 +6,7 @@ import { deleteOptionalPackage, downloadPackage, packageSize, readInstalledPacka
 import type { PackageManifest } from '../lib/packages';
 
 export function OfflinePage() {
-  const available=usePackageUpdates();
+  const available = usePackageUpdates();
   const [storage, setStorage] = useState<Awaited<ReturnType<typeof readInstalledPackages>>>();
   const installed = storage?.packages ?? [];
   const [message, setMessage] = useState('Đang kiểm tra nội dung đã lưu…');
@@ -18,7 +18,7 @@ export function OfflinePage() {
   const [retry, setRetry] = useState<PackageManifest | null>(null);
   const [pending, setPending] = useState<PackageManifest | null>(null);
   const transfer = useRef<AbortController | null>(null);
-  const baseReady = installed.some(item => item.stored.scope === 'BASE' && item.payload.isBase);
+  const baseReady = installed.some(item => item.payload.isBase);
   useEffect(() => {
     let active = true;
     const refresh = () => {
@@ -64,8 +64,7 @@ export function OfflinePage() {
       const latest = await checkPackageUpdates({ force: true });
       if (!latest.length) setMessage('Máy chủ chưa có gói đã phê duyệt để tải.');
       else if (baseReady && latest.every(manifest =>
-        installed.some(item => item.stored.manifest.version === manifest.version)
-        || (manifest.scope === 'OPTIONAL' && !installed.some(item => item.stored.scope === 'OPTIONAL')))) {
+        installed.some(item => item.stored.scope === manifest.scope && item.stored.manifest.version === manifest.version))) {
         setMessage('Nội dung đã cài đang ở phiên bản mới nhất.');
       } else setMessage('Có gói để tải hoặc cập nhật. Chỉ tải sau khi bạn xác nhận.');
     } catch { setMessage('Không kiểm tra được cập nhật. Nội dung đã cài vẫn giữ nguyên.'); }
@@ -105,11 +104,11 @@ export function OfflinePage() {
   }
   return <section className="offline-page">
     <title>Nội dung offline · TravelVoice</title><h1>Nội dung offline</h1>
-    <p>Gói được lưu trong trình duyệt để dùng offline, không xuất hiện trong thư mục Downloads. Sau khi cài, mở danh sách địa điểm trong gói để đọc bài.</p>
-    {!baseReady && <p className="fallback-note">Để chuẩn bị lần đầu, hãy kết nối mạng và xác nhận tải gói cơ bản.</p>}
+    <p>Lưu bài thuyết minh trong trình duyệt này để đọc khi mất mạng.</p>
+    {storage && !baseReady && <p className="fallback-note">Hãy kết nối mạng và chọn “Tải gói” để lưu nội dung lần đầu.</p>}
     {baseReady && shellReady && <p className="fallback-note"><strong>Sẵn sàng ngoại tuyến.</strong> Mở lại cùng địa chỉ bằng trình duyệt này để dùng bài đã lưu. Bản đồ nền cần mạng.</p>}
     {!shellReady && <p className="fallback-note">Web chưa sẵn sàng mở lại khi mất mạng. Hãy cho phép lưu trữ và tải lại trang khi có mạng.</p>}
-    {!online && <p>Đang mất kết nối. Bạn vẫn có thể mở bài đã lưu và xóa gói bổ sung.</p>}
+    {!online && <p>Đang mất kết nối. Bạn có thể mở bài đã lưu bên dưới.</p>}
     <p role="status">{message}</p>
     {progress && <div className="package-progress">
       <label htmlFor="package-progress">Tiến độ tải {new Intl.NumberFormat('vi-VN', { style: 'percent' }).format(progress.bytes / progress.total)}</label>
@@ -123,17 +122,16 @@ export function OfflinePage() {
       const current = installed.find(item => item.stored.scope === manifest.scope);
       const same = current?.stored.manifest.version === manifest.version;
       const size = packageSize(manifest);
-      return <li key={manifest.scope}><h2>{manifest.isBase ? 'Nội dung cơ bản' : 'Nội dung bổ sung'}</h2>
+      return <li key={manifest.scope}><h2>Nội dung có thể tải ngoại tuyến</h2>
         <p>{new Intl.NumberFormat('vi-VN', { style: 'unit', unit: 'kilobyte', maximumFractionDigits: 1 }).format(size / 1000)} · {same ? 'Đã mới nhất' : current ? 'Có bản cập nhật' : 'Chưa tải'}</p>
         <p className="version-text">Phiên bản: <span translate="no">{manifest.version}</span></p>
-        {!same && <button type="button" className="secondary-button" disabled={busy || !online || (!manifest.isBase && !baseReady)} onClick={() => setPending(manifest)}>{current ? 'Cập nhật gói' : 'Tải gói'}</button>}
-        {!manifest.isBase && !baseReady && <p>Cần cài gói cơ bản trước khi tải gói bổ sung.</p>}
+        {!same && <button type="button" className="secondary-button" disabled={busy || !online} onClick={() => setPending(manifest)}>{current ? 'Cập nhật gói' : 'Tải gói'}</button>}
       </li>;
     })}</ul>
     <h2>Đang lưu trên thiết bị</h2>
     {storage?.invalidScopes.includes('OPTIONAL') && <button type="button" className="secondary-button" disabled={busy} onClick={() => void remove()}>Xóa gói bổ sung bị lỗi</button>}
-    {installed.length === 0 ? <p>Chưa có gói đã xác minh.</p> : <ul className="package-list">{installed.map(({ stored, payload }) => <li key={stored.scope}>
-      <h3>{stored.manifest.isBase ? 'Gói cơ bản · được bảo vệ' : 'Gói bổ sung'}</h3>
+    {installed.length === 0 ? <p>{storage ? 'Chưa có gói đã xác minh.' : 'Chưa có thông tin về nội dung đã lưu.'}</p> : <ul className="package-list">{installed.map(({ stored, payload }) => <li key={stored.scope}>
+      <h3>{stored.scope === 'WEB' ? 'Gói thuyết minh ngoại tuyến' : stored.manifest.isBase ? 'Gói cơ bản · được bảo vệ' : 'Nội dung tải thêm trước đây'}</h3>
       <p className="version-text">Phiên bản đã cài: <span translate="no">{stored.manifest.version}</span></p>
       <p>{new Intl.NumberFormat('vi-VN').format(payload.locations.length)} địa điểm · {new Intl.NumberFormat('vi-VN').format(payload.guides.length)} bài · đã cài {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(stored.installedAt))}</p>
       <p>{shellReady ? 'Có thể đọc nội dung đã tải khi offline.' : 'Đã lưu text; ứng dụng chưa xác nhận mở lại được offline.'}</p>

@@ -7,13 +7,13 @@ test.describe('Real signed package / production service worker', () => {
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+    await expect(page.getByText('Gói thuyết minh ngoại tuyến')).toBeVisible();
     await page.evaluate(() => new Promise<void>((resolve, reject) => {
       const open = indexedDB.open('travelvoice-content-v1', 1);
       open.onerror = () => reject(open.error);
       open.onsuccess = () => {
         const db = open.result; const tx = db.transaction('packages', 'readwrite');
-        const store = tx.objectStore('packages'); const read = store.get('BASE');
+        const store = tx.objectStore('packages'); const read = store.get('WEB');
         read.onsuccess = () => {
           const stored = read.result;
           new Uint8Array(stored.assets[0].bytes)[0] ^= 1;
@@ -30,9 +30,9 @@ test.describe('Real signed package / production service worker', () => {
   test('confirm download, verify, protect base and reopen actual guide offline', async ({ page, context, request }) => {
     page.on('pageerror', error => console.log('Offline page error:', error.message));
     page.on('requestfailed', request => console.log('Offline request failed:', request.url(), request.failure()?.errorText));
-    const available = await request.get('/api/content-packages'); expect(available.status()).toBe(200);
+    const available = await request.get('/api/content-packages?client=web'); expect(available.status()).toBe(200);
     const manifests = await available.json() as { scope: string; version: string }[];
-    expect(manifests.map(item => item.scope)).toEqual(['BASE', 'OPTIONAL']);
+    expect(manifests.map(item => item.scope)).toEqual(['WEB']);
     await page.goto('/offline');
     await page.evaluate(async () => { await navigator.serviceWorker.ready; });
     await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
@@ -44,7 +44,7 @@ test.describe('Real signed package / production service worker', () => {
     await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+    await expect(page.getByText('Gói thuyết minh ngoại tuyến')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Xóa nội dung bổ sung' })).toHaveCount(0);
     console.log('Shell cache:', await page.evaluate(async () => {
       const names = await caches.keys();
@@ -69,8 +69,8 @@ test.describe('Real signed package / production service worker', () => {
     await context.setOffline(false);
   });
   test('an interrupted update and insufficient storage preserve the installed base', async ({ page, context, request }) => {
-    const manifests = await (await request.get('/api/content-packages')).json();
-    const base = manifests.find((manifest: { scope: string }) => manifest.scope === 'BASE');
+    const manifests = await (await request.get('/api/content-packages?client=web')).json();
+    const base = manifests.find((manifest: { scope: string }) => manifest.scope === 'WEB');
     await page.goto('/offline');
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
@@ -78,10 +78,10 @@ test.describe('Real signed package / production service worker', () => {
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
     await expect(page.getByRole('status')).toContainText('phiên bản mới nhất');
 
-    const version = 'base-' + 'a'.repeat(64);
-    const downloadUrl = '/api/content-packages/BASE/' + version;
-    await page.route('**/api/content-packages', route => route.fulfill({
-      json: manifests.map((manifest: { scope: string }) => manifest.scope === 'BASE'
+    const version = 'web-' + 'a'.repeat(64);
+    const downloadUrl = '/api/content-packages/WEB/' + version;
+    await page.route('**/api/content-packages?client=web', route => route.fulfill({
+      json: manifests.map((manifest: { scope: string }) => manifest.scope === 'WEB'
         ? { ...base, version, downloadUrl } : manifest),
     }));
     await page.route('**' + downloadUrl + '/preview?*', route => route.fulfill({
@@ -118,7 +118,7 @@ test.describe('Real signed package / production service worker', () => {
     }
     await page.reload();
     await expect(page.getByText(base.version, { exact: true })).toBeVisible();
-    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+    await expect(page.getByText('Gói thuyết minh ngoại tuyến')).toBeVisible();
     await expect(page.getByText('Sẵn sàng ngoại tuyến.', { exact: true })).toBeVisible();
   });
 
@@ -129,7 +129,7 @@ test.describe('Real signed package / production service worker', () => {
     await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
     await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
     await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-    await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+    await expect(page.getByText('Gói thuyết minh ngoại tuyến')).toBeVisible();
     await context.setOffline(true);
     await page.goto('/locations/20000000-0000-0000-0000-000000000108?language=VI&scriptType=SHORT');
     await expect(page.getByText('Đang đọc từ gói offline đã xác minh.', { exact: false })).toBeVisible();
@@ -152,11 +152,11 @@ test.describe('Real signed package / production service worker', () => {
     // Chromium may bypass request interception for fetches delegated to a controlling worker.
     // The separate reopen test above exercises the actual production worker.
     test.use({ serviceWorkers: 'block' });
-    test('tampered bytes rejected; BASE audio protected and empty OPTIONAL removable', async ({ page, context }) => {
+    test('tampered bytes rejected and only WEB offered for download', async ({ page, context }) => {
       await page.goto('/offline');
       await page.getByRole('button', { name: 'Kiểm tra cập nhật' }).click();
       let tampered = 0;
-      const packageUrl = (url: URL) => /^\/api\/content-packages\/BASE\/base-[a-f0-9]{64}$/.test(url.pathname);
+      const packageUrl = (url: URL) => /^\/api\/content-packages\/WEB\/web-[a-f0-9]{64}$/.test(url.pathname);
       await context.route(packageUrl, async route => {
         const response = await route.fetch(); const bytes = Buffer.from(await response.body());
         bytes[bytes.length - 2] ^= 1;
@@ -169,23 +169,13 @@ test.describe('Real signed package / production service worker', () => {
       await expect(page.getByRole('status')).toContainText('Checksum');
       await expect(page.getByText('Chưa có gói đã xác minh.')).toBeVisible();
       await context.unroute(packageUrl);
-      await context.route('**/api/content-packages/BASE/*/preview', route => route.fulfill({ status: 404 }));
+      await context.route('**/api/content-packages/WEB/*/preview', route => route.fulfill({ status: 404 }));
       await page.getByRole('button', { name: 'Tải gói', exact: true }).first().click();
       await expect(page.getByRole('dialog')).toContainText('Bạn vẫn có thể xác nhận tải.');
       await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-      await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+      await expect(page.getByText('Gói thuyết minh ngoại tuyến')).toBeVisible();
       await expect(page.getByRole('button', { name: 'Xóa nội dung bổ sung' })).toHaveCount(0);
-      await page.getByRole('button', { name: 'Tải gói', exact: true }).click();
-      await page.getByRole('button', { name: 'Xác nhận tải', exact: true }).click();
-      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
-      await context.setOffline(true);
-      page.once('dialog', dialog => dialog.dismiss());
-      await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
-      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toBeVisible();
-      page.once('dialog', dialog => dialog.accept());
-      await page.getByRole('button', { name: 'Xóa nội dung bổ sung' }).click();
-      await expect(page.getByRole('heading', { name: 'Gói bổ sung', exact: true })).toHaveCount(0);
-      await expect(page.getByText('Gói cơ bản · được bảo vệ')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Tải gói', exact: true })).toHaveCount(0);
     });
   });
 });

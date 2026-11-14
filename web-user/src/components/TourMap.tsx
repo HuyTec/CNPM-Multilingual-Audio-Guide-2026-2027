@@ -305,7 +305,7 @@ export default function TourMap({
       }
       return;
     }
-    map.setView(marker.getLatLng(), 1, { animate: false });
+    map.setView(marker.getLatLng(), 16, { animate: false });
     marker.openPopup();
     marker
       .getPopup()

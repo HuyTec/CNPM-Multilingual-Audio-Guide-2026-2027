@@ -142,7 +142,7 @@ Hệ thống bổ sung REVIEWER bên cạnh các tác nhân chính hiện có. C
 | UC-01 | Khám phá/chọn địa điểm; từ chối quyền vẫn có đường chọn thủ công. | Tích hợp định vị/bản đồ native; liên kết hợp lệ có thể mở địa điểm tương ứng. | URL HTTPS công khai mở địa điểm không cần cài đặt hoặc đăng nhập; xử lý quyền trình duyệt khi tìm lân cận. |
 | UC-02 | Nội dung APPROVED, FULL/SHORT, dự phòng Đang chọn → EN → VI và giữ scriptType. | Máy chủ hoặc kho nội dung cục bộ đã xác minh. | Cùng API/định danh nội dung; dùng nội dung cục bộ trình duyệt đã xác minh khi sẵn sàng ngoại tuyến. |
 | UC-03 | Phát do người dùng khởi tạo, điều khiển phát, TTS phù hợp, xử lý lỗi; không tự phát khi điều hướng. | Audio/TTS nền tảng và vòng đời audio focus. | Adapter audio/TTS trình duyệt/nền tảng; phải kiểm thử giọng và điều khiển, không mặc định giống Android. |
-| UC-04 | Gói đã xác minh, đồng ý tải rõ ràng, cài nguyên tử, lưu phiên bản và bảo vệ Base Content. | Base Content đóng gói khi cài ứng dụng. | Cấp phát và xác minh Base Content trong lần đầu truy cập có mạng trước khi báo sẵn sàng ngoại tuyến. Không hứa truy cập lần đầu khi chưa có mạng. |
+| UC-04 | Gói đã xác minh, đồng ý tải rõ ràng, cài nguyên tử, lưu phiên bản và bảo vệ Base Content. | Base Content đóng gói khi cài ứng dụng. | Một gói Web đã xác minh chứa nội dung xuất bản thuộc cả hai loại gói Android. Lần đầu cần có mạng và người dùng xác nhận tải. |
 | UC-05 | Phát hiện đi vào geofence khi được hỗ trợ; cooldown, thông báo/banner đúng ngôn ngữ, điều hướng locationId, không tự phát. | Quyền định vị/geofence/thông báo native và vòng đời ứng dụng. | Theo dõi vị trí và banner tiền cảnh cần phiên đang hoạt động, có quyền. Không hứa theo dõi nền/khi đóng tab hoặc thông báo hệ thống nếu chưa kiểm chứng trên danh sách trình duyệt hỗ trợ. |
 
 Khả năng nền tảng không hỗ trợ hoặc bị từ chối phải được giải thích và xử lý bằng luồng ngoại lệ/thủ công tương ứng. Không được âm thầm coi đó là chức năng hoàn thành hoặc thay đổi quy tắc nghiệp vụ. Phiên bản trình duyệt/OS, giọng đọc hỗ trợ, độ bền lưu trữ và phạm vi tiền cảnh/chạy nền cần có ma trận nghiệm thu; phiên bản và môi trường kiểm thử cụ thể còn là \[?\].
@@ -193,9 +193,9 @@ Giữ dữ liệu địa điểm và nội dung hướng dẫn thiết yếu lu�
 
 ### **3.3.2. Chức năng**
 
-* **FR-06:** Base Content cấp phát theo mục 2.4, kiểm tra cập nhật, chọn gói tùy chọn và tải các gói mới hơn đã được phê duyệt (UC-04).
+* **FR-06:** Base Content cấp phát theo mục 2.4, kiểm tra cập nhật và xác nhận tải phiên bản mới đã được duyệt. Web du khách cung cấp một gói gồm nội dung xuất bản của cả hai loại gói Android. Chọn gói tùy chọn áp dụng cho Android (UC-04).
 * **FR-07:** Cài đặt nguyên tử, có xác minh, với dữ liệu địa điểm, kịch bản và âm thanh hiện có tương ứng (UC-04).
-* **FR-08:** Xóa nội dung tùy chọn, hủy thao tác và bảo vệ vật lý đối với Base Content (UC-04).
+* **FR-08:** Hủy thao tác và bảo vệ nội dung ngoại tuyến nền tảng. Xóa nội dung tùy chọn áp dụng cho Android và gói Web cũ trước khi chuyển đổi (UC-04).
 
 ### **3.3.3. Use case liên quan**
 
@@ -270,7 +270,7 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | | **E4:** Nếu danh mục đã chọn không có địa điểm, hệ thống hiển thị **Empty State** và gợi ý danh mục khác hoặc địa điểm phổ biến. | |
 | **Điểm mở rộng** | Không áp dụng | |
 | **Kích hoạt** | **Do người dùng:** Du khách mở ứng dụng du khách hoặc đến màn hình **Khám phá / Bản đồ**. Du khách chọn **“Tìm địa điểm lân cận”**, sử dụng thanh **Tìm kiếm**, chọn **Danh mục**, chọn một **điểm đánh dấu** trên bản đồ tương tác hoặc mở URL/liên kết QR của địa điểm (A4). | |
-| **Giả định** | **Dữ liệu:** Cơ sở dữ liệu máy chủ hoặc kho nội dung cục bộ đã xác minh chứa thông tin địa điểm, gồm tọa độ, mô tả, danh mục và ảnh thu nhỏ. **Nền tảng:** Định vị có thể cần quyền hoặc không khả dụng; vẫn cho chọn thủ công. **Nội dung cơ bản ngoại tuyến:** Android đóng gói dữ liệu địa điểm/hướng dẫn khi cài đặt; Web du khách cấp phát và xác minh khi sử dụng trực tuyến lần đầu theo mục 2.4. UC-04 quản lý gói tùy chọn/mới hơn sau khi nội dung cơ bản sẵn sàng. | |
+| **Giả định** | **Dữ liệu:** Cơ sở dữ liệu máy chủ hoặc kho nội dung cục bộ đã xác minh chứa thông tin địa điểm, gồm tọa độ, mô tả, danh mục và ảnh thu nhỏ. **Nền tảng:** Định vị có thể cần quyền hoặc không khả dụng; vẫn cho chọn thủ công. **Nội dung cơ bản ngoại tuyến:** Android đóng gói dữ liệu địa điểm/hướng dẫn khi cài đặt; Web du khách cấp phát và xác minh khi sử dụng trực tuyến lần đầu theo mục 2.4. UC-04 quản lý phiên bản mới của gói Web duy nhất và các gói tùy chọn hoặc bản mới trên Android. | |
 | **Tham chiếu: Quy tắc nghiệp vụ** | **BR1 – Bán kính tìm GPS:** Bán kính tìm địa điểm có thể cấu hình trong khoảng **100–500 mét**. Hệ thống dùng giá trị mặc định cố định trong cấu hình ứng dụng, không chỉnh qua Web Admin Dashboard. **BR2 – Xếp hạng kết quả:** Kết quả dựa trên GPS được sắp xếp theo **khoảng cách tăng dần**. Kết quả theo từ khóa hoặc danh mục có thể xếp theo **độ liên quan hoặc khoảng cách**. **BR3 – Quyền vị trí:** Nếu du khách từ chối quyền vị trí, hệ thống không được ngăn họ tiếp tục sử dụng ứng dụng. Các chức năng phụ thuộc GPS bị tắt; hệ thống phải cung cấp cách chọn địa điểm khác như **Tìm theo từ khóa**, **Duyệt theo danh mục** hoặc **Xem bản đồ**. | |
 | **Tác giả** | | |
 | **Ngày** | | |
@@ -340,6 +340,8 @@ Hỗ trợ cải thiện dịch vụ và nội dung thông qua thống kê sử 
 | **Sơ đồ hoạt động** | Xem UC03_activity.drawio | |
 
 ## **4.4. USE CASE 4: Quản lý và cập nhật nội dung ngoại tuyến**
+
+**Web du khách:** Khi có mạng, Web cung cấp một gói đã ký chứa các địa điểm đã xuất bản đủ điều kiện, kịch bản đã duyệt và audio tương ứng nếu có, gồm cả nội dung trước đây thuộc gói bổ sung. Chỉ tải hoặc cập nhật sau khi du khách xác nhận. Gói phải được xác minh trước khi cài. Khi cài thành công, Web thay cả hai gói cũ trong cùng giao dịch lưu trữ. Hủy, thiếu dung lượng hoặc lỗi giữ nguyên nội dung đã cài. A2 và gợi ý xóa gói tùy chọn trong E1 chỉ áp dụng cho Android và kho Web cũ.
 
 | Thuộc tính | Mô tả | |
 | :---- | :---- | :---- |
@@ -499,7 +501,7 @@ Phiên bản gói được cấp khi xuất bản. Kịch bản DRAFT hoặc PEN
 | **GuideScript** | scriptId (PK), locationId (FK), languageCode (FK), scriptType (FULL hoặc SHORT), scriptText, status, packageVersion (không bắt buộc trước khi xuất bản), reviewerComment, updatedBy, updatedAt | UC-02, UC-03, UC-04, UC-06 | Văn bản hướng dẫn cho một địa điểm, ngôn ngữ và loại kịch bản, kèm thông tin duyệt bên ngoài và liên kết với gói đã xuất bản. |
 | **AudioAsset** | audioId (PK), scriptId (FK), fileUrl, format, durationSec, sizeBytes, checksum | UC-03, UC-04, UC-06 | Âm thanh tùy chọn gắn với locationId, languageCode và scriptType của kịch bản. Giới hạn đề xuất được nêu tại NFR-14. |
 | **Content Package** | packageVersion (PK, cần xác nhận tính duy nhất), sizeBytes, checksum, publishedAt, manifest | UC-04 | Cài đặt nguyên tử có xác minh cho dữ liệu địa điểm bị ảnh hưởng, kịch bản, âm thanh hiện có và các thay đổi về hiển thị mục bị xóa hoặc lưu trữ. |
-| **Local Content Version** | installedPackageVersion, installedAt, isBase | UC-04 | Theo dõi nội dung đã cài, phân biệt Base Content được bảo vệ với nội dung tùy chọn (Optional Content). |
+| **Local Content Version** | installedPackageVersion, installedAt, scope, isBase | UC-04 | Theo dõi nội dung đã cài, phân biệt gói cơ bản và gói tùy chọn của Android với gói Web duy nhất được bảo vệ. |
 | **Feedback** | feedbackId (PK đề xuất), locationId (FK có thể null), category, rating (đề xuất \[1–5\]), content, languageCode, status (NEW, IN_REVIEW, RESOLVED), createdAt, updatedAt | UC-07 | Được cung cấp qua phụ thuộc gửi phản hồi bên ngoài; RESOLVED là trạng thái cuối. |
 | **Analytics Event** | eventId (PK đề xuất), eventType, locationId, languageCode, connectivity, occurredAt | UC-07 | Được cung cấp qua phụ thuộc thu thập sự kiện phân tích bên ngoài. Trường timestamp trong hợp đồng sự kiện chỉ thời điểm xảy ra được lưu ở occurredAt, không phải một thời điểm sự kiện bổ sung. Phạm vi áp dụng từng loại sự kiện được nêu trong Phụ lục. |
 
@@ -554,7 +556,7 @@ UC-06 chỉ tạo DRAFT và PENDING_REVIEW. Mọi thay đổi trạng thái khá
 * **NFR-01 — Hiệu năng:** Màn hình Chi tiết địa điểm tải trong \[2\] giây trên 4G và \[1\] giây từ Local Content Store.
 * **NFR-02 — Hiệu năng:** Tìm kiếm lân cận trả kết quả trong \[3\] giây sau khi có vị trí GPS hợp lệ.
 * **NFR-03 — Hiệu năng:** Âm thanh tạo sẵn bắt đầu trong \[2\] giây sau khi chọn Phát; TTS dự phòng bắt đầu trong \[3\] giây khi thiết bị có giọng đọc cho languageCode thực tế được sử dụng.
-* **NFR-04 — Ngoại tuyến:** Base Content tối đa \[150\] MB. Khi nội dung cơ bản đã xác minh và có cục bộ, tìm kiếm/duyệt danh mục UC-01, UC-02 và UC-03 hoạt động không cần mạng. Android đóng gói nội dung cơ bản; Web du khách cần cấp phát trực tuyến lần đầu và môi trường lưu trữ hỗ trợ đã kiểm chứng. Ứng dụng phải báo đúng trạng thái sẵn sàng offline. Map View cần mạng; offline dùng danh sách. Phát cần audio cục bộ hoặc TTS offline tương thích, theo UC-03 E1/E3 và mục 2.4.
+* **NFR-04 — Ngoại tuyến:** Gói cơ bản Android và gói Web duy nhất đều tối đa \[150\] MB. Khi nội dung cơ bản đã xác minh và có cục bộ, tìm kiếm/duyệt danh mục UC-01, UC-02 và UC-03 hoạt động không cần mạng. Android đóng gói nội dung cơ bản; Web du khách cần cấp phát trực tuyến lần đầu và môi trường lưu trữ hỗ trợ đã kiểm chứng. Ứng dụng phải báo đúng trạng thái sẵn sàng offline. Map View cần mạng; offline dùng danh sách. Phát cần audio cục bộ hoặc TTS offline tương thích, theo UC-03 E1/E3 và mục 2.4.
 * **NFR-05 — Nền tảng:** Client du khách đã thống nhất là Android và trình duyệt Web. Android tối thiểu đề xuất \[8.0+\]; phiên bản trình duyệt/thiết bị và phạm vi khả năng hỗ trợ còn là \[?\]. Không yêu cầu ứng dụng iOS native trong đợt bàn giao này. Use case chung cần bằng chứng nghiệm thu riêng từng nền tảng, nhất là audio/TTS, kho offline, quyền và hành vi tiền cảnh/chạy nền.
 * **NFR-06 — Bảo mật:** Mọi lưu lượng máy khách–máy chủ dùng HTTPS (TLS). Web Admin yêu cầu xác thực và phân quyền theo vai trò. Gói nội dung được xác minh checksum và chữ ký theo UC-04 BR-02.
 * **NFR-07 — Quyền riêng tư:** Vị trí chỉ dùng cho tìm kiếm lân cận và geofencing; sự kiện phân tích dùng mã định danh ẩn danh. Yêu cầu tuân thủ đề xuất: xử lý dữ liệu tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân, cần người có chuyên môn xác nhận. Đây là yêu cầu cần rà soát, không phải bằng chứng đã tuân thủ.

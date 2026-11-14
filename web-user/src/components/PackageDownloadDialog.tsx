@@ -40,7 +40,7 @@ export function PackageDownloadDialog({ manifest, installedVersion, onConfirm, o
     };
   }, [manifest.downloadUrl, installedVersion, attempt]);
   return <dialog className="package-download-dialog" ref={dialog} aria-labelledby="download-title" aria-describedby="download-description" onCancel={event => { event.preventDefault(); onCancel(); }}>
-    <p className="eyebrow">{manifest.isBase ? 'Gói cơ bản' : 'Gói bổ sung'}</p>
+    <p className="eyebrow">Gói thuyết minh ngoại tuyến</p>
     <h2 id="download-title">Xác nhận tải nội dung?</h2>
     <p>Dung lượng tải {size.format(packageSize(manifest) / 1000)}.</p>
     <div aria-live="polite">

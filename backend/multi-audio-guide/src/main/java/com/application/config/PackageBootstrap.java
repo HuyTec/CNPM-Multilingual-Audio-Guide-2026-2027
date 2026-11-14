@@ -10,6 +10,6 @@ public class PackageBootstrap implements ApplicationRunner {
     public PackageBootstrap(PublicationRepository repository) { this.repository=repository; }
     @Transactional public void run(ApplicationArguments args) {
         repository.lock();
-        if(repository.manifests().isEmpty() && repository.jobs().isEmpty()) repository.enqueue(null);
+        if(repository.needsWebPackage()) repository.enqueue(null);
     }
 }

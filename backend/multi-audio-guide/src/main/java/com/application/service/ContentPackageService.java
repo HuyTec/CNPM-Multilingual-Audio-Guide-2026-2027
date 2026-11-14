@@ -37,7 +37,7 @@ public class ContentPackageService {
     public List<Manifest> manifests() { return versions.manifests(); }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Bundle download(String scope, String version) {
-        if (!List.of("BASE", "OPTIONAL").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loại gói không hợp lệ.");
+        if (!List.of("BASE", "OPTIONAL", "WEB").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Loại gói không hợp lệ.");
         return versions.bundle(scope,version).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Chưa có phiên bản gói sẵn sàng."));
     }
     public record Preview(int locations, int guides, int audioFiles, Changes changes) { }
@@ -73,9 +73,10 @@ public class ContentPackageService {
     }
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
     public Bundle build(String scope) {
-        if (!List.of("BASE", "OPTIONAL").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại gói không hợp lệ.");
-        boolean base = scope.equals("BASE");
-        var locations = repository.locations(base); var guides = repository.guides(base);
+        if (!List.of("BASE", "OPTIONAL", "WEB").contains(scope)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Loại gói không hợp lệ.");
+        boolean base = !scope.equals("OPTIONAL");
+        Boolean categoryPartition = scope.equals("WEB") ? null : base;
+        var locations = repository.locations(categoryPartition); var guides = repository.guides(categoryPartition);
         // A freshly reset scope is valid and must not prevent publishing the other scope.
         // Keep rejecting a partial snapshot rather than publishing locations without guides.
         if (locations.isEmpty() != guides.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có gói đã duyệt.");

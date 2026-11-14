@@ -17,12 +17,13 @@ import java.util.UUID;
 public class ContentPackageRepository {
     private final NamedParameterJdbcTemplate jdbc;
     private final JsonMapper json = JsonMapper.builder().build();
-    private static final String FILTER = " AND (CASE WHEN :base THEN l.category_id=:category ELSE l.category_id<>:category END)";
+    private static final String FILTER = " AND (:combined OR CASE WHEN :base THEN l.category_id=:category ELSE l.category_id<>:category END)";
     public ContentPackageRepository(NamedParameterJdbcTemplate jdbc) { this.jdbc = jdbc; }
-    private Map<String, ?> parameters(boolean base) {
-        return Map.of("base", base, "category", UUID.fromString("10000000-0000-0000-0000-000000000101"));
+    private Map<String, ?> parameters(Boolean base) {
+        return Map.of("combined", base == null, "base", Boolean.TRUE.equals(base),
+                "category", UUID.fromString("10000000-0000-0000-0000-000000000101"));
     }
-    public List<Location> locations(boolean base) {
+    public List<Location> locations(Boolean base) {
         return jdbc.query("""
                 SELECT l.id,l.name,l.category_id,c.name AS category_name,
                        ST_Y(l.coordinates::geometry) AS lat,ST_X(l.coordinates::geometry) AS lng,l.geofence_radius_m,l.image_url,
@@ -32,7 +33,7 @@ public class ContentPackageRepository {
                 rs.getString("name"), rs.getObject("category_id", UUID.class), rs.getString("category_name"),
                 rs.getDouble("lat"), rs.getDouble("lng"), rs.getInt("geofence_radius_m"), localized(rs.getString("localized_names")),rs.getString("image_url")));
     }
-    public List<GuideContent> guides(boolean base) {
+    public List<GuideContent> guides(Boolean base) {
         return jdbc.query("""
                 SELECT DISTINCT ON (g.location_id,g.language_code,g.script_type)
                     g.id,g.location_id,COALESCE((SELECT t.name FROM location_translations t WHERE t.location_id=l.id AND t.language_code=g.language_code),l.name) AS name,g.language_code,g.script_type,g.script_text,a.storage_key

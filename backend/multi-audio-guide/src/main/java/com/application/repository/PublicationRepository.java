@@ -26,7 +26,7 @@ public class PublicationRepository {
         UUID id=UUID.randomUUID();
         var params=new HashMap<String,Object>();params.put("id",id);params.put("l",payload==null?null:payload.id());params.put("e",payload==null?null:payload.editVersion());params.put("p",payload==null?null:json.writeValueAsString(payload));
         jdbc.update("INSERT INTO publication_jobs(id,location_id,edit_version,payload,status) VALUES(:id,:l,:e,CAST(:p AS jsonb),'BUILDING')",params);
-        for(String scope:List.of("BASE","OPTIONAL")) jdbc.update("INSERT INTO content_package_versions(version,job_id,scope,status) VALUES(:v,:id,:s,'BUILDING')",Map.of("v","building-"+id+"-"+scope,"id",id,"s",scope));
+        for(String scope:List.of("BASE","OPTIONAL","WEB")) jdbc.update("INSERT INTO content_package_versions(version,job_id,scope,status) VALUES(:v,:id,:s,'BUILDING')",Map.of("v","building-"+id+"-"+scope,"id",id,"s",scope));
         return job(id).orElseThrow();
     }
     public List<Job> jobs() { return query("ORDER BY created_at DESC LIMIT 50",Map.of()); }
@@ -90,6 +90,15 @@ public class PublicationRepository {
     }
     public List<Manifest> manifests() {
         return jdbc.query("SELECT DISTINCT ON(scope) manifest::text FROM content_package_versions WHERE status='READY' ORDER BY scope,ready_at DESC,version DESC",Map.of(),(r,n)->json.readValue(r.getString(1),Manifest.class));
+    }
+    public boolean needsWebPackage() {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT NOT EXISTS (
+                    SELECT 1 FROM content_package_versions WHERE scope='WEB' AND status IN ('READY','BUILDING','FAILED')
+                ) AND NOT EXISTS (
+                    SELECT 1 FROM publication_jobs WHERE status='BUILDING'
+                )
+                """, Map.of(), Boolean.class));
     }
     public Optional<Bundle> bundle(String scope,String version) {
         return jdbc.query("SELECT manifest::text,payload FROM content_package_versions WHERE status='READY' AND scope=:s AND version=:v",Map.of("s",scope,"v",version),(r,n)->new Bundle(json.readValue(r.getString(1),Manifest.class),r.getBytes(2))).stream().findFirst();

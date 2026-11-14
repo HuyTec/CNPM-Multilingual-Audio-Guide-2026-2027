@@ -10,7 +10,7 @@ const locationRoute = new RegExp(`^/api/locations(?:/${uuid}(?:/guide)?)?$`);
 const audioRoute = new RegExp(`^/api/content-audio/${uuid}\\.(?:mp3|wav|ogg)$`);
 const imageRoute = new RegExp(`^/api/content-images/${uuid}\\.png$`);
 const guidePage = new RegExp(`^/locations/${uuid}/?$`);
-const packageRoute = /^\/api\/content-packages(?:\/key|\/(?:BASE|OPTIONAL)\/(?:base|optional)-[a-f0-9]{64}(?:\/preview)?)?$/;
+const packageRoute = /^\/api\/content-packages(?:\/key|\/(?:BASE|OPTIONAL|WEB)\/(?:base|optional|web)-[a-f0-9]{64}(?:\/preview)?)?$/;
 const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.webp': 'image/webp', '.woff2': 'font/woff2' };
 
