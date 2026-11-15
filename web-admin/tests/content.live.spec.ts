@@ -145,12 +145,12 @@ test("shared admin session reads actual playback statistics", async ({
     .getByRole("link", { name: "Thống kê & phản hồi", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "Thống kê lượt nghe", exact: true }),
+    page.getByRole("heading", { name: "Thống kê và phản hồi", exact: true }),
   ).toBeVisible();
   await expect(page.locator(".metric-value").first()).toBeVisible();
   const params = new URL(page.url()).searchParams;
   const response = await request.get(
-    `/api/admin/analytics?from=${params.get("from")}&to=${params.get("to")}`,
+    `/api/admin/analytics?platform=WEB&from=${params.get("from")}&to=${params.get("to")}`,
     { headers: { Authorization: await auth(request) } },
   );
   expect(response.status()).toBe(200);

@@ -42,7 +42,7 @@ export const languages = [
   { code: "en", label: "English" },
   { code: "fr", label: "Français" },
 ];
-export const categories = ["Văn hóa", "Lịch sử", "Ẩm thực"];
+export const categories = ["Thường", "Di tích", "Bảo tàng", "Công viên"];
 export const feedbackCategories = ["Nội dung", "Audio", "Ứng dụng", "Đề xuất"];
 const names = [
   "Bưu điện Trung tâm",
@@ -103,12 +103,12 @@ const seedLocations: Location[] = names.map((name, i) => {
     id,
     name,
     category: [
-      "Văn hóa",
-      "Lịch sử",
-      "Ẩm thực",
-      "Văn hóa",
-      "Lịch sử",
-      "Văn hóa",
+      "Thường",
+      "Di tích",
+      "Thường",
+      "Di tích",
+      "Bảo tàng",
+      "Công viên",
     ][i],
     latitude: coordinates[i][0],
     longitude: coordinates[i][1],

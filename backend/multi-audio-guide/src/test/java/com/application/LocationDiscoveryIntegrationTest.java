@@ -52,7 +52,7 @@ class LocationDiscoveryIntegrationTest {
     @Test
     void migrationsValidateAndDoNotRunTwice() {
         flyway.validate();
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("9");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("9.2");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
     }
 
@@ -85,6 +85,8 @@ class LocationDiscoveryIntegrationTest {
         mvc.perform(get("/api/categories"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(4))
+                .andExpect(jsonPath("$[*].name").value(org.hamcrest.Matchers.containsInAnyOrder("Thường", "Di tích", "Bảo tàng", "Công viên")))
+                .andExpect(jsonPath("$[?(@.categoryId == '10000000-0000-0000-0000-000000000101')].name").value(contains("Thường")))
                 .andExpect(jsonPath("$[?(@.categoryId == '10000000-0000-0000-0000-000000000001')].locationCount").value(contains(2)))
                 .andExpect(jsonPath("$[?(@.categoryId == '10000000-0000-0000-0000-000000000003')].locationCount").value(contains(0)));
     }

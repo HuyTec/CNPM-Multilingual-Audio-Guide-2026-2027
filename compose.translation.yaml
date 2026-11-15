@@ -1,0 +1,17 @@
+services:
+  libretranslate:
+    image: libretranslate/libretranslate
+    restart: unless-stopped
+    environment:
+      LT_LOAD_ONLY: "vi,en,fr,ja,ru,zh"
+    volumes:
+      - translation_models:/home/libretranslate/.local
+
+  backend:
+    environment:
+      TRANSLATION_PROVIDER: libretranslate
+      TRANSLATION_URL: http://libretranslate:5000/translate
+      TRANSLATION_API_KEY: ""
+
+volumes:
+  translation_models:

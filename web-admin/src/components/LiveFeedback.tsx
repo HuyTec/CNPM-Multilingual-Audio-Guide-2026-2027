@@ -172,7 +172,13 @@ export function LiveFeedback({ from, to }: { from: string; to: string }) {
         <LoadingState />
       ) : !current.data.items.length ? (
         <EmptyState title="Không có phản hồi phù hợp">
-          <p>Thay đổi kỳ báo cáo hoặc bỏ bộ lọc để xem dữ liệu.</p>
+          {params.has("category") || params.has("status") ? (
+            <Button secondary onClick={() => {
+              const next = new URLSearchParams(params);
+              for (const name of ["category", "status", "page", "feedback"]) next.delete(name);
+              setParams(next, { preventScrollReset: true });
+            }}>Bỏ bộ lọc phản hồi</Button>
+          ) : <p>Chọn kỳ báo cáo khác để xem phản hồi.</p>}
         </EmptyState>
       ) : (
         <DataTable

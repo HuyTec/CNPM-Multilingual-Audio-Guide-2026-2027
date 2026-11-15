@@ -121,6 +121,26 @@ class PlaybackIntegrationTest {
                 .andExpect(jsonPath("$.topLocations[0].count").value(2)).andExpect(jsonPath("$.languages[0].count").value(2));
     }
 
+    @Test void webReportFiltersEveryMetricWithoutChangingTheDefaultReport() throws Exception {
+        UUID browser = UUID.randomUUID();
+        Instant instant = Instant.parse("2026-01-08T10:00:00Z");
+        for (String platform : new String[]{"WEB", "ANDROID", null}) {
+            jdbc.update("""
+                    INSERT INTO analytics_events(id, location_id, language_code, event_type, is_offline, occurred_at, installation_id, client_platform)
+                    VALUES (?, ?::uuid, 'VI', 'PLAYBACK_STARTED', ?, ?, ?, ?)
+                    """, UUID.randomUUID(), LOCATION, "ANDROID".equals(platform), Timestamp.from(instant),
+                    platform == null ? null : browser, platform);
+        }
+        mvc.perform(get("/api/admin/analytics").header(HttpHeaders.AUTHORIZATION, AUTH)
+                        .param("from", "2026-01-08").param("to", "2026-01-08").param("platform", "WEB"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalPlaybacks").value(1))
+                .andExpect(jsonPath("$.onlinePlaybacks").value(1)).andExpect(jsonPath("$.offlinePlaybacks").value(0))
+                .andExpect(jsonPath("$.topLocations[0].count").value(1)).andExpect(jsonPath("$.languages[0].count").value(1));
+        mvc.perform(get("/api/admin/analytics").header(HttpHeaders.AUTHORIZATION, AUTH)
+                        .param("from", "2026-01-08").param("to", "2026-01-08"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.totalPlaybacks").value(3));
+    }
+
     @Test void emptyPeriodAndBadDatesAreHandled() throws Exception {
         mvc.perform(get("/api/admin/analytics").header(HttpHeaders.AUTHORIZATION, AUTH)
                         .param("from", "1900-01-01").param("to", "1900-01-02"))

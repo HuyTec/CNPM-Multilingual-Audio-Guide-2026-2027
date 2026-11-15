@@ -12,7 +12,7 @@ test('deployed editor and reviewer pages remain accessible and readable at deskt
   await page.getByLabel('Mật khẩu', { exact: true }).fill(process.env.ADMIN_WORKSPACE_PASSWORD!);
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Điều hướng chính' });
-  for (const [link, heading] of [['Địa điểm', 'Địa điểm'], ['Thống kê & phản hồi', 'Thống kê lượt nghe'], ['Hướng dẫn sử dụng', 'Hướng dẫn sử dụng']]) {
+  for (const [link, heading] of [['Địa điểm', 'Địa điểm'], ['Thống kê & phản hồi', 'Thống kê và phản hồi'], ['Hướng dẫn sử dụng', 'Hướng dẫn sử dụng']]) {
     await nav.getByRole('link', { name: link, exact: true }).click();
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     await expect(page.getByText('Đang tải dữ liệu…', { exact: true })).toHaveCount(0);

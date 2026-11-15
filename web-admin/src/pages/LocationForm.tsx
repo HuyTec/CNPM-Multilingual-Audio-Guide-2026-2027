@@ -50,8 +50,18 @@ export default function LocationForm() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { authorization, config, identity } = useAdminSession();
-  const categories = config!.categories,
-    languages = config!.languages;
+  const categoryLabel = (value: string) => {
+    if (value === "Tuyến Quận 1 và lân cận (demo)") return "Thường";
+    if (value === "Công viên demo (trống)") return "Công viên";
+    return value;
+  };
+  const categoryOrder = ["Thường", "Di tích", "Bảo tàng", "Công viên"];
+  const categories = categoryOrder.flatMap((label) => {
+    const value = config!.categories.find((item) => item === label)
+      ?? config!.categories.find((item) => categoryLabel(item) === label);
+    return value ? [value] : [];
+  });
+  const languages = config!.languages;
   const [form, setForm] = useState<ContentLocation>(blankLocation);
   const [found, setFound] = useState(true);
   const [load, setLoad] = useState(id ? "loading" : "ready");
@@ -65,6 +75,8 @@ export default function LocationForm() {
   const [busy, setBusy] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [targets, setTargets] = useState<string[]>([]);
+  const [translationMessage, setTranslationMessage] = useState("");
+  const [translated, setTranslated] = useState<{ language: string; type: "FULL" | "SHORT" }[]>([]);
   const [uploadError, setUploadError] = useState("");
   const [uploadBusy, setUploadBusy] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
@@ -222,79 +234,85 @@ export default function LocationForm() {
     setMessage("");
   }
   async function translate() {
-    if (!targets.length || !form.names?.[language]?.trim()) {
-      setMessage("Nhập tên nguồn và chọn ít nhất một ngôn ngữ đích.");
+    const selected = targets.filter((target) => target !== language);
+    const name = (form.names?.[language] || (language === "vi" ? form.name : "")).trim();
+    const full = form.assets[`${language}:FULL`]?.text?.trim() || "";
+    const shortText = form.assets[`${language}:SHORT`]?.text?.trim() || "";
+    setTranslated([]);
+    if (!selected.length || !name || (!full && !shortText)) {
+      setTranslationMessage("Nhập tên và ít nhất một kịch bản nguồn (FULL hoặc SHORT), rồi chọn ngôn ngữ đích.");
       return;
     }
     if (
-      targets.some(
-        (l) =>
-          form.names?.[l] ||
-          form.assets[`${l}:FULL`]?.text ||
-          form.assets[`${l}:SHORT`]?.text,
+      selected.some((target) =>
+        form.names?.[target] ||
+        (full && form.assets[`${target}:FULL`]?.text) ||
+        (shortText && form.assets[`${target}:SHORT`]?.text),
       ) &&
-      !window.confirm(
-        "Dịch sẽ thay nội dung các ngôn ngữ đích đã chọn. Tiếp tục?",
-      )
-    )
-      return;
+      !window.confirm("Thay nội dung đã có ở các ngôn ngữ đích đã chọn?")
+    ) return;
+
     setTranslating(true);
-    setMessage("");
+    setTranslationMessage("Đang dịch kịch bản…");
     try {
-      const result = await adminRequest<{
-        provider: string;
-        simulated: boolean;
-        variants: {
-          language: string;
-          name: string;
-          full: string;
-          shortText: string;
-        }[];
-      }>("/api/admin/content/translate", authorization, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceLanguage: language,
-          targetLanguages: targets,
-          name: form.names?.[language],
-          full: form.assets[`${language}:FULL`]?.text || "",
-          shortText: form.assets[`${language}:SHORT`]?.text || "",
-        }),
-      });
-      setForm((old) => {
-        const names = { ...old.names },
-          assets = { ...old.assets },
-          fieldOrigins = { ...old.fieldOrigins };
-        for (const variant of result.variants) {
-          names[variant.language] = variant.name;
-          fieldOrigins[`name:${variant.language}`] = "AUTO_TRANSLATED";
-          for (const type of ["FULL", "SHORT"] as const) {
-            const key = `${variant.language}:${type}`;
-            assets[key] = {
-              ...assets[key],
-              locationId: old.id,
-              languageCode: variant.language,
-              scriptType: type,
-              packageVersion: old.packageVersion,
-              text: type === "FULL" ? variant.full : variant.shortText,
-            };
-            fieldOrigins[`script:${key}`] = "AUTO_TRANSLATED";
-          }
+      type Variant = { language: string; name: string; full: string; shortText: string };
+      const results = await Promise.allSettled(selected.map(async (target) => {
+        const response = await adminRequest<{ simulated: boolean; variants: Variant[] }>(
+          "/api/admin/content/translate",
+          authorization,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sourceLanguage: language, targetLanguages: [target], name, full, shortText }),
+          },
+        );
+        const variant = response.variants.find((item) => item.language === target);
+        if (!variant || !variant.name?.trim() || (full && !variant.full?.trim()) ||
+            (shortText && !variant.shortText?.trim())) {
+          throw new Error("Dịch vụ trả thiếu tên hoặc kịch bản.");
         }
-        return { ...old, names, assets, fieldOrigins };
+        return { variant, simulated: response.simulated };
+      }));
+      const completed = results.flatMap((result) =>
+        result.status === "fulfilled" ? [result.value] : [],
+      );
+      const failures = results.flatMap((result, index) => {
+        if (result.status !== "rejected") return [];
+        const prefix = selected.length > 1 ? selected[index].toUpperCase() + ": " : "";
+        const problem = result.reason instanceof Error ? result.reason.message : "Dịch không thành công.";
+        return [prefix + problem];
       });
-      setDirty(true);
-      setMessage(
-        result.simulated
-          ? "DEMO: kết quả giả lập, chưa phải bản dịch thật. Hãy kiểm tra và sửa trước khi gửi duyệt."
-          : "Đã dịch. Hãy kiểm tra tên và kịch bản trước khi gửi duyệt. Web/Android dùng TTS để đọc nếu không có audio.",
-      );
-    } catch (error) {
-      setMessage(
-        error instanceof Error
-          ? error.message
-          : "Dịch lỗi; dữ liệu được giữ nguyên.",
-      );
+      if (completed.length) {
+        setForm((old) => {
+          const names = { ...old.names }, assets = { ...old.assets }, fieldOrigins = { ...old.fieldOrigins };
+          for (const { variant } of completed) {
+            names[variant.language] = variant.name;
+            fieldOrigins[`name:${variant.language}`] = "AUTO_TRANSLATED";
+            for (const [scriptType, text] of [["FULL", full && variant.full], ["SHORT", shortText && variant.shortText]] as const) {
+              if (!text) continue;
+              const assetKey = `${variant.language}:${scriptType}`;
+              assets[assetKey] = {
+                ...assets[assetKey],
+                locationId: old.id,
+                languageCode: variant.language,
+                scriptType,
+                packageVersion: old.packageVersion,
+                text,
+              };
+              fieldOrigins[`script:${assetKey}`] = "AUTO_TRANSLATED";
+            }
+          }
+          return { ...old, names, assets, fieldOrigins };
+        });
+        setDirty(true);
+        setTranslated(completed.map(({ variant }) => ({ language: variant.language, type: full ? "FULL" : "SHORT" })));
+      }
+      const previewMessage = completed.length
+        ? completed.some((item) => item.simulated)
+          ? "Dịch vụ đang trả dữ liệu giả lập. Hãy kiểm tra nội dung trước khi gửi duyệt."
+          : "Đã điền bản dịch. Chọn ngôn ngữ bên dưới để kiểm tra kịch bản."
+        : "";
+      setTranslationMessage([previewMessage, ...failures].filter(Boolean).join(" "));
     } finally {
       setTranslating(false);
     }
@@ -342,7 +360,7 @@ export default function LocationForm() {
     setPendingFile({ file, key: target, asset: current });
     if (!/\.(mp3|wav|ogg)$/i.test(file.name)) {
       setUploadError(
-        "Định dạng không hợp lệ. Demo hỗ trợ MP3, WAV, OGG; hãy chọn tệp khác.",
+        "Định dạng không hợp lệ. Hãy chọn tệp MP3, WAV hoặc OGG.",
       );
       return;
     }
@@ -585,14 +603,14 @@ export default function LocationForm() {
                   : "Nhập tên và nội dung ở ngôn ngữ nguồn bên dưới, chọn ngôn ngữ đích rồi bấm Dịch tự động. Kết quả có thể chỉnh sửa."}
               </p>
               <p className="editor-tts-note">
-                Web/Android đọc nội dung bằng TTS khi không có file audio; không
-                bắt buộc tải audio lên.
+                Âm thanh thu sẵn là tùy chọn. Web du khách có thể dùng giọng đọc
+                của trình duyệt khi thiếu âm thanh.
               </p>
               {entryMode === "auto" && (
                 <>
                   <p className="editor-translation-warning">
-                    Dịch tự động phụ thuộc dịch vụ được cấu hình. Provider demo
-                    chỉ tạo kết quả giả lập, không phải bản dịch thật.
+                    Nguồn: {languages.find((item) => item.code === language)?.label || language}.
+                    Chỉ dịch các kịch bản FULL hoặc SHORT đã nhập ở ngôn ngữ nguồn.
                   </p>
                   <fieldset className="editor-targets">
                     <legend>
@@ -633,8 +651,19 @@ export default function LocationForm() {
                       <Languages size={16} aria-hidden="true" />
                       Dịch tự động
                     </Button>
-                    <span>Có thể sửa lại kết quả trước khi lưu.</span>
                   </div>
+                  <p role="status" aria-live="polite">{translationMessage}</p>
+                  {translated.length > 0 && <div className="editor-translation-action">
+                    {translated.map((item) => (
+                      <Button key={item.language} secondary onClick={() => {
+                        const next = new URLSearchParams(params);
+                        next.set("language", item.language);
+                        next.set("type", item.type);
+                        setParams(next, { replace: true });
+                        document.getElementById("script")?.focus();
+                      }}>Xem bản {item.language.toUpperCase()} · {item.type}</Button>
+                    ))}
+                  </div>}
                 </>
               )}
             </section>
@@ -698,7 +727,7 @@ export default function LocationForm() {
                       >
                         <option value="">Chọn danh mục</option>
                         {categories.map((x) => (
-                          <option key={x}>{x}</option>
+                          <option key={x} value={x}>{categoryLabel(x)}</option>
                         ))}
                       </select>
                     ) : (

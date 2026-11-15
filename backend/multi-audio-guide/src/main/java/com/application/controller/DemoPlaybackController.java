@@ -3,6 +3,7 @@ package com.application.controller;
 import com.application.dto.AnalyticsResponse;
 import com.application.dto.PlaybackReceipt;
 import com.application.dto.PlaybackRequest;
+import com.application.dto.VisitorHeartbeat.Platform;
 import com.application.service.PlaybackService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,7 +27,8 @@ public class DemoPlaybackController {
     @GetMapping("/api/admin/analytics")
     public AnalyticsResponse analytics(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return service.analytics(from, to);
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Platform platform) {
+        return service.analytics(from, to, platform);
     }
 }

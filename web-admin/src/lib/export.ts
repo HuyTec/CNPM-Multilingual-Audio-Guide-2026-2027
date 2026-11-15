@@ -12,7 +12,7 @@ export async function exportReport(
   const workbook = new Workbook();
   const analytics = workbook.addWorksheet("Analytics");
   analytics.addRows([
-    ["Báo cáo demo HVP", source],
+    ["Báo cáo TravelVoice", source],
     ["Từ ngày", from],
     ["Đến ngày", to],
     ["Chỉ số", "Giá trị"],

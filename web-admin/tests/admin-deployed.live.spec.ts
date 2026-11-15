@@ -34,7 +34,7 @@ for (const port of [3000, 3001]) {
       page.getByRole("button", { name: "Dịch tự động", exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText(/Provider demo chỉ tạo kết quả giả lập/),
+      page.getByText(/Chỉ dịch các kịch bản FULL hoặc SHORT đã nhập/),
     ).toBeVisible();
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.setViewportSize({ width: 1440, height: 1000 });

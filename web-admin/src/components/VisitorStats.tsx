@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { number, dateTime } from '../lib/format';
 import { Button } from './ui/Button';
 type Snapshot = { generatedAt: string; activeWindowMinutes: number; platforms: {
   platform: string; totalInstallations: number; activeInstallations: number;
 }[] };
+const windows = [5, 10, 15, 30, 60];
 
 export function VisitorStats({ authorization }: { authorization: string }) {
   const [result, setResult] = useState<{ key: string; data?: Snapshot; error?: string }>({ key: '' });
   const [attempt, setAttempt] = useState(0);
-  const [minutes, setMinutes] = useState(5);
-  const requestKey = `${authorization}:${minutes}`;
+  const [params, setParams] = useSearchParams();
+  const requestedMinutes = Number(params.get('activeMinutes'));
+  const minutes = windows.includes(requestedMinutes) ? requestedMinutes : 5;
+  const requestKey = `${authorization}:${minutes}:${attempt}`;
   useEffect(() => {
     const controller = new AbortController();
     let busy = false;
@@ -18,7 +22,7 @@ export function VisitorStats({ authorization }: { authorization: string }) {
       busy = true;
       try {
         const response = await fetch(`/api/admin/visitors?minutes=${minutes}`, { headers: { Authorization: authorization },
-          signal: controller.signal, cache: 'no-store' });
+          signal: controller.signal, cache: 'no-store', credentials: 'same-origin' });
         if (!response.ok) throw new Error('Chưa tải được số khách. Hãy thử lại.');
         const data = await response.json() as Snapshot;
         if (!controller.signal.aborted) setResult({ key: requestKey, data });
@@ -32,27 +36,36 @@ export function VisitorStats({ authorization }: { authorization: string }) {
     return () => { controller.abort(); clearInterval(timer); document.removeEventListener('visibilitychange', refresh); };
   }, [authorization, attempt, minutes, requestKey]);
   const data = result.key === requestKey ? result.data : undefined;
+  const web = data?.platforms.find(item => item.platform === 'WEB');
+  const error = result.key === requestKey ? result.error : undefined;
   return <section className="card visitor-stats-card" aria-labelledby="visitor-stats-title">
-    <h2 id="visitor-stats-title">Khách vãng lai dùng ứng dụng</h2>
-    <label htmlFor="visitor-minutes">Khoảng thời gian hoạt động</label>
-    <select
-      id="visitor-minutes"
-      value={minutes}
-      onChange={(event) => setMinutes(Number(event.target.value))}
-    >
-      <option value={5}>5 phút</option>
-      <option value={10}>10 phút</option>
-      <option value={15}>15 phút</option>
-      <option value={30}>30 phút</option>
-      <option value={60}>60 phút</option>
-    </select>
-    <p className="muted">Tổng lượt cài đặt Android/hồ sơ trình duyệt đã mở từ khi bật thống kê; không phải lượt tải APK hay số người duy nhất. Số liệu này độc lập kỳ báo cáo lượt nghe.</p>
-    {result.key === requestKey && result.error ? <div role="status"><p>{result.error}</p><Button secondary onClick={() => setAttempt(value => value + 1)}>Thử lại thống kê khách</Button></div>
-      : !data ? <p role="status">Đang tải số khách…</p>
-      : <><div className="visitor-platform-grid">{data.platforms.map(item => <div className="visitor-platform-card" key={item.platform}>
-        <h3>{item.platform === 'ANDROID' ? 'Android' : 'Web du khách'}</h3>
-        <p className="visitor-total" style={{ fontVariantNumeric: 'tabular-nums' }}>Đã sử dụng <strong>{number(item.totalInstallations)}</strong></p>
-        <p style={{ fontVariantNumeric: 'tabular-nums' }}>Hoạt động trong {number(data.activeWindowMinutes)} phút: <strong>{number(item.activeInstallations)}</strong></p>
-      </div>)}</div><p className="muted">Cập nhật: {dateTime(data.generatedAt)}. Nhiều tab cùng trình duyệt tính một; xóa dữ liệu hoặc cài lại có thể tạo lượt cài đặt mới.</p></>}
+    <div className="visitor-stats-heading">
+      <div>
+        <h2 id="visitor-stats-title">Hoạt động trên Web du khách</h2>
+        <p className="muted">Đếm theo hồ sơ trình duyệt. Khoảng hoạt động chỉ áp dụng cho chỉ số gần đây.</p>
+      </div>
+      <div className="field">
+        <label htmlFor="visitor-minutes">Khoảng hoạt động</label>
+        <select id="visitor-minutes" name="activeMinutes" value={minutes} onChange={(event) => {
+          const value = event.target.value;
+          setParams((current) => {
+            const next = new URLSearchParams(current);
+            next.set('activeMinutes', value);
+            return next;
+          }, { preventScrollReset: true });
+        }}>
+          {windows.map((window) => <option key={window} value={window}>{number(window)} phút</option>)}
+        </select>
+      </div>
+    </div>
+    {error ? <div className="notice error"><p role="status">{error}</p><Button secondary onClick={() => setAttempt(value => value + 1)}>Thử lại</Button></div>
+      : !data ? <p role="status">Đang tải hoạt động trong {number(minutes)} phút…</p>
+      : <>
+        <dl className="visitor-metrics">
+          <div><dt>Hoạt động trong {number(data.activeWindowMinutes)} phút</dt><dd>{number(web?.activeInstallations ?? 0)}</dd></div>
+          <div><dt>Đã từng truy cập</dt><dd>{number(web?.totalInstallations ?? 0)}</dd></div>
+        </dl>
+        <p className="muted report-updated">Cập nhật {dateTime(data.generatedAt)}</p>
+      </>}
   </section>;
 }

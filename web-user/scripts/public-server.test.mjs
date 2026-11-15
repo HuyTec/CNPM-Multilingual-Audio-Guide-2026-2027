@@ -33,11 +33,8 @@ test('phone gateway serves only the built app and public backend routes', async 
     }
     assert.equal((await fetch(origin + '/assets/app.js')).status, 200);
     assert.equal((await fetch(origin + '/playback-outbox.js')).status, 200);
-    assert.equal((await fetch(origin+'/downloads/android-release.json')).status,200);
-    const apk=await fetch(origin+'/downloads/travelvoice.apk');assert.equal(apk.status,200);
-    assert.equal(apk.headers.get('content-type'),'application/vnd.android.package-archive');
-    assert.match(apk.headers.get('content-disposition'),/attachment/);
-    assert.equal(await apk.text(),'PK-test-apk');
+    assert.equal((await fetch(origin+'/downloads/android-release.json')).status,404);
+    assert.equal((await fetch(origin+'/downloads/travelvoice.apk')).status,404);
     assert.equal((await fetch(origin+'/downloads/private.txt')).status,404);
     for (const path of ['/api/admin/content/images/40000000-0000-0000-0000-000000000001.png', '/api/content-images/not-an-image.png', '/api/admin/analytics', '/api/admin/content/locations', '/actuator/health', '/.env', '/src/main.tsx', '/@vite/client', '/assets/%2e%2e/.env'])
       assert.equal((await fetch(origin + path)).status, 404, path);

@@ -3,6 +3,7 @@ package com.application.repository;
 import com.application.dto.AnalyticsResponse.CountItem;
 import com.application.model.GuideContent;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
@@ -16,8 +17,9 @@ import java.util.UUID;
 public class PlaybackRepository {
     private final NamedParameterJdbcTemplate jdbc;
     private static final String PERIOD = """
-            FROM analytics_events e WHERE e.event_type = 'PLAYBACK_STARTED'
+            WHERE e.event_type = 'PLAYBACK_STARTED'
             AND e.occurred_at >= :start AND e.occurred_at < :end
+            AND (CAST(:platform AS varchar) IS NULL OR e.client_platform = :platform)
             """;
 
     public PlaybackRepository(NamedParameterJdbcTemplate jdbc) { this.jdbc = jdbc; }
@@ -45,28 +47,31 @@ public class PlaybackRepository {
                 Map.of("id", eventId, "installation", installationId, "platform", platform));
     }
 
-    public long count(Instant start, Instant end, boolean offline) {
-        Long result = jdbc.queryForObject("SELECT count(*) " + PERIOD + " AND e.is_offline = :offline",
-                Map.of("start", Timestamp.from(start), "end", Timestamp.from(end), "offline", offline), Long.class);
+    public long count(Instant start, Instant end, boolean offline, String platform) {
+        Long result = jdbc.queryForObject("SELECT count(*) FROM analytics_events e " + PERIOD + " AND e.is_offline = :offline",
+                period(start, end, platform).addValue("offline", offline), Long.class);
         return result == null ? 0 : result;
     }
 
-    public List<CountItem> byLocation(Instant start, Instant end) {
+    public List<CountItem> byLocation(Instant start, Instant end, String platform) {
         return jdbc.query("""
                 SELECT COALESCE(l.name, 'Địa điểm không còn khả dụng') AS label, count(*) AS total
                 FROM analytics_events e LEFT JOIN locations l ON l.id = e.location_id
-                WHERE e.event_type = 'PLAYBACK_STARTED' AND e.occurred_at >= :start AND e.occurred_at < :end
+                """ + PERIOD + """
                 GROUP BY e.location_id, l.name ORDER BY total DESC, label, e.location_id
-                """, period(start, end), (rs, row) -> new CountItem(rs.getString("label"), rs.getLong("total")));
+                """, period(start, end, platform), (rs, row) -> new CountItem(rs.getString("label"), rs.getLong("total")));
     }
 
-    public List<CountItem> byLanguage(Instant start, Instant end) {
-        return jdbc.query("SELECT COALESCE(e.language_code, 'UNKNOWN') AS label, count(*) AS total " + PERIOD
-                + " GROUP BY e.language_code ORDER BY total DESC, label", period(start, end),
+    public List<CountItem> byLanguage(Instant start, Instant end, String platform) {
+        return jdbc.query("SELECT COALESCE(e.language_code, 'UNKNOWN') AS label, count(*) AS total FROM analytics_events e " + PERIOD
+                + " GROUP BY e.language_code ORDER BY total DESC, label", period(start, end, platform),
                 (rs, row) -> new CountItem(rs.getString("label"), rs.getLong("total")));
     }
 
-    private Map<String, Object> period(Instant start, Instant end) {
-        return Map.of("start", Timestamp.from(start), "end", Timestamp.from(end));
+    private MapSqlParameterSource period(Instant start, Instant end, String platform) {
+        return new MapSqlParameterSource()
+                .addValue("start", Timestamp.from(start))
+                .addValue("end", Timestamp.from(end))
+                .addValue("platform", platform, java.sql.Types.VARCHAR);
     }
 }

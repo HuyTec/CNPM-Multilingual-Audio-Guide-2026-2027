@@ -19,6 +19,7 @@ export function useLiveAnalytics(
   from: string,
   to: string,
   revision: number,
+  enabled: boolean,
 ) {
   const [result, setResult] = useState<{
     key: string;
@@ -28,7 +29,7 @@ export function useLiveAnalytics(
   }>({ key: "" });
   const key = `${authorization}:${from}:${to}:${revision}`;
   useEffect(() => {
-    if (!authorization) return;
+    if (!authorization || !enabled) return;
     const controller = new AbortController();
     let fetching = false;
     let rejected = false;
@@ -43,7 +44,7 @@ export function useLiveAnalytics(
       fetching = true;
       try {
         const response = await fetch(
-          `/api/admin/analytics?${new URLSearchParams({ from, to })}`,
+          `/api/admin/analytics?${new URLSearchParams({ from, to, platform: "WEB" })}`,
           {
             headers: { Authorization: authorization },
             signal: controller.signal,
@@ -55,9 +56,9 @@ export function useLiveAnalytics(
           throw Object.assign(
             new Error(
               response.status === 401
-                ? "Tên đăng nhập hoặc mật khẩu chưa đúng."
+                ? "Phiên đăng nhập đã hết hạn. Hãy đăng nhập lại."
                 : body.detail ||
-                    "Không thể tải số liệu. Kiểm tra backend rồi thử lại.",
+                    "Không thể tải số liệu. Hãy thử lại.",
             ),
             { unauthorized: response.status === 401 },
           );
@@ -79,13 +80,13 @@ export function useLiveAnalytics(
       }
     }
     void refresh();
-    const timer = window.setInterval(() => void refresh(), 5000);
+    const timer = window.setInterval(() => void refresh(), 30_000);
     document.addEventListener("visibilitychange", refresh);
     return () => {
       controller.abort();
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [authorization, from, to, revision, key]);
+  }, [authorization, from, to, revision, key, enabled]);
   return result.key === key ? result : { key };
 }

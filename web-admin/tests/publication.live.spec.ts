@@ -64,7 +64,7 @@ test("real DB: translate, draft, reviewer publication, reconnect polling, verifi
     .click();
   await page.getByRole("checkbox", { name: "English", exact: true }).check();
   await page.getByRole("button", { name: "Dịch tự động", exact: true }).click();
-  await expect(page.getByText(/DEMO: kết quả giả lập/)).toBeVisible();
+  await expect(page.getByText(/Dịch vụ đang trả dữ liệu giả lập/)).toBeVisible();
   await page.getByLabel("Ngôn ngữ", { exact: true }).selectOption("en");
   await expect(page.getByLabel("Tên địa điểm")).toHaveValue(
     `[DEMO en] ${editorName}`,

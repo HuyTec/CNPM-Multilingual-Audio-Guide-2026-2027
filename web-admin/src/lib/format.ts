@@ -39,3 +39,16 @@ export function daysAgo(days: number) {
   d.setUTCDate(d.getUTCDate() - days);
   return d.toISOString().slice(0, 10);
 }
+
+export function reportPeriodError(from: string, to: string) {
+  const start = Date.parse(from);
+  const end = Date.parse(to);
+  const isDate = (value: string, time: number) =>
+    /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(time) &&
+    new Date(time).toISOString().slice(0, 10) === value;
+  if (!isDate(from, start) || !isDate(to, end)) return "Chọn đủ hai ngày hợp lệ.";
+  if (start > end) return "Ngày kết thúc phải từ ngày bắt đầu trở đi.";
+  if (end - start > 365 * 86_400_000) return "Chọn kỳ báo cáo tối đa 366 ngày.";
+  return "";
+}

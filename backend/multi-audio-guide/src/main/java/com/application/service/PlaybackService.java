@@ -3,6 +3,7 @@ package com.application.service;
 import com.application.dto.AnalyticsResponse;
 import com.application.dto.PlaybackReceipt;
 import com.application.dto.PlaybackRequest;
+import com.application.dto.VisitorHeartbeat.Platform;
 import com.application.model.GuideContent;
 import com.application.repository.GuideRepository;
 import com.application.repository.PlaybackRepository;
@@ -72,7 +73,7 @@ public class PlaybackService {
 
     /** One database snapshot keeps totals and distributions consistent while new plays arrive. */
     @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public AnalyticsResponse analytics(LocalDate from, LocalDate to) {
+    public AnalyticsResponse analytics(LocalDate from, LocalDate to, Platform platform) {
         LocalDate endDate = to == null ? LocalDate.now(REPORT_ZONE) : to;
         LocalDate startDate = from == null ? endDate.minusDays(29) : from;
         if (startDate.isAfter(endDate) || ChronoUnit.DAYS.between(startDate, endDate) > 365) {
@@ -80,9 +81,10 @@ public class PlaybackService {
         }
         Instant start = startDate.atStartOfDay(REPORT_ZONE).toInstant();
         Instant end = endDate.plusDays(1).atStartOfDay(REPORT_ZONE).toInstant();
-        long online = playbacks.count(start, end, false);
-        long offline = playbacks.count(start, end, true);
+        String clientPlatform = platform == null ? null : platform.name();
+        long online = playbacks.count(start, end, false, clientPlatform);
+        long offline = playbacks.count(start, end, true, clientPlatform);
         return new AnalyticsResponse(startDate, endDate, REPORT_ZONE.getId(), Instant.now(), online + offline,
-                online, offline, playbacks.byLocation(start, end), playbacks.byLanguage(start, end));
+                online, offline, playbacks.byLocation(start, end, clientPlatform), playbacks.byLanguage(start, end, clientPlatform));
     }
 }

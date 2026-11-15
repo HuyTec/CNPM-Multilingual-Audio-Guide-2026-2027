@@ -95,6 +95,32 @@ test("translation failure keeps source text and manual editing available", async
   await expect(page.getByLabel("Tên địa điểm")).toHaveValue("Manual English");
 });
 
+test("translation keeps successful languages and opens the available script", async ({ page }) => {
+  await page.route("**/api/admin/content/translate", (route) => {
+    const input = route.request().postDataJSON();
+    expect(input.full).toBe("Bài đầy đủ nguồn.");
+    expect(input.shortText).toBe("");
+    if (input.targetLanguages[0] === "fr")
+      return route.fulfill({ status: 502, json: { detail: "Dịch vụ tạm lỗi." } });
+    return route.fulfill({ json: { simulated: false, variants: [
+      { language: "en", name: "Saigon University", full: "Full narration.", shortText: "" },
+    ] } });
+  });
+  await page.goto("/locations/new");
+  await page.getByLabel("Tên địa điểm").fill("Đại học Sài Gòn");
+  await page.getByLabel("Nội dung thuyết minh", { exact: true }).fill("Bài đầy đủ nguồn.");
+  await page.getByRole("radio", { name: "Dịch tự động từ nội dung nguồn", exact: true }).click();
+  await page.getByRole("checkbox", { name: "English", exact: true }).check();
+  await page.getByRole("checkbox", { name: "Français", exact: true }).check();
+  await page.getByRole("button", { name: "Dịch tự động", exact: true }).click();
+  await expect(page.getByText(/FR: Dịch vụ tạm lỗi/)).toBeVisible();
+  await page.getByRole("button", { name: "Xem bản EN · FULL" }).click();
+  await expect(page.getByLabel("Nội dung thuyết minh", { exact: true })).toHaveValue("Full narration.");
+  await expect(page.getByLabel("Tên địa điểm")).toHaveValue("Saigon University");
+  await expect(page.getByLabel("Danh mục", { exact: true }).locator("option"))
+    .toHaveText(["Chọn danh mục", "Thường", "Di tích", "Bảo tàng", "Công viên"]);
+});
+
 test("localized name selection preserves VI, rejection is read-only and can be resubmitted", async ({
   page,
   adminData,

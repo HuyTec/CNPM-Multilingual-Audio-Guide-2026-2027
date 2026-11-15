@@ -44,7 +44,7 @@ export const test = base.extend<{ adminData: Data }>({
       if (url.pathname === "/api/admin/auth/logout") return json({username:"editor",role:"EDITOR"});
       if (url.pathname === "/api/admin/content/config")
         return json({
-          categories: ["Văn hóa", "Lịch sử", "Ẩm thực"],
+          categories: ["Thường", "Di tích", "Bảo tàng", "Công viên"],
           languages: [
             { code: "vi", label: "Tiếng Việt" },
             { code: "en", label: "English" },

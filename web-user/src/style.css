@@ -9,15 +9,6 @@
 .nearby-notice-action:hover, .nearby-notice-close:hover { background: var(--trail-wash); }
 .nearby-result-summary { scroll-margin-top: 24px; }
 
-.android-promo { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:32px; align-items:center; margin:32px 0; padding:32px; background:var(--reading-paper); border:1px solid var(--reading-rule); border-radius:12px; scroll-margin-top:24px; }
-.android-promo-copy { min-width:0; max-width:640px; }
-.android-promo h2 { margin:8px 0 16px; font-size:clamp(1.4rem,3vw,1.9rem); }
-.android-promo-qr { margin:0; text-align:center; width:208px; }
-.android-promo-qr img { display:block; width:208px; height:208px; image-rendering:pixelated; background:#fff; }
-.android-promo-qr figcaption, .android-install-note { color:var(--story-muted); font-size:0.875rem; margin-top:12px; }
-.android-release { font-variant-numeric:tabular-nums; }
-.android-download { display:inline-flex; text-decoration:none; }
-@media(max-width:640px) { .android-promo { grid-template-columns:minmax(0,1fr); padding:20px; gap:24px; } .android-promo-qr { justify-self:center; } }
 
 @theme { --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
 .geofence-notices, .playback-sync { min-width: 0; font-variant-numeric: tabular-nums; }
@@ -301,6 +292,4 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .installed-places summary { cursor: pointer; font-weight: 600; padding-block: 8px; }
 .installed-places ul { max-height: 260px; overflow-y: auto; padding-inline-start: 22px; }
 .installed-places li { padding-block: 7px; overflow-wrap: anywhere; content-visibility: auto; contain-intrinsic-size: auto 2rem; }
-.android-qr-host { font-size: 12px; color: var(--story-muted); overflow-wrap: anywhere; margin-block: 8px; }
-.android-qr-save { display: inline-block; padding: 8px 12px; font-size: 14px; text-underline-offset: 4px; }
-.fallback-note a, .android-qr-save { text-decoration: underline; text-underline-offset: 3px; }
+.fallback-note a { text-decoration: underline; text-underline-offset: 3px; }

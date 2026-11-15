@@ -26,8 +26,8 @@ const sections = [
     steps: [
       "Vào Địa điểm → Thêm địa điểm. Nhập tên, danh mục, vĩ độ, kinh độ và bán kính. Lưu nháp được phép thiếu thông tin; gửi duyệt phải đủ các trường bắt buộc.",
       "Chọn ảnh JPEG/PNG tối đa 5 MB và kiểm tra ảnh xem trước. Một ảnh đại diện dùng chung cho các ngôn ngữ.",
-      "Nhập thủ công: chọn từng ngôn ngữ, nhập tên và bài FULL (đầy đủ) hoặc SHORT (rút gọn). Dịch tự động: nhập tên/bài ở ngôn ngữ nguồn, chọn đích rồi bấm Dịch tự động; đọc và sửa kết quả. Hiện provider demo chỉ giả lập, không phải bản dịch thật.",
-      "Web/Android dùng TTS đọc văn bản khi không có audio thu sẵn. Nếu cần tải audio, mở Audio thu sẵn (tùy chọn), chọn MP3/WAV/OGG rồi nghe thử.",
+      "Nhập thủ công theo từng ngôn ngữ và loại bài FULL hoặc SHORT. Khi dịch tự động, chọn ngôn ngữ nguồn và đích, sau đó kiểm tra bản dịch trước khi gửi duyệt.",
+      "Web du khách có thể đọc văn bản bằng giọng của trình duyệt khi không có âm thanh thu sẵn. Để tải âm thanh, chọn MP3, WAV hoặc OGG rồi nghe thử.",
     ],
   },
   {
@@ -47,7 +47,7 @@ const sections = [
     title: "4. Kiểm tra nội dung trên Web du khách",
     steps: [
       "Sau khi tác vụ READY, mở Web du khách → Nội dung offline → Kiểm tra cập nhật. Ứng dụng cũng kiểm tra khoảng 30 giây một lần khi đang mở.",
-      "Chọn Tải gói hoặc Cập nhật gói, đọc hộp xác nhận ở giữa màn hình rồi bấm Xác nhận tải. Gói cơ bản dành cho tuyến demo; địa điểm khác nằm trong gói bổ sung.",
+      "Trên Web du khách, chọn Tải gói hoặc Cập nhật gói rồi xác nhận. Web cài một gói ngoại tuyến chứa nội dung du khách có thể nghe khi mất mạng.",
       "Gói được lưu trong bộ nhớ trình duyệt, không phải file trong thư mục Downloads. Đợi thông báo Đã cài nội dung được xác minh; mở Xem địa điểm trong gói để đọc bài.",
       "Dữ liệu lưu riêng theo trình duyệt và địa chỉ website. Đổi link tunnel hoặc thiết bị cần tải lại. Điểm mẫu (1,1) cách xa Việt Nam; tìm theo tên hoặc mở từ gói đã cài, không tìm trong danh sách gần bạn.",
     ],
@@ -70,7 +70,7 @@ const sections = [
       "Không đăng nhập được: kiểm tra tên tài khoản/mật khẩu được cấp. Cần duyệt nhưng không thấy menu: đăng xuất và dùng tài khoản REVIEWER.",
       "Báo xung đột phiên bản: chép lại phần đang nhập trước khi mở lại bản mới nhất. Không lưu đè khi một người khác vừa sửa cùng địa điểm.",
       "Chưa thấy gói mới: kiểm tra trạng thái duyệt và tác vụ tạo gói, đúng địa chỉ website/backend, sau đó Kiểm tra cập nhật. Đang nghe hoặc tạm dừng bài có thể khiến việc cài gói phải chờ; hãy dừng bài.",
-      "Ảnh mới hiện dùng online; chưa có ảnh tải offline hoặc UI ảnh mới trên Android. Giọng TTS ngoại tuyến cần được cài trên thiết bị. Khi báo lỗi, ghi trang đang dùng, tên địa điểm và thông báo lỗi; không gửi mật khẩu.",
+      "Ảnh địa điểm cần kết nối mạng. Để nghe TTS ngoại tuyến, trình duyệt cần có giọng đọc cục bộ phù hợp. Khi báo lỗi, ghi trang đang dùng, tên địa điểm và thông báo lỗi. Giữ riêng mật khẩu.",
     ],
   },
 ];

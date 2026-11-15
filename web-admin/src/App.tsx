@@ -29,6 +29,7 @@ import { useAdminSession } from "./lib/admin-content";
 function Layout() {
   const location = useLocation();
   const [params, setParams] = useSearchParams();
+  const mockAnalytics = import.meta.env.DEV && params.get("source") === "mock";
   const { authorization, setAuthorization, identity } = useAdminSession();
   return (
     <div className="app-shell">
@@ -70,15 +71,9 @@ function Layout() {
           </NavLink>
         </nav>
         <div className="sidebar-bottom">
-          <div className="demo-badge">
-            <FlaskConical size={15} aria-hidden="true" />
-            Môi trường demo
-          </div>
-          <p>
-            Thống kê lấy từ database.
-            <br />
-            Biên tập và phản hồi lưu vào DB chung.
-          </p>
+          {mockAnalytics && <div className="demo-badge">
+            <FlaskConical size={15} aria-hidden="true" /> Dữ liệu giả lập
+          </div>}
           <div className="profile">
             <span className="avatar">AD</span>
             <div>
@@ -141,7 +136,7 @@ function Layout() {
           </div>
         </main>
         {location.pathname.startsWith("/analytics") &&
-          params.get("source") === "mock" && (
+          mockAnalytics && (
             <footer className="demo-controls">
               <label htmlFor="scenario">
                 <FlaskConical size={15} aria-hidden="true" />

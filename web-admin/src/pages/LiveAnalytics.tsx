@@ -1,14 +1,14 @@
 import { AdminAccess } from "../components/AdminAccess";
 import { useAdminSession } from "../lib/admin-content";
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
-import { Field } from "../components/ui/Field";
+import { ReportPeriod } from "../components/ReportPeriod";
 import { DataTable } from "../components/ui/DataTable";
 import { EmptyState } from "../components/ui/EmptyState";
 import { LoadingState } from "../components/ui/States";
 import { useLiveAnalytics, type CountItem } from "../lib/live-analytics";
-import { daysAgo, today, number, percent, dateTime } from "../lib/format";
+import { daysAgo, today, number, percent, dateTime, reportPeriodError } from "../lib/format";
 import { exportReport } from "../lib/export";
 import { feedbackForExport, feedbackQuery } from "../lib/feedback";
 import { LiveFeedback } from "../components/LiveFeedback";
@@ -22,7 +22,8 @@ export default function LiveAnalytics() {
   const [revision, setRevision] = useState(0);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
-  const result = useLiveAnalytics(authorization, from, to, revision);
+  const invalidPeriod = reportPeriodError(from, to);
+  const result = useLiveAnalytics(authorization, from, to, revision, !invalidPeriod);
   const data = result.data;
   useEffect(() => {
     if (!params.has("from") || !params.has("to")) {
@@ -32,12 +33,17 @@ export default function LiveAnalytics() {
       setParams(next, { replace: true });
     }
   }, [params, setParams, from, to]);
-  function period(name: string, value: string) {
+  function period(start: string, end: string) {
+    if (start === from && end === to) {
+      setRevision((x) => x + 1);
+      return;
+    }
     const next = new URLSearchParams(params);
-    next.set("from", from);
-    next.set("to", to);
-    next.set(name, value);
+    next.set("from", start);
+    next.set("to", end);
     next.delete("page");
+    next.delete("feedback");
+    setExportError("");
     setParams(next);
   }
   async function download() {
@@ -82,7 +88,7 @@ export default function LiveAnalytics() {
           ]),
         ],
         feedback,
-        "PostgreSQL — lượt bắt đầu phát và phản hồi theo bộ lọc đang chọn",
+        "Web du khách · lượt bắt đầu phát và phản hồi theo bộ lọc đang chọn",
       );
     } catch {
       setExportError(
@@ -96,10 +102,9 @@ export default function LiveAnalytics() {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">DỮ LIỆU CHUNG WEB VÀ ANDROID</p>
-          <h1>Thống kê lượt nghe</h1>
+          <h1>Thống kê và phản hồi</h1>
           <p className="muted">
-            Theo dõi lượt phát, ngôn ngữ và phản hồi trong kỳ báo cáo.
+            Theo dõi hoạt động trên Web du khách và xử lý phản hồi theo kỳ báo cáo.
           </p>
         </div>
       </div>
@@ -113,47 +118,12 @@ export default function LiveAnalytics() {
         />
       ) : (
         <>
-          <section className="card period">
-            <div>
-              <h2>Kỳ báo cáo</h2>
-              <p className="muted">
-                Mặc định 30 ngày · giờ Việt Nam · tối đa 366 ngày.
-              </p>
-            </div>
-            <div className="filters">
-              <Field id="live-from" label="Từ ngày">
-                <input
-                  id="live-from"
-                  name="from"
-                  type="date"
-                  autoComplete="off"
-                  value={from}
-                  onChange={(e) => period("from", e.target.value)}
-                />
-              </Field>
-              <Field id="live-to" label="Đến ngày">
-                <input
-                  id="live-to"
-                  name="to"
-                  type="date"
-                  autoComplete="off"
-                  value={to}
-                  onChange={(e) => period("to", e.target.value)}
-                />
-              </Field>
-              <Button secondary onClick={() => setRevision((x) => x + 1)}>
-                Làm mới số liệu
-              </Button>
-              <Button
-                disabled={!data}
-                busy={exporting}
-                onClick={() => void download()}
-              >
-                {exporting ? "Đang xuất…" : "Xuất báo cáo .xlsx"}
-              </Button>
-            </div>
-          </section>
-          {result.error ? (
+          <ReportPeriod key={`${from}:${to}`} from={from} to={to}
+            loading={!invalidPeriod && !data && !result.error}
+            exporting={exporting} canExport={!!data} onApply={period}
+            onExport={() => void download()} />
+          <VisitorStats authorization={authorization} />
+          {invalidPeriod ? null : result.error ? (
             <div className="notice error" role="status" aria-live="polite">
               <p>{result.error}</p>
               <Button secondary onClick={() => setRevision((x) => x + 1)}>
@@ -164,19 +134,13 @@ export default function LiveAnalytics() {
             <LoadingState />
           ) : (
             <>
-              <VisitorStats authorization={authorization} />
-              <p className="muted" role="status" aria-live="polite">
-                Cập nhật: {dateTime(data.generatedAt)} · Một lượt = một phiên
-                bắt đầu phát, không phải lượt nghe hết.
+              <p className="muted report-updated">
+                Cập nhật {dateTime(data.generatedAt)} · Tính theo lượt bắt đầu phát
               </p>
               <div className="summary-grid">
                 <Metric
                   label="Tổng lượt phát"
                   value={number(data.totalPlaybacks)}
-                />
-                <Metric
-                  label="Địa điểm nổi bật"
-                  value={data.topLocations[0]?.label || "Chưa có"}
                 />
                 <Metric
                   label="Ngôn ngữ được sử dụng"
@@ -195,9 +159,7 @@ export default function LiveAnalytics() {
                 <section className="card">
                   <EmptyState title="Chưa có lượt nghe trong kỳ">
                     <p>
-                      Chọn địa điểm trên Web du khách hoặc Android rồi nhấn Nghe
-                      thuyết minh. Trang chỉ hiển thị lượt nghe đã ghi vào
-                      database.
+                      Hãy đổi kỳ báo cáo hoặc kiểm tra lượt phát trên Web du khách.
                     </p>
                   </EmptyState>
                 </section>
@@ -233,20 +195,9 @@ export default function LiveAnalytics() {
               </Button>
             </div>
           )}
-          <LiveFeedback from={from} to={to} />
+          {!invalidPeriod && <LiveFeedback from={from} to={to} />}
         </>
       )}
-      <details className="card admin-demo-details">
-        <summary>Thông tin bản demo</summary>
-        <p>
-          Địa điểm, bản nháp, gửi duyệt, lượt nghe và phản hồi dùng database
-          chung. Phản hồi được tiếp nhận qua hệ thống bên ngoài; trang này quản
-          lý trạng thái.
-        </p>
-        <Link to="/analytics?source=mock">
-          Mở giao diện thống kê và phản hồi giả lập
-        </Link>
-      </details>
     </>
   );
 }

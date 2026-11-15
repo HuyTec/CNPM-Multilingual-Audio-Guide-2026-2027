@@ -22,7 +22,7 @@ import LiveAnalytics from "./LiveAnalytics";
 
 export default function AnalyticsFeedback() {
   const [params] = useSearchParams();
-  return params.get("source") === "mock" ? (
+  return import.meta.env.DEV && params.get("source") === "mock" ? (
     <MockAnalyticsFeedback />
   ) : (
     <LiveAnalytics />

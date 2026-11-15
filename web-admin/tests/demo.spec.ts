@@ -99,8 +99,45 @@ test("UC-06 unsaved navigation asks confirmation and Escape keeps form", async (
     .click();
   await page.getByRole("button", { name: "Rời trang", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Thống kê lượt nghe", exact: true }),
+    page.getByRole("heading", { name: "Thống kê và phản hồi", exact: true }),
   ).toBeVisible();
+});
+
+test("Pilot reports apply the selected period and refresh only Web presence", async ({ page }) => {
+  await page.route("**/api/admin/visitors?*", async (route) => {
+    const minutes = Number(new URL(route.request().url()).searchParams.get("minutes"));
+    await route.fulfill({ json: {
+      generatedAt: new Date().toISOString(),
+      activeWindowMinutes: minutes,
+      platforms: [
+        { platform: "WEB", totalInstallations: 26, activeInstallations: minutes === 5 ? 1 : 4 },
+        { platform: "ANDROID", totalInstallations: 99, activeInstallations: 99 },
+      ],
+    } });
+  });
+  await page.goto("/analytics?from=2026-10-17&to=2026-11-15");
+  const visitors = page.getByRole("region", { name: "Hoạt động trên Web du khách" });
+  await expect(visitors.getByText("Hoạt động trong 5 phút")).toBeVisible();
+  await expect(visitors.getByText("99", { exact: true })).toHaveCount(0);
+  await visitors.getByLabel("Khoảng hoạt động").selectOption("15");
+  await expect(visitors.getByText("Hoạt động trong 15 phút")).toBeVisible();
+  await expect(visitors.getByText("4", { exact: true })).toBeVisible();
+  await expect(visitors.getByText("26", { exact: true })).toBeVisible();
+
+  await page.getByLabel("Từ ngày", { exact: true }).fill("2026-11-02");
+  await expect(page).toHaveURL(/from=2026-10-17/);
+  await expect(page.getByRole("button", { name: "Xuất báo cáo .xlsx" })).toBeDisabled();
+  const request = page.waitForRequest((req) => req.url().includes("/api/admin/analytics?")
+    && new URL(req.url()).searchParams.get("from") === "2026-11-02");
+  await page.getByRole("button", { name: "Áp dụng kỳ" }).click();
+  expect(new URL((await request).url()).searchParams.get("platform")).toBe("WEB");
+  await expect(page).toHaveURL(/from=2026-11-02/);
+  await expect(page.getByRole("button", { name: "Xuất báo cáo .xlsx" })).toBeEnabled();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Xuất báo cáo .xlsx" }).click();
+  expect((await download).suggestedFilename()).toBe("bao-cao-2026-11-02-2026-11-15.xlsx");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
 
 test("UC-07 URL filters/detail; strict feedback transitions and timestamp persist", async ({
