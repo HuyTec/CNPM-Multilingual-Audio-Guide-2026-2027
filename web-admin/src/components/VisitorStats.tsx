@@ -5,7 +5,7 @@ import { Button } from './ui/Button';
 type Snapshot = { generatedAt: string; activeWindowMinutes: number; platforms: {
   platform: string; totalInstallations: number; activeInstallations: number;
 }[] };
-const windows = [5, 10, 15, 30, 60];
+const windows = [5, 10, 15, 20, 25, 30, 60];
 
 export function VisitorStats({ authorization }: { authorization: string }) {
   const [result, setResult] = useState<{ key: string; data?: Snapshot; error?: string }>({ key: '' });

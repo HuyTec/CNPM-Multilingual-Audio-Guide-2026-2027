@@ -431,10 +431,15 @@
 .visitor-metrics {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: .75rem;
   margin-block: 1rem .75rem;
-  padding: .875rem 1rem;
+  padding: 0;
+}
+.visitor-metrics > div {
+  min-width: 0;
+  padding: 1rem;
   background: #f5faf9;
+  border: 1px solid #dcebe8;
   border-radius: .5rem;
 }
 .visitor-metrics dt { font-size: .875rem; }
@@ -442,6 +447,9 @@
 .visitor-metrics, .report-updated, .admin-analytics .analytics-grid td { font-variant-numeric: tabular-nums; }
 .visitor-stats-card .report-updated { margin: 0; }
 .admin-analytics .report-updated + .summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 540px) {
+  .visitor-metrics { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 950px) {
   .report-actions { grid-column: 1 / -1; padding-top: 0; }
   .report-controls { grid-template-columns: repeat(2,minmax(0,1fr)); }
