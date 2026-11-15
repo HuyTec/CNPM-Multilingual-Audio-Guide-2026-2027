@@ -5,11 +5,11 @@
 
 ## Thành viên nhóm
 
-| Thành viên        | MSSV       | Vai trò     |
-| ----------------- | ---------- | ----------- |
-| Trần Nhựt Huy     | 3124411112 | Nhóm trưởng |
-| Nguyễn Hoàng Phúc | 3124411236 | Thành viên  |
-| Phùng Anh Vũ      | 3124411351 | Thành viên  |
+| Thành viên         | MSSV       | Vai trò       |
+| -------------------- | ---------- | -------------- |
+| Trần Nhựt Huy      | 3124411112 | Nhóm trưởng |
+| Nguyễn Hoàng Phúc | 3124411236 | Thành viên   |
+| Phùng Anh Vũ       | 3124411351 | Thành viên   |
 
 ## Giới thiệu
 
@@ -26,14 +26,14 @@ Phạm vi gồm 7 use case (UC-01 đến UC-07) theo tài liệu PRD.
 
 Chạy toàn bộ backend, PostgreSQL, Web Admin và Web du khách bằng `.\scripts\start-live-demo.ps1` từ gốc repo. Tất cả nằm trong một [compose.yaml](compose.yaml); xem cổng, Cloudflare và cách giữ dữ liệu trong [hướng dẫn Docker](docs/operations/DOCKER_GUIDE.md).
 
-| Thành phần     | Công nghệ               | Ghi chú                                             |
-| -------------- | ----------------------- | --------------------------------------------------- |
-| Web admin      | React.js                | Giao diện quản trị (UC-06, UC-07)                   |
-| Backend        | Java 21, Spring Boot 4.1.1, Maven | Kiến trúc 3 lớp                          |
-| Android client | Kotlin                  | Ứng dụng cho du khách (UC-01 đến UC-05)             |
-| Cơ sở dữ liệu  | PostgreSQL              | Phù hợp với nhiều dịch vụ lưu trữ miễn phí          |
-| CI             | GitHub Actions          | Tự động build và test khi push hoặc mở pull request |
-| CD / đóng gói  | Docker (Docker Compose) | Chạy được trên nhiều máy, thuận tiện cho demo       |
+| Thành phần      | Công nghệ                       | Ghi chú                                                  |
+| ----------------- | --------------------------------- | --------------------------------------------------------- |
+| Web admin         | React.js                          | Giao diện quản trị (UC-06, UC-07)                      |
+| Backend           | Java 21, Spring Boot 4.1.1, Maven | Kiến trúc 3 lớp                                        |
+| Android client    | Kotlin                            | Ứng dụng cho du khách (UC-01 đến UC-05)              |
+| Cơ sở dữ liệu | PostgreSQL                        | Phù hợp với nhiều dịch vụ lưu trữ miễn phí      |
+| CI                | GitHub Actions                    | Tự động build và test khi push hoặc mở pull request |
+| CD / đóng gói  | Docker (Docker Compose)           | Chạy được trên nhiều máy, thuận tiện cho demo    |
 
 **Lý do chọn Java cho backend:** cùng nền JVM với Kotlin nên dễ chuyển đổi và đọc hiểu code giữa hai phần.
 
@@ -62,13 +62,13 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 ## Quy trình và công cụ
 
-| Việc             | Công cụ / quy ước                                         |
-| ---------------- | --------------------------------------------------------- |
-| Quản lý mã nguồn | GitHub                                                    |
-| Quản lý dự án    | Jira (Scrum, sprint 1 tuần, space`HVP`)                   |
-| Tên nhánh        | `HVP-<số>-<mô-tả-ngắn>`, ví dụ `HVP-17-backend-skeleton`  |
-| Commit           | `HVP-<số>: <mô tả thay đổi>`                              |
-| Hợp nhất code    | Qua pull request, CI phải xanh, ít nhất một người xem qua |
+| Việc                | Công cụ / quy ước                                              |
+| -------------------- | ------------------------------------------------------------------ |
+| Quản lý mã nguồn | GitHub                                                             |
+| Quản lý dự án    | Jira (Scrum, sprint 1 tuần, space`HVP`)                         |
+| Tên nhánh          | `HVP-<số>-<mô-tả-ngắn>`, ví dụ `HVP-17-backend-skeleton` |
+| Commit               | `HVP-<số>: <mô tả thay đổi>`                                |
+| Hợp nhất code      | Qua pull request, CI phải xanh, ít nhất một người xem qua    |
 
 **Ví dụ commit:**
 
@@ -89,14 +89,12 @@ Các mục dưới đây mới là đề xuất, chưa phải quyết định c�
 
 Xem [mục lục tài liệu theo vai trò](docs/README.md) để tìm hướng dẫn, kịch bản nghiệm thu và audit log.
 
-- gg doc: [docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing](https://docs.google.com/document/d/1avxIks8YUeUG-7u1_YWe64EFjLieWTuItmzri2PvZOM/edit?usp=sharing)
+- gg doc: [docs.google.com/document/d/1WSH3ITG6EBQOxG1M_Aofu22_v4rTu9vtTz6UB854WV8/edit?usp=sharing](https://docs.google.com/document/d/1WSH3ITG6EBQOxG1M_Aofu22_v4rTu9vtTz6UB854WV8/edit?usp=sharing)
 - lược đồ: **[drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing](https://drive.google.com/file/d/1zns1wdhfCAlyiyA4wL7bHa6eJkIttKw4/view?usp=sharing)**
-- **PRD hiện hành:** [tiếng Anh](docs/en/PRD_Report.md), [tiếng Việt](docs/vi/PRD_Report_vi.md).
+- **PRD hiện hành: [docs.google.com/document/d/1WSH3ITG6EBQOxG1M_Aofu22_v4rTu9vtTz6UB854WV8/edit?usp=sharing](https://docs.google.com/document/d/1WSH3ITG6EBQOxG1M_Aofu22_v4rTu9vtTz6UB854WV8/edit?usp=sharing)**
 - **Bản Word nguồn:** [PRODUCT REQUIRMENTS DOCUMENT.docx](<docs/en/PRODUCT REQUIRMENTS DOCUMENT.docx>); đối chiếu yêu cầu hiện hành bằng hai bản PRD Markdown ở trên.
 - **Sơ đồ gốc:** [SE.drawio (1).xml](<docs/en/SE.drawio (1).xml>).
 - **Ghi chú PRD theo Epic:** [Khám phá/thông báo](https://trannhuthuy897.atlassian.net/browse/HVP-1), [hướng dẫn/audio](https://trannhuthuy897.atlassian.net/browse/HVP-3), [ngoại tuyến](https://trannhuthuy897.atlassian.net/browse/HVP-4), [quản lý nội dung](https://trannhuthuy897.atlassian.net/browse/HVP-5), [thống kê/phản hồi](https://trannhuthuy897.atlassian.net/browse/HVP-6).
-- **Thiết kế/review Web Admin:** [Jira HVP-21](https://trannhuthuy897.atlassian.net/browse/HVP-21); **Android:** [Jira HVP-22](https://trannhuthuy897.atlassian.net/browse/HVP-22).
-- **Thiết lập và hạ tầng:** [Jira HVP-7](https://trannhuthuy897.atlassian.net/browse/HVP-7). Câu hỏi nghiệp vụ được ghi tại Epic tương ứng.
 
 Thiết kế, backlog nháp và biên bản review được quản lý trực tiếp trên Jira. Repository giữ PRD, hướng dẫn cài đặt/chạy và các tệp nguồn/ảnh tham khảo; không duy trì thêm bản Markdown thiết kế trùng nội dung Jira.
 
