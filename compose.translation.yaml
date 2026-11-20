@@ -3,15 +3,25 @@ services:
     image: libretranslate/libretranslate
     restart: unless-stopped
     environment:
-      LT_LOAD_ONLY: "vi,en,fr,ja,ru,zh"
+      LT_LOAD_ONLY: "vi,en,fr,ja,ru,zh-Hans"
+      LT_UPDATE_MODELS: "true"
     volumes:
       - translation_models:/home/libretranslate/.local
+    healthcheck:
+      test: ["CMD-SHELL", "./venv/bin/python scripts/healthcheck.py"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 15s
 
   backend:
     environment:
       TRANSLATION_PROVIDER: libretranslate
       TRANSLATION_URL: http://libretranslate:5000/translate
       TRANSLATION_API_KEY: ""
+    depends_on:
+      libretranslate:
+        condition: service_healthy
 
 volumes:
   translation_models:
