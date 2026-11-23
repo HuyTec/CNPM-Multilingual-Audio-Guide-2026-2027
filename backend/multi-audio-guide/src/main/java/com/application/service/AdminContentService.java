@@ -1,13 +1,19 @@
 package com.application.service;
 
 import com.application.dto.AdminContentDto.*;
+import com.application.component.AudioStorage;
 import com.application.repository.AdminContentRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.server.ResponseStatusException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,13 +25,13 @@ import java.util.UUID;
 @Service
 @Profile("demo")
 public class AdminContentService {
+    private static final Logger log = LoggerFactory.getLogger(AdminContentService.class);
     private final AdminContentRepository repository;
+    private final AudioStorage storage;
     private final String editor;
     private final com.application.repository.LocationImageRepository images;
-    public AdminContentService(AdminContentRepository repository, String editor) { this(repository,editor,null); }
-    @org.springframework.beans.factory.annotation.Autowired
-    public AdminContentService(AdminContentRepository repository, @Value("${demo.admin.username:admin}") String editor, com.application.repository.LocationImageRepository images) {
-        this.repository = repository; this.editor = editor; this.images=images;
+    public AdminContentService(AdminContentRepository repository, @Value("${demo.admin.username:admin}") String editor, com.application.repository.LocationImageRepository images, AudioStorage storage) {
+        this.repository = repository; this.editor = editor; this.images=images; this.storage=storage;
     }
     public Config config() { return repository.config(); }
     @Transactional(readOnly = true)
@@ -89,6 +95,7 @@ public class AdminContentService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Bản làm việc đã đổi. Hãy mở lại địa điểm; nội dung đang nhập vẫn được giữ.");
         return detail(id);
     }
+    @Transactional
     public UploadResponse upload(UUID location, String language, String type, String filename, byte[] bytes) {
         language = language.toUpperCase(Locale.ROOT);
         if (!List.of("FULL", "SHORT").contains(type) || !repository.languageActive(language)) bad("Biến thể audio không hợp lệ.");
@@ -102,11 +109,40 @@ public class AdminContentService {
             default -> false;
         };
         if (!signature || name.length() > 255) bad("Định dạng hoặc header audio không hợp lệ (MP3/WAV/OGG).");
-        UUID id = UUID.randomUUID(); repository.insertAudio(id, location, language, type, name, format, bytes, actor());
+        UUID id = UUID.randomUUID();
+        try {
+            storage.write(id, format, bytes);
+        } catch (IOException error) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Không ghi được audio vào thư mục lưu trữ. Hãy thử lại.", error);
+        }
+        try {
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override public void afterCompletion(int status) {
+                        if (status == STATUS_ROLLED_BACK) removeUpload(id, format);
+                    }
+                });
+            }
+            // Keep the DB bytes for compatibility; the existing schema requires them.
+            repository.insertAudio(id, location, language, type, name, format, bytes, actor());
+        } catch (RuntimeException error) {
+            removeUpload(id, format);
+            throw error;
+        }
         return new UploadResponse("/api/content-audio/" + id + "." + format, name, "ready");
     }
     public Audio audio(UUID id, String format, boolean preview) {
-        return repository.audio(id, format, preview).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có audio công khai hoặc tệp không tồn tại."));
+        // Authorize through the DB before reading any local file.
+        Audio audio = repository.audio(id, format, preview).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chưa có audio công khai hoặc tệp không tồn tại."));
+        try {
+            return new Audio(storage.readOrFallback(id, audio.format(), audio.bytes()), audio.format());
+        } catch (IOException error) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Không đọc được audio từ thư mục lưu trữ.", error);
+        }
+    }
+    private void removeUpload(UUID id, String format) {
+        try { storage.delete(id, format); }
+        catch (IOException error) { log.warn("Could not remove uncommitted audio {}.{}", id, format, error); }
     }
     private String actor() {
         var attributes=org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();

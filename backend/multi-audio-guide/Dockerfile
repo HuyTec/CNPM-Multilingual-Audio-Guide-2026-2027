@@ -12,6 +12,7 @@ FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
+RUN mkdir -p /app/storage/audio && chown -R app:app /app/storage
 COPY --from=build --chown=app:app /workspace/target/multi-audio-guide-0.0.1-SNAPSHOT.jar app.jar
 USER app
 

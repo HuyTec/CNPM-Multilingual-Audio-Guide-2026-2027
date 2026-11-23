@@ -6,18 +6,25 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import java.util.UUID;
 
-/** Only reads allowlisted classpath/database sources; never fetches remote audio. */
+/** Only reads allowlisted classpath/local/database sources; never fetches remote audio. */
 @Component
 @Profile("demo")
 public class AudioFileReader {
     private final ContentPackageRepository repository;
-    public AudioFileReader(ContentPackageRepository repository) { this.repository = repository; }
+    private final AudioStorage storage;
+    public AudioFileReader(ContentPackageRepository repository, AudioStorage storage) { this.repository = repository; this.storage = storage; }
     public byte[] read(String url) {
         try {
             byte[] bytes;
             if (url.matches("/demo-audio/[a-z-]+\\.wav")) bytes = new ClassPathResource("static" + url).getContentAsByteArray();
-            else if (url.matches("/api/content-audio/[0-9a-f-]{36}\\.(mp3|wav|ogg)")) bytes = repository.audio(url);
+            else if (url.matches("/api/content-audio/[0-9a-f-]{36}\\.(mp3|wav|ogg)")) {
+                byte[] databaseBytes = repository.audio(url);
+                int dot = url.lastIndexOf('.');
+                UUID id = UUID.fromString(url.substring("/api/content-audio/".length(), dot));
+                bytes = storage.readOrFallback(id, url.substring(dot + 1), databaseBytes);
+            }
             else throw new IllegalArgumentException("Unsupported audio source");
             if (bytes == null) throw new IllegalStateException("Missing audio");
             return bytes;
