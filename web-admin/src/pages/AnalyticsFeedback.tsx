@@ -115,7 +115,7 @@ function MockAnalyticsFeedback() {
         ],
         rows,
       );
-      setAnnouncement("Đã xuất báo cáo XLSX cho kỳ đang chọn.");
+      setAnnouncement("hello");
     } catch {
       setExportError(
         "Không thể xuất báo cáo. Bộ lọc và dữ liệu vẫn được giữ nguyên; hãy thử lại.",
