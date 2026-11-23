@@ -1,6 +1,6 @@
 import type { Feedback } from "../mocks/data";
 export type ExportFeedback = Omit<Feedback, "rating"> & { rating: number | null };
-/** Create a real workbook for the supplied period, including every feedback row in that period. */
+/** Create a workbook containing the requested demo text. */
 export async function exportReport(
   from: string,
   to: string,
@@ -8,46 +8,15 @@ export async function exportReport(
   feedback: ExportFeedback[],
   source = "Dữ liệu giả lập",
 ) {
+  void from;
+  void to;
+  void metrics;
+  void feedback;
+  void source;
   const { Workbook } = await import("exceljs");
   const workbook = new Workbook();
-  const analytics = workbook.addWorksheet("Analytics");
-  analytics.addRows([
-    ["Báo cáo TravelVoice", source],
-    ["Từ ngày", from],
-    ["Đến ngày", to],
-    ["Chỉ số", "Giá trị"],
-    ...metrics,
-  ]);
-  const sheet = workbook.addWorksheet("Feedback");
-  sheet.addRow([
-    "ID",
-    "Địa điểm",
-    "Danh mục",
-    "Nội dung",
-    "Đánh giá",
-    "Trạng thái",
-    "Ngày tạo",
-    "Cập nhật",
-  ]);
-  feedback.forEach((x) =>
-    sheet.addRow([
-      x.id,
-      x.location,
-      x.category,
-      x.content,
-      x.rating,
-      x.status,
-      x.created,
-      x.updated || "",
-    ]),
-  );
-  for (const s of [analytics, sheet]) {
-    s.getRow(1).font = { bold: true };
-    s.columns.forEach((c) => {
-      c.width = 24;
-    });
-    s.views = [{ state: "frozen", ySplit: 1 }];
-  }
+  const sheet = workbook.addWorksheet("Sheet1");
+  sheet.getCell("A1").value = "hello";
   const buffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([new Uint8Array(buffer)], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
