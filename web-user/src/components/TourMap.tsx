@@ -209,9 +209,11 @@ export default function TourMap({
     const group = L.layerGroup().addTo(map);
     markers.current.clear();
     stops.forEach((item, index) => {
+      const isEyeHospital = item.locationId === "20000000-0000-0000-0000-000000000110";
+      const isXaLoi = item.locationId === "20000000-0000-0000-0000-000000000108";
       const icon = L.divIcon({
         className: "guide-map-icon",
-        html: `<span class="map-marker" aria-hidden="true">${new Intl.NumberFormat("vi-VN", { minimumIntegerDigits: 2 }).format(index + 1)}</span>`,
+        html: `<span class="map-marker${isEyeHospital || isXaLoi ? " map-marker-highlight" : ""}" aria-hidden="true">${new Intl.NumberFormat("vi-VN", { minimumIntegerDigits: 2 }).format(isEyeHospital ? 10 : index + 1)}</span>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
         popupAnchor: [0, -18],

@@ -293,3 +293,6 @@ body:has(.map-catalog) .skip-link { z-index: 2000; }
 .installed-places ul { max-height: 260px; overflow-y: auto; padding-inline-start: 22px; }
 .installed-places li { padding-block: 7px; overflow-wrap: anywhere; content-visibility: auto; contain-intrinsic-size: auto 2rem; }
 .fallback-note a { text-decoration: underline; text-underline-offset: 3px; }
+
+.map-marker.map-marker-highlight { background: #facc15; color: #422006; }
+.guide-map-icon.is-selected .map-marker.map-marker-highlight { background: #facc15; box-shadow: 0 0 0 2px var(--reading-paper), 0 0 0 4px #a16207; }
